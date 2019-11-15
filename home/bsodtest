@@ -1,0 +1,2 @@
+local bsod = require("bsod")
+bsod("KENYÉR")
