@@ -19,8 +19,23 @@ while true do
   end)
   if not result then
     io.stderr:write((reason ~= nil and tostring(reason) or "unknown error") .. "\n")
-    io.write("Press any key to continue.\n")
-    os.sleep(0.5)
-    require("event").pull("key")
+    local fs = require("filesystem")
+    local log
+    if not fs.exists("/crashlog.log")
+      log = fs.open("/crashlog.log","w")
+    else
+      fs.remove("/crashlog.log")
+      log = fs.open("/crashlog.log","w")
+    end
+    
+    log:write("---OOPS---\n")
+    log:write("PLOTOS HAS CRASHED AND HERE'S A LOG!\n")
+    log:write("error of crash:\n")
+    log:write(reason ~= nil and tostring(reason) or "unknown error")
+    log:write("\nadditional info:\n")
+    log:write("nothing!")
+    
+    os.sleep(3)
+    os.shutdown(1)
   end
 end
