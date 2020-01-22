@@ -21,7 +21,7 @@ while true do
     io.stderr:write((reason ~= nil and tostring(reason) or "unknown error") .. "\n")
     local fs = require("filesystem")
     local log
-    if not fs.exists("/crashlog.log")
+    if not fs.exists("/crashlog.log") then
       log = fs.open("/crashlog.log","w")
     else
       fs.remove("/crashlog.log")
