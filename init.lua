@@ -33,7 +33,7 @@ while true do
     log:write("error of crash:\n")
     log:write(reason ~= nil and tostring(reason) or "unknown error")
     log:write("\nadditional info:\n")
-    log:write("nothing!")
+    log:write("is it interrupted: "..string.match(tostring(reason), "interrupted"))
     
     os.sleep(3)
     os.shutdown(1)
