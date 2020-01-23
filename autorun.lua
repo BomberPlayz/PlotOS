@@ -1,7 +1,15 @@
-local net = require("internet")
+local inet = require("internet")
+
+local response = inet.request("https://raw.githubusercontent.com/BomberPlayz/PlotOS/master/ver")
+local body = ""
+for chunk in response do
+  body = body .. chunk
+end
 
 for line in io.lines("/ver") do
- if not line == net.request("https://raw.githubusercontent.com/BomberPlayz/PlotOS/master/ver") then
-  shell.execute("/home/posinst")
- end
+ print(body)
+ print(line)
+  if not body == line then
+    shell.execute("/home/posinst")
+  end
 end
