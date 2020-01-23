@@ -20,6 +20,7 @@ while true do
   if not result then
     io.stderr:write("PlotOS ERROR! RESTARTING IN 3 SECONDS..." .. "\n")
     local fs = require("filesystem")
+    local computer = require("computer")
     local log
     if not fs.exists("/crashlog.log") then
       log = fs.open("/crashlog.log","w")
