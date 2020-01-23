@@ -1,13 +1,7 @@
 local shell = require("shell")
 local tty = require("tty")
 local fs = require("filesystem")
-local net = require("internet")
 
-for line in io.lines("/ver") do
- if not line == net.request("https://raw.githubusercontent.com/BomberPlayz/PlotOS/master/ver") then
-  shell.execute("/home/posinst")
- end
-end
 
 if tty.isAvailable() then
   if io.stdout.tty then
