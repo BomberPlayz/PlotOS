@@ -10,7 +10,8 @@ for line in io.lines("/ver") do
  print(body)
  print(line)
   if body == line then
-    else
+    return
+  else
     shell.execute("/home/posinst")
   end
 end
