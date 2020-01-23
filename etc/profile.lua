@@ -2,6 +2,19 @@ local shell = require("shell")
 local tty = require("tty")
 local fs = require("filesystem")
 
+local inet = require("internet")
+
+local response = inet.request("https://raw.githubusercontent.com/BomberPlayz/PlotOS/master/ver")
+local body = ""
+for chunk in response do
+  body = body .. chunk
+end
+
+for line in io.lines("/ver") do
+  if not body == line then
+    shell.execute("/home/posinst")
+  end
+end
 
 if tty.isAvailable() then
   if io.stdout.tty then
