@@ -18,7 +18,7 @@ while true do
     return tostring(msg).."\n"..debug.traceback()
   end)
   if not result then
-    io.stderr:write((reason ~= nil and tostring(reason) or "unknown error") .. "\n")
+    io.stderr:write("PlotOS ERROR! RESTARTING IN 3 SECONDS..." .. "\n")
     local fs = require("filesystem")
     local log
     if not fs.exists("/crashlog.log") then
@@ -36,6 +36,6 @@ while true do
     log:write("is it interrupted: "..string.match(tostring(reason), "interrupted"))
     
     os.sleep(3)
-    os.shutdown(1)
+    computer.shutdown(1)
   end
 end
