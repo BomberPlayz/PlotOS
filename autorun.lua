@@ -13,4 +13,3 @@ local line = file:read(1)
   else
     shell.execute("/home/posinst")
   end
-end
