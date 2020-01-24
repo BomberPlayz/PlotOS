@@ -4,7 +4,7 @@ local unicode = require("unicode")
 local tty = require("tty")
 
 local f = io.open("/usr/misc/greetings.txt")
-local lines = {_OSVERSION .. " (" .. math.floor(computer.totalMemory() / 1024) .. "k RAM)"}
+local lines = {math.floor(computer.totalMemory() / 1024) .. "k RAM", "PlotOS system BETA"}
 local greeting = ""
 if f then
   local greetings = {}
