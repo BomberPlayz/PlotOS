@@ -6,9 +6,8 @@ for chunk in response do
   body = body .. chunk
 end
 
-for line in io.lines("/ver") do
- print(body)
- print(line)
+local file = io.open("/ver")
+local line = file:read(1)
   if body == line then
     return
   else
