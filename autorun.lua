@@ -7,7 +7,7 @@ for chunk in response do
 end
 
 local file = io.open("/ver")
-local line = file:read(1)
+local line = file:read(1)..file:read(2)..file:read(3)..file:read(4)..file:read(5)
   if body == line then
     return
   else
