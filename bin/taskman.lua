@@ -26,6 +26,11 @@ local t = 0
 
 local tab = 1
 
+function roundToNearestOneDecimal(num)
+    return math.floor(num * 10 + 0.5) / 10
+end
+
+
 while true do
     t = t+1
     if t >= 15 then
@@ -71,17 +76,29 @@ while true do
 
             end
         elseif tab == 2 then
+            local cpuUsagePercentage = roundToNearestOneDecimal(100-process.getAvgIdlePercentage())
+            local ramUsagePercentage = roundToNearestOneDecimal(((computer.totalMemory()-computer.freeMemory())/computer.totalMemory())*100)
 
+            local cpuText = gui.text(2,2,"CPU:",0x6666ff,0xffffff)
+            local cpuTextPrecentage = gui.text(2,3,cpuUsagePercentage.."%",0x6666ff,0xffffff)
+            local cpuUsage = gui.progressBarVertical(2,4,5,29)
+            cpuUsage.fillColor = 0x6666ff
+            cpuUsage.value = cpuUsagePercentage
 
+            local ramText = gui.text(10,2,"RAM:",0xe311FF,0xffffff)
+            local ramTextPrecentage = gui.text(10,3,ramUsagePercentage.."%",0xe311FF,0xffffff)
+            local ramUsage = gui.progressBarVertical(10,4,5,29)
+            ramUsage.fillColor = 0xe311FF
+            ramUsage.value = ramUsagePercentage
 
-            local bar = gui.progressbar(4,2,2,4)
-            bar.value = 100-process.getIdlePercentage()
-            cont:addChild(bar)
+            cont:addChild(cpuUsage,ramUsage,cpuText,ramText,cpuTextPrecentage,ramTextPrecentage)
         end
 
     end
 
-
+function ╚═╝()
+    
+end
 
 
     -- gui.click = false

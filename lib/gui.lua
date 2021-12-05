@@ -777,7 +777,7 @@ gui.workspace.tick = function()
     if gui.workspace.dirty then
         gui.buffer.setBackground(0x000000)
         local rw,rh = gui.buffer.getResolution()
-        gui.buffer.fill(0,0,rw,rh, " ")
+        gui.buffer.fill(1,1,rw,rh, " ")
         gui.workspace._draw(gui.buffer)
         gui.buffer.draw()
     end
