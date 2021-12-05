@@ -30,24 +30,37 @@ function roundToNearestOneDecimal(num)
     return math.floor(num * 10 + 0.5) / 10
 end
 
-
+local selectedProcess = nil
 while true do
     t = t+1
     if t >= 15 then
         t = 0
         cont.children = {}
-        local bb = gui.button(0,0,25,1,"Tab 1")
+        local bb = gui.button(0,0,25,1,"Processes")
         bb.onClick = function()
             tab = 1
         end
-        local bb2 = gui.button(26,0,25,1,"Tab 2")
+        local bb2 = gui.button(26,0,25,1,"Performance")
         bb2.onClick = function()
             tab = 2
         end
-        cont:addChild(bb)
-        cont:addChild(bb2)
+
+
+        cont:addChild(bb,bb2)
+
 
         if tab == 1 then
+
+            local killProcessButton = gui.button(75-12,35-2,12,1,"Kill Process")
+            killProcessButton.onClick = function()
+                if selectedProcess then
+                    selectedProcess:kill()
+                end
+            end
+
+            cont:addChild(killProcessButton)
+
+
             local allcputime = 0
             local processes = {}
 
@@ -65,13 +78,22 @@ while true do
             end
             local i = 0
 
-
+            local texts = {}
 
             for k,v in ipairs(processes) do
 
 
                 i = i+1
-                local p = gui.text(1,i,v.name.." :: "..(math.floor((v:getAvgCpuTime()*1000))).."ms".." :: "..(math.floor(v:getAvgCpuPercentage()*10)/10).."%",0x000000,0xffffff)
+                local p = gui.text(1,i,v.name.." :: "..(math.floor((v:getAvgCpuTime()*1000))).."ms".." :: "..(math.floor(v:getAvgCpuPercentage()*10)/10).."%",0x000000,v == selectedProcess and 0xaaaaaa or 0xffffff)
+                function p.onMouseDown()
+                    selectedProcess = v
+                    p.backColor = 0xbcbcbc
+                    for k,v in ipairs(texts) do
+                        v.backColor = 0xffffff
+                    end
+                end
+
+                table.insert(texts, p)
                 cont:addChild(p)
 
             end
@@ -96,9 +118,7 @@ while true do
 
     end
 
-function ╚═╝()
-    
-end
+
 
 
     -- gui.click = false
