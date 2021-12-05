@@ -1,5 +1,5 @@
 local event = {}
-
+local proc = require("process")
 -- event#pull function. Takes a timeout and an event.
 -- Use computer.pullSignal to get an event. It takes a timeout as argument.
 -- If the timeout is nil, the function will block until an event occurs.
@@ -65,7 +65,55 @@ function event.emitter()
     end
   end
 
+  obj.remove = function(evt,callback)
+    for k,v in ipairs(obj.internal.listeners) do
+      if v.event == evt and v.callback == callback then
+        table.remove(obj.internal.listeners, k)
+      end
+    end
+  end
+
   return obj
 end
+
+event.timeouts = {}
+
+function event.setTimeout(fun, timeout)
+  table.insert(event.timeouts, {
+    timeout=timeout,
+    callback=fun,
+    start=computer.uptime(),
+    isInterval = false
+  })
+end
+
+function event.setInterval(fun, timeout)
+  table.insert(event.timeouts, {
+    timeout=timeout,
+    callback=fun,
+    start=computer.uptime(),
+    isInterval = false
+  })
+end
+
+proc.new("TimeoutHandler", [[
+
+local event = require("event")
+
+while true do
+  os.sleep(0.01)
+  for k,v in ipairs(event.timeouts) do
+    if computer.uptime() - v.start >= v.timeout then
+      v.callback()
+      if not v.isInterval then
+        table.remove(event.timeouts, k)
+      else
+        v.start = computer.uptime()
+      end
+    end
+  end
+end
+
+]])
 
 return event

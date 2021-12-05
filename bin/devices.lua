@@ -6,5 +6,5 @@ for k,v in pairs(computer.getDeviceInfo()) do
     print("description: "..device.description)
     print("============================================================")
     print("")
-    os.sleep(1)
+    --os.sleep(1)
 end

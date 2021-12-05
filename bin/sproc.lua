@@ -10,7 +10,7 @@ if fs.exists("/bin/"..cmd..".lua") then
 else
     if fs.exists(os.currentDirectory..cmd) then
         --dofile(os.currentDirectory..cmd)
-        loadfile(os.currentDirectory..cmd)(args)
+        process.load(cmd,os.currentDirectory..cmd)
     else
         print("The specified file does not exist")
     end

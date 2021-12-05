@@ -10,17 +10,11 @@ local buf = buffering.getMain()
 local workspace = gui.workspace
 
 
-local closed = false
 
-local win = gui.window(10,10,75,35,"Task Manager")
+
+local win,closeButton = gui.window(10,10,75,35,"Task Manager")
 local cont = gui.container(0,0,75,35)
 win:addChild(cont)
-
-win.titlebar.closeButton.onClick = function()
-    closed = true
-    win.close()
-end
-
 workspace:addChild(win)
 workspace._tick()
 workspace._draw(buf)
@@ -37,7 +31,11 @@ function roundToNearestOneDecimal(num)
 end
 
 local selectedProcess = nil
-while not closed do
+
+local startProcessTextbox = gui.textbox(1,35-2,45,1,45,0x000000,0xbcbcbc)
+
+while true do
+    if win.closed then break end
     t = t+1
     if t >= 15 then
         t = 0
@@ -69,7 +67,9 @@ while not closed do
 
             end
 
-            cont:addChild(killProcessButton,startProcessButton)
+
+
+            cont:addChild(killProcessButton,startProcessButton,startProcessTextbox)
 
 
             local allcputime = 0
@@ -128,10 +128,5 @@ while not closed do
         end
 
     end
-
-
-
-
-    -- gui.click = false
     os.sleep(0)
 end

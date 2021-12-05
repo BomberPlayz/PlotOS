@@ -24,20 +24,4 @@ function cursor.setBackgroundColor(color)
   cursor.bgColor = color
 end
 
---[[
-require("process").new("blinkingCursor",[[
-  while true do
-    if cursor.blink == true then
-      local prevfg = gpu.getForeground()
-      local prevbg = gpu.getBackground()
 
-      local a,b,c,d,e,f,g = gpu.get(prt_x,prt_y)
-      gpu.setForeground(cursor.fgcolor)
-      gpu.setForeground(cursor.bgcolor)
-      gpu.set(cursor.x,cursor.y,a)
-      gpu.setForeground(prevfg)
-      gpu.setForeground(prevbg)
-      os.sleep(0.5)
-    end
-  end
-]]--)

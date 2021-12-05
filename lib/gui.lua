@@ -5,6 +5,8 @@ gui.cy = 0
 gui.clickBlocked = false
 
 
+
+
 gui.config = {
     WOWD=true
 }
@@ -12,6 +14,75 @@ gui.config = {
 local buffering = require("doublebuffering")
 local gpu = require("driver").load("gpu")
 local event = require("event")
+
+gui.event = event.emitter()
+
+local keyboard = require("keyboard")
+
+local codeMap = {
+    space=" ",
+    numpad0="0",
+    numpad1="1",
+    numpad2="2",
+    numpad3="3",
+    numpad4="4",
+    numpad5="5",
+    numpad6="6",
+    numpad7="7",
+    numpad8="8",
+    numpad9="9",
+    numpaddecimal=".",
+    equals="=",
+    apostrophe="'",
+    grave="`"
+}
+
+local disabledCodeMap = {
+    lshift=true,
+    rshift=true,
+    lcontrol=true,
+    rcontrol=true,
+    lmenu=true,
+    rmenu=true,
+    tab=true,
+    numlock=true,
+    scroll=true,
+    pageUp=true,
+    pageDown=true,
+    insert=true,
+    pause=true,
+    f1=true,
+    f2=true,
+    f3=true,
+    f4=true,
+    f5=true,
+    f6=true,
+    f7=true,
+    f8=true,
+    f9=true,
+    f10=true,
+    f11=true,
+    f12=true,
+    f13=true,
+    f14=true,
+    f15=true,
+    f16=true,
+    f17=true,
+    f18=true,
+    f19=true,
+    f20=true,
+    f21=true,
+    f22=true,
+    f23=true,
+    f24=true,
+    up=true,
+    down=true,
+    left=true,
+    right=true,
+    home=true,
+    ["end"]=true,
+    delete=true
+}
 
 local function isObstructed(rootObject, object)
     -- check if the object is obstructed by another object in rootObject.
@@ -217,6 +288,7 @@ gui.container = function(x,y,w,h)
     end
 
     obj._draw = function(buf)
+        if not obj.visible then return end
         if not obj.visici then
             --buf.setBackground(0x000000)
             --buf.fill(obj.x,obj.y,obj.width,obj.height," ")
@@ -248,6 +320,7 @@ gui.container = function(x,y,w,h)
     end
 
     obj._tick = function()
+        if not obj.visible then return end
         if obj.tick then obj.tick() end
         for k=#obj.children,1,-1 do
             local v = obj.children[k]
@@ -260,6 +333,7 @@ gui.container = function(x,y,w,h)
     end
 
     obj._mousedown = function(x,y,btn)
+        if not obj.visible then return end
         --print("mdown")
         if obj.onMouseDown then
             obj.onMouseDown(x,y,btn)
@@ -287,6 +361,7 @@ gui.container = function(x,y,w,h)
     end
 
     obj._mouseup = function(x,y,btn)
+        if not obj.visible then return end
         if obj.onMouseUp then
             obj.onMouseUp(x,y,btn)
         end
@@ -313,6 +388,7 @@ gui.container = function(x,y,w,h)
     end
 
     obj._drag = function(x,y)
+        if not obj.visible then return end
         if obj.onDrag then
             obj.onDrag(x,y)
         end
@@ -354,6 +430,7 @@ gui.text = function(x,y,text,fore,back)
     obj.width = string.len(text)
 
     obj._draw = function(buf)
+        if not obj.visible then return end
         buf.setForeground(obj.textColor)
         buf.setBackground(obj.backColor)
         buf.set(obj.x, obj.y, obj.text)
@@ -371,6 +448,72 @@ gui.text = function(x,y,text,fore,back)
     return obj
 end
 
+gui.textbox = function(x,y,w,h,charLimit,fore,back)
+    local obj = gui.component()
+    obj.dirty = true
+    obj.x = x
+    obj.y = y
+    obj.width = w
+    obj.height = h
+    obj.textColor = fore or 0xffffff
+    obj.backColor = back or 0x000000
+    obj.charLimit = charLimit
+    obj.text = ""
+    obj.selected = false
+
+    obj._draw = function(buf)
+        local txtToSet = obj.text
+        if string.len(txtToSet) > obj.width then
+            txtToSet = string.sub(txtToSet, 1, obj.width)
+        end
+
+        buf.setForeground(obj.textColor)
+        buf.setBackground(obj.backColor)
+        buf.fill(obj.x,obj.y,obj.width,obj.height," ")
+        buf.set(obj.x, obj.y, obj.text)
+        obj.dirty = false
+    end
+
+    local macska = function(a1,a2,key,a4,a5)
+        if obj.selected then
+            key = require("keyboard").keys[key]
+
+            if key ~= nil then
+                if key == "enter" then
+                    obj.selected = false
+                    gui.event.remove("key_down", macska)
+
+                elseif key == "back" then
+                    if string.len(obj.text) > 0 then
+                        obj.text = string.sub(obj.text, 1, string.len(obj.text) - 1)
+                    end
+                else
+                    obj.text = obj.text .. key or ""
+                end
+                obj.dirty = true
+            end
+        end
+    end
+
+    obj.onSelected = function()
+        gui.event.remove("key_down", macska)
+        gui.event.on("key_down", macska)
+    end
+
+    obj.tick = function()
+
+    end
+
+
+
+    obj._mousedown = function(x,y,btn)
+        obj.selected = true
+        obj.onSelected()
+    end
+
+    return obj
+end
+
 gui.panel = function(x,y,w,h,color)
     local obj = gui.component()
     obj.x = x
@@ -380,6 +523,7 @@ gui.panel = function(x,y,w,h,color)
     obj.color = color or 0xffffff
     obj.dirty = true
     obj._draw = function(buf)
+        if not obj.visible then return end
         buf.setBackground(obj.color)
         buf.fill(obj.x,obj.y,obj.width,obj.height," ")
 
@@ -411,6 +555,7 @@ gui.button = function(x,y,w,h,text)
     obj.dirty = true
 
     obj._draw = function(buf)
+        if not obj.visible then return end
         buf.setForeground(obj.isPressed and obj.ptextColor or obj.textColor)
         buf.setBackground(obj.isPressed and obj.pbackColor or obj.backColor)
         buf.fill(obj.x,obj.y,obj.width,obj.height, " ")
@@ -425,6 +570,7 @@ gui.button = function(x,y,w,h,text)
 
 
     obj.tick = function()
+        if not obj.visible then return end
         if obj.isPressed then
             obj.isPressed = false
             obj.dirty = true
@@ -437,12 +583,14 @@ gui.button = function(x,y,w,h,text)
     -- onMouseDown is triggered when the mouse gets pressed on the component, and onDrop is triggered when the mouse is released.
     -- The events are triggered on the component, and not on the parent.
     obj.onMouseDown = function(button)
+        if not obj.visible then return end
         --print("THAT GHURTS STOP")
         obj.isPressed = true
         obj.dirty = true
     end
 
     obj.onMouseUp = function(button)
+        if not obj.visible then return end
         obj.isPressed = false
         obj.dirty = true
     end
@@ -522,6 +670,7 @@ gui.window = function(x,y,w,h,title)
     end
 
     function obj.redraw()
+        if not obj.visible then return end
         obj.dirty = true
         function helper(obj)
             if obj.children then
@@ -540,6 +689,7 @@ gui.window = function(x,y,w,h,title)
 
 
     function obj.tick()
+        if not obj.visible then return end
         -- print("winticc")
 
         -- tick all child elements, like in a simple container, then handle drag logic.
@@ -555,7 +705,7 @@ gui.window = function(x,y,w,h,title)
 
 
     function obj.titlebar.onMouseDown(button)
-
+        if not obj.visible then return end
         obj.isDrag = true
         obj.drag.sx = gui.cx - obj.x
         obj.drag.sy = gui.cy - obj.y
@@ -581,6 +731,7 @@ gui.window = function(x,y,w,h,title)
     end
 
     function obj.titlebar.onMouseUp(button)
+        if not obj.visible then return end
         obj.isDrag = false
 
         for _, object in pairs(obj.titlebar.children) do
@@ -603,6 +754,7 @@ gui.window = function(x,y,w,h,title)
     end
 
     function obj.titlebar.onDrag()
+        if not obj.visible then return end
 
         for _, object in pairs(obj.titlebar.children) do
             if object.visible then
@@ -625,6 +777,7 @@ gui.window = function(x,y,w,h,title)
     end
 
     function obj.titlebar.tick()
+        if not obj.visible then return end
         for k=#obj.titlebar.children,1,-1 do
             local v = obj.titlebar.children[k]
 
@@ -649,7 +802,7 @@ gui.window = function(x,y,w,h,title)
     -- migrate the above to the onMouseDown, onDrop, and onDrag events.
     function obj.onMouseDown(button)
 
-
+        if not obj.visible then return end
         local obstructed = false
         for _, object in pairs(obj.children) do
             if object.visible then
@@ -683,7 +836,7 @@ gui.window = function(x,y,w,h,title)
 
     function obj.onMouseUp(btn)
 
-
+        if not obj.visible then return end
         local obstructed = false
         for _, object in pairs(obj.children) do
             if object.visible then
@@ -707,7 +860,7 @@ gui.window = function(x,y,w,h,title)
 
     function obj.onDrag()
 
-
+        if not obj.visible then return end
         local obstructed = false
         for _, object in pairs(obj.children) do
             if object.visible then
@@ -757,6 +910,7 @@ gui.progressBar = function(x,y,w,h)
     obj.emptyColor = 0xdddddd
 
     obj._draw = function()
+        if not obj.visible then return end
         gui.buffer.setBackground(obj.emptyColor)
         gui.buffer.fill(obj.x,obj.y,obj.width,obj.height," ")
         gui.buffer.setBackground(obj.fillColor)
@@ -774,6 +928,7 @@ gui.progressBarVertical = function(x,y,w,h)
     obj.emptyColor = 0xdddddd
 
     obj._draw = function()
+        if not obj.visible then return end
         gui.buffer.setBackground(obj.fillColor)
         gui.buffer.fill(obj.x,obj.y,obj.width,obj.height," ")
         gui.buffer.setBackground(obj.emptyColor)
@@ -804,8 +959,11 @@ gui.rootObject = gui.workspace
 require("process").new("GuiTicker", [[
     local gui = require("gui")
     while true do
+        local e = {computer.pullSignal(0)}
+        if e[1] == "key_down" then
+            gui.event.emit("key_down",e[2],e[3],e[4],e[5])
+        end
         gui.workspace._tick()
-        os.sleep(0)
     end
 ]])
 
