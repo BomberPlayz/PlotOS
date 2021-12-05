@@ -202,10 +202,13 @@ gui.container = function(x,y,w,h)
     obj.height = h
     obj.children = {}
 
-    function obj:addChild(child)
-        child.parent = obj
-        child._parentIndex = #obj.children+1
-        table.insert(obj.children, child)
+    function obj:addChild(...)
+        local children = table.pack(...)
+        for i=1,#children do
+            children[i].parent = obj
+            children[i]._parentIndex = #obj.children+1
+            table.insert(obj.children, children[i])
+        end
     end
 
     obj._draw = function(buf)
