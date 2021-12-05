@@ -4,6 +4,11 @@ gui.cx = 0
 gui.cy = 0
 gui.clickBlocked = false
 
+
+gui.config = {
+    WOWD=true
+}
+
 local buffering = require("doublebuffering")
 local gpu = require("driver").load("gpu")
 local event = require("event")
@@ -467,14 +472,24 @@ gui.window = function(x,y,w,h,title)
 
     obj.close = function()
         -- window close logic
-
-        gui.buffer.setBackground(0x000000)
-        gui.buffer.fill(obj.x,obj.y,obj.width,obj.height," ")
-        table.remove(obj.parent.children, obj._parentIndex)
-        for i=obj._parentIndex, #obj.parent.children do
-            obj.parent.children[i]._parentIndex = i
+        local canClose = true
+        if obj.onClose then
+            if not obj.onClose() then
+                canClose = false
+            end
         end
-        gui.buffer.draw()
+        if canClose then
+            gui.buffer.setBackground(0x000000)
+            gui.buffer.fill(obj.x,obj.y,obj.width,obj.height," ")
+            table.remove(obj.parent.children, obj._parentIndex)
+            for i=obj._parentIndex, #obj.parent.children do
+                obj.parent.children[i]._parentIndex = i
+            end
+            obj.parent = nil
+            obj._parentIndex = -1
+            gui.buffer.draw()
+
+        end
     end
     obj.titlebar:addChild(closeButton)
 
