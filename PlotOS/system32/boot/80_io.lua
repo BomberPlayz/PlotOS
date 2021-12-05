@@ -74,51 +74,58 @@ function io.read()
   cursor.x = prt_x
   cursor.setBlink(true)
   while true do
-    local a,b,_,c,d = computer.pullSignal()
+    local a,b,_,c,d = computer.pullSignal(0.5)
 
     if a == "key_down" then
       c = keyboard.keys[c]
-    if c == "enter" then
-      if pusy > 0 then
-        cursor.x = cursor.x+1
-      end
-      cursor.setBlink(false)
-      io.writeline("")
-      cursor.x = prt_x
-      cursor.y = prt_y
-      return txt
-    elseif c == "back" then
-    if pusy > 0 then
-      pusy = pusy-1
-      txt = string.sub(txt,1,(string.len(txt)-1))
-      component.gpu.fill(prt_x-1,prt_y,1,1, " ")
-      prt_x = prt_x-1
-      cursor.x = prt_x+1
-      cursor.setBlink(false)
-      cursor.x = prt_x
-      cursor.setBlink(true)
-      if txt == nil then txt = "" end
-    end
-    else
-
-      if disabledCodeMap[c] == nil then
-        if codeMap[c] ~= nil then c = codeMap[c] end
-        if c ~= nil then
-          txt = txt..c
-          pusy = pusy+1
+      if c == "enter" then
+        if pusy > 0 then
+          cursor.x = cursor.x+1
+        end
+        cursor.setBlink(false)
+        io.writeline("")
+        cursor.x = prt_x
+        cursor.y = prt_y
+        return txt
+      elseif c == "back" then
+        if pusy > 0 then
+          pusy = pusy-1
+          txt = string.sub(txt,1,(string.len(txt)-1))
+          component.gpu.fill(prt_x-1,prt_y,1,1, " ")
+          prt_x = prt_x-1
           cursor.x = prt_x+1
-          cursor.y = prt_y
-          cursor.setBlink(true)
-          
-          cursor.x = prt_x
-          cursor.y = prt_y
           cursor.setBlink(false)
-          io.write(c)
+          cursor.x = prt_x
+          cursor.setBlink(true)
+          if txt == nil then txt = "" end
+        end
+      else
+
+        if disabledCodeMap[c] == nil then
+          if codeMap[c] ~= nil then c = codeMap[c] end
+          if c ~= nil then
+            txt = txt..c
+            pusy = pusy+1
+            cursor.x = prt_x+1
+            cursor.y = prt_y
+            cursor.setBlink(true)
+
+            cursor.x = prt_x
+            cursor.y = prt_y
+            cursor.setBlink(false)
+            io.write(c)
+          end
         end
       end
+    elseif a == nil then
+      if cursor.blink then
+        cursor.setBlink(false)
+      else
+        cursor.setBlink(true)
+      end
     end
-  end
-  end
+
+    end
 end
 
 function io.write(txt)
