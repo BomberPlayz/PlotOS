@@ -82,6 +82,7 @@ function io.read()
         if pusy > 0 then
           cursor.x = cursor.x+1
         end
+        cursor.x = prt_x
         cursor.setBlink(false)
         io.writeline("")
         cursor.x = prt_x
@@ -97,6 +98,7 @@ function io.read()
           cursor.setBlink(false)
           cursor.x = prt_x
           cursor.setBlink(true)
+
           if txt == nil then txt = "" end
         end
       else
@@ -113,7 +115,10 @@ function io.read()
             cursor.x = prt_x
             cursor.y = prt_y
             cursor.setBlink(false)
+
             io.write(c)
+            --cursor.x = prt_x+1
+            cursor.x = prt_x
           end
         end
       end
