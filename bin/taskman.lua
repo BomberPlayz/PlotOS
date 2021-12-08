@@ -91,23 +91,31 @@ while true do
 
             local texts = {}
 
-            for k,v in ipairs(processes) do
+            local function mate(processes,ni)
+                if not ni then ni = 1 end
+                for k,v in ipairs(processes) do
 
 
-                i = i+1
-                local p = gui.text(1,i,v.name.." :: "..(math.floor((v:getAvgCpuTime()*1000))).."ms".." :: "..(math.floor(v:getAvgCpuPercentage()*10)/10).."%",0x000000,v == selectedProcess and 0xaaaaaa or 0xffffff)
-                function p.onMouseDown()
-                    selectedProcess = v
-                    p.backColor = 0xbcbcbc
-                    for k,v in ipairs(texts) do
-                        v.backColor = 0xffffff
+                    i = i+1
+                    local p = gui.text(ni,i,v.name.." :: "..(math.floor((v:getAvgCpuTime()*1000))).."ms".." :: "..(math.floor(v:getAvgCpuPercentage()*10)/10).."%",0x000000,v == selectedProcess and 0xaaaaaa or 0xffffff)
+                    function p.onMouseDown()
+                        selectedProcess = v
+                        p.backColor = 0xbcbcbc
+                        for k,v in ipairs(texts) do
+                            v.backColor = 0xffffff
+                        end
                     end
+
+                    table.insert(texts, p)
+                    cont:addChild(p)
+
+                    if #v.processes > 0 then
+                        mate(v.processes,ni+1)
+                    end
+
                 end
-
-                table.insert(texts, p)
-                cont:addChild(p)
-
             end
+            mate(processes)
         elseif tab == 2 then
             local cpuUsagePercentage = roundToNearestOneDecimal(100-process.getAvgIdlePercentage())
             local ramUsagePercentage = roundToNearestOneDecimal(((computer.totalMemory()-computer.freeMemory())/computer.totalMemory())*100)

@@ -11,7 +11,9 @@ _G.rawFs = fs
 local x = 1
 local y = 1
 
-function split (inputstr, sep)
+ local pcps = computer.pullSignal
+
+local function split (inputstr, sep)
         if sep == nil then
                 sep = "%s"
         end
@@ -69,7 +71,7 @@ gpu.fill(1,1,w,h," ")
    kern_info("----------------------------------------------------","error")
    kern_info("Panic reason: "..reason, "error")
    while true do
-     computer.pullSignal()
+     pcps()
    end
 
  end
@@ -101,6 +103,37 @@ package.loaded.filesystem = fs
 package.loaded.package = package
 kern_info("Loading other files...")
 
+ function bsod(reason,isKern)
+     if gpu then
+         gpu.setBackground(0x2665ed)
+         gpu.setForeground(0xffffff)
+         gpu.fill(1,1,w,h," ")
+         gpu.set(10,10,"Oops! Something went wrong!")
+         gpu.set(10,11,"BSOD reason: ")
+         local splitReason = split(reason,"\n")
+         local kaka = 1
+         for k,v in ipairs(splitReason) do
+             gpu.set(10,12+k,v)
+             kaka = k
+         end
+         gpu.set(10,12+kaka+1,"Details:")
+         local splitTrace = split(debug.traceback(),"\n")
+         local ka = 1
+         for k,v in ipairs(splitTrace) do
+             gpu.set(10,13+ka+kaka,v)
+             ka = k
+         end
+
+     end
+     if not isKern then
+         while true do
+             pcps()
+         end
+     else
+         return reason
+     end
+ end
+
 local function rom_invoke(method, ...)
   return component.invoke(computer.getBootAddress(), method, ...)
 end
@@ -124,7 +157,11 @@ require("screen").clear()
 dofile("/PlotOS/cursor.lua")
 --local ok, reason = xpcall(dofile, erred,"/sys/shell.lua")
 
- local process = require("process")
+ local e,process = xpcall(require, function(e) bsod(e,true) end, "process")
+ if not e then
+   while true do pcps() end
+ end
+
  process.load("Shell", os.getEnv("SHELL"))
 
  process.load("cursorblink","/bin/cursorblink.lua")
