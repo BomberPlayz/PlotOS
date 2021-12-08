@@ -79,7 +79,7 @@ gpu.fill(1,1,w,h," ")
   local program, reason = raw_loadfile(file)
   --kernel_info(file.." and is the: "..program)
   if program then
-    local result = table.pack(xpcall(program,function(e) error(debug.traceback()) end))
+    local result = table.pack(xpcall(program,debug.traceback))
     if result[1] then
       return table.unpack(result, 2, result.n)
     else

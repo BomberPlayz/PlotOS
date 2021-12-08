@@ -15,11 +15,113 @@ end
 local _signal = nil
 
 
+
+
+
 api.findByThread = function(thread)
-    for k,v in ipairs(api.processes) do
+
+    for k=1,#api.processes do
+        --os.sleep(0)
+        local v = api.processes[k]
+        --component.gpu.set(1,1,"k: "..k)
         if v.thread == thread then
+
             return v
         end
+        if #v.processes > 0 then
+            for k=1,#v.processes do
+                --os.sleep(0)
+                local v = v.processes[k]
+                --component.gpu.set(1,1,"k: "..k)
+                if v.thread == thread then
+
+                    return v
+                end
+                if #v.processes > 0 then
+                    for k=1,#v.processes do
+                        --os.sleep(0)
+                        local v = v.processes[k]
+                        --component.gpu.set(1,1,"k: "..k)
+                        if v.thread == thread then
+
+                            return v
+                        end
+                        if #v.processes > 0 then
+                            for k=1,#v.processes do
+                                --os.sleep(0)
+                                local v = v.processes[k]
+                                --component.gpu.set(1,1,"k: "..k)
+                                if v.thread == thread then
+
+                                    return v
+                                end
+                                if #v.processes > 0 then
+                                    for k=1,#v.processes do
+                                        --os.sleep(0)
+                                        local v = v.processes[k]
+                                        --component.gpu.set(1,1,"k: "..k)
+                                        if v.thread == thread then
+
+                                            return v
+                                        end
+                                        if #v.processes > 0 then
+                                            for k=1,#v.processes do
+                                                --os.sleep(0)
+                                                local v = v.processes[k]
+                                                --component.gpu.set(1,1,"k: "..k)
+                                                if v.thread == thread then
+
+                                                    return v
+                                                end
+                                                if #v.processes > 0 then
+                                                    for k=1,#v.processes do
+                                                        --os.sleep(0)
+                                                        local v = v.processes[k]
+                                                        --component.gpu.set(1,1,"k: "..k)
+                                                        if v.thread == thread then
+
+                                                            return v
+                                                        end
+                                                        if #v.processes > 0 then
+                                                            for k=1,#v.processes do
+                                                                --os.sleep(0)
+                                                                local v = v.processes[k]
+                                                                --component.gpu.set(1,1,"k: "..k)
+                                                                if v.thread == thread then
+
+                                                                    return v
+                                                                end
+                                                                if #v.processes > 0 then
+
+                                                                end
+
+                                                            end
+                                                        end
+
+                                                    end
+                                                end
+
+                                            end
+                                        end
+
+                                    end
+                                end
+
+                            end
+                        end
+
+                    end
+                end
+
+            end
+        end
+
+    end
+end
+
+api.isProcess = function()
+    if api.findByThread(coroutine.running()) then
+        return true
     end
 end
 
@@ -52,6 +154,7 @@ api.new = function(name, code, perms,...)
     ret.pid = as_pid
     ret.lastCpuTime = 0
     ret.cputime_avg = {}
+    ret.processes = {}
     as_pid = as_pid+1
 
     function ret:getCpuTime()
@@ -96,7 +199,13 @@ api.new = function(name, code, perms,...)
     end
     security.attach(ret)
 
-    table.insert(api.processes, ret)
+    if api.isProcess() then
+        local p = api.findByThread(coroutine.running())
+        table.insert(p.processes,ret)
+    else
+        table.insert(api.processes,ret)
+    end
+
 
 
     return ret
@@ -230,11 +339,25 @@ api.tick = function()
     local ae = 0
     local s = computer.uptime()
     usedTime = 0
-    for k,v in ipairs(api.processes) do
-        ae = ae+1
-        local a,e = api.tickProcess(v)
+    
+    local function ticker(processes)
+        for k,v in ipairs(processes) do
+            ae = ae+1
+            local a,e = api.tickProcess(v)
+            if #v.processes > 0 then
+                print(#v.processes)
+                ticker(v.processes)
+
+            end
+
+            --ticker(v.processes)
+           -- print(v.name)
+
+        end
 
     end
+    ticker(api.processes)
+    
     for k,v in ipairs(toRemoveFromProc) do
 
         for i=1,#api.processes do

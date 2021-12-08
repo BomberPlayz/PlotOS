@@ -427,6 +427,7 @@ gui.text = function(x,y,text,fore,back)
     obj.textColor = fore or 0xffffff
     obj.backColor = back or 0x000000
     obj.text = text
+    obj.oldText = ""
     obj.width = string.len(text)
 
     obj._draw = function(buf)
@@ -436,6 +437,13 @@ gui.text = function(x,y,text,fore,back)
         buf.set(obj.x, obj.y, obj.text)
 
         obj.dirty = false
+    end
+
+    obj.checkDirty = function()
+        if obj.text ~= obj.oldText then
+            obj.dirty = true
+            obj.oldText = obj.text
+        end
     end
 
 
@@ -482,6 +490,7 @@ gui.textbox = function(x,y,w,h,charLimit,fore,back,selectedColor,cursorBgColor)
                 end
             end
         end
+        obj.dirty = false
     end
 
     local macska = function(a1,a2,key,a4,a5)

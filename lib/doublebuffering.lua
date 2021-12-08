@@ -132,23 +132,26 @@ function api.new(w,h,proxy)
 
 
         -- use lastbuffer too, and only set foreground and background when needed.
+        if ret.buffer ~= ret.lastbuffer then
+            for y=yy,ret.height+yy-1,1 do
+                for x=xx,ret.width+xx-1,1 do
+                    local char,foree,backe = table.unpack(ret.buffer[ret.index(x,y)])
 
-        for y=yy,ret.height+yy-1,1 do
-            for x=xx,ret.width+xx-1,1 do
-                local char,foree,backe = table.unpack(ret.buffer[ret.index(x,y)])
+                    local lastchar,lastfore,lastback = table.unpack(ret.lastbuffer[ret.index(x,y)])
+                    if char ~= lastchar or foree ~= lastfore or backe ~= lastback then
 
-                local lastchar,lastfore,lastback = table.unpack(ret.lastbuffer[ret.index(x,y)])
-                if char ~= lastchar or foree ~= lastfore or backe ~= lastback then
 
-                    if foree ~= fore then gpu.setForeground(foree); fore = foree end
-                    if backe ~= back then gpu.setBackground(backe); back = backe end
-                    if backe == 0x000000 and lastback == 0x000000 and char == " " then
-                        -- do nothing
-                    else
-                        gpu.set(x,y,char)
+                        if backe == 0x000000 and lastback == 0x000000 and char == " " then
+                            -- do nothing
+                        else
+                            if foree ~= fore then gpu.setForeground(foree); fore = foree end
+                            if backe ~= back then gpu.setBackground(backe); back = backe end
+                            gpu.set(x,y,char)
+                        end
                     end
                 end
             end
+
         end
 
 
