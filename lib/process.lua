@@ -370,6 +370,7 @@ api.new = function(name, code, perms,...)
     if api.isProcess() then
         local p = api.findByThread(coroutine.running())
         table.insert(p.processes,ret)
+        ret.parent = p
     else
         table.insert(api.processes,ret)
     end
@@ -516,9 +517,9 @@ api.tickProcess = function(v)
 
         end
     elseif v.status == "dead" then
-        table.insert(toRemoveFromProc, v.pid)
+        table.insert(toRemoveFromProc, v)
     elseif v.status == "dying" then
-        print(v.name.." dead: "..v.err)
+       -- print(v.name.." dead: "..v.err)
 
         v.io.signal.pull = {}
         v.io.signal.queue = {}
@@ -557,12 +558,21 @@ api.tick = function()
     
     for k,v in ipairs(toRemoveFromProc) do
 
-        for i=1,#api.processes do
-            if api.processes[i].pid == v then
-                table.remove(api.processes, i)
-                break
-            end
+        if not v.parent then
+            for i=1,#api.processes do
+                if api.processes[i].pid == v.pid then
+                    table.remove(api.processes, i)
+                    break
+                end
 
+            end
+        else
+            for i=1, #v.parent.processes do
+                if v.parent.processes[i].pid == v.pid then
+                    table.remove(v.parent.processes, i)
+                    break
+                end
+            end
         end
 
     end

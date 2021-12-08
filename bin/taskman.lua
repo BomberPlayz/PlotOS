@@ -2,6 +2,7 @@ local gui = require("gui")
 local gpu = require("driver").load("gpu")
 local buffering = require("doublebuffering")
 local process = require("process")
+local fs = require("fs")
 
 
 local w,h = gpu.getResolution()
@@ -64,6 +65,17 @@ while true do
 
             local startProcessButton = gui.button(75-13,35-2,12,1,"Start Process")
             startProcessButton.onClick = function()
+
+                local cmd = startProcessTextbox.text
+                if fs.exists("/bin/"..cmd..".lua") then
+                    process.load(cmd, "/bin/"..cmd..".lua")
+                elseif fs.exists(cmd) then
+                    local processName = cmd:match("([^/]+)$")
+                    processName = processName:match("(.+)%.")
+                    process.load(processName, cmd)
+                else
+                    startProcessTextbox.text = "File not found"
+                end
 
             end
 
