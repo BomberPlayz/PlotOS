@@ -448,7 +448,7 @@ gui.text = function(x,y,text,fore,back)
     return obj
 end
 
-gui.textbox = function(x,y,w,h,charLimit,fore,back)
+gui.textbox = function(x,y,w,h,charLimit,fore,back,selectedColor,cursorBgColor)
     local obj = gui.component()
     obj.dirty = true
     obj.x = x
@@ -457,21 +457,31 @@ gui.textbox = function(x,y,w,h,charLimit,fore,back)
     obj.height = h
     obj.textColor = fore or 0xffffff
     obj.backColor = back or 0x000000
+    obj.selectedColor = selectedColor or 0x888888
+    obj.cursorBgColor = cursorBgColor or 0x777777
     obj.charLimit = charLimit
     obj.text = ""
     obj.selected = false
+    obj.enabled = true
 
     obj._draw = function(buf)
         local txtToSet = obj.text
-        if string.len(txtToSet) > obj.width then
-            txtToSet = string.sub(txtToSet, 1, obj.width)
+        local bgColor = obj.backColor
+        if obj.selected then
+            bgColor = obj.selectedColor
         end
-
         buf.setForeground(obj.textColor)
-        buf.setBackground(obj.backColor)
+        buf.setBackground(bgColor)
         buf.fill(obj.x,obj.y,obj.width,obj.height," ")
         buf.set(obj.x, obj.y, obj.text)
-        obj.dirty = false
+        if obj.selected then
+            if obj.enabled then
+                if _G.cursorBlink then
+                    buf.setBackground(obj.cursorBgColor)
+                    buf.set(string.len(obj.text)+obj.x, obj.y, " ")
+                end
+            end
+        end
     end
 
     local macska = function(a1,a2,key,a4,a5)
@@ -482,13 +492,25 @@ gui.textbox = function(x,y,w,h,charLimit,fore,back)
                 if key == "enter" then
                     obj.selected = false
                     gui.event.remove("key_down", macska)
-
                 elseif key == "back" then
-                    if string.len(obj.text) > 0 then
-                        obj.text = string.sub(obj.text, 1, string.len(obj.text) - 1)
+                    if obj.enabled then
+                        if string.len(obj.text) > 0 then
+                            obj.text = string.sub(obj.text, 1, string.len(obj.text) - 1)
+                        end
                     end
                 else
-                    obj.text = obj.text .. key or ""
+                    if obj.enabled then
+                        if codeMap[key] ~= nil then
+                            key = codeMap[key]
+                        end
+                        if disabledCodeMap[key] == nil then
+                            if not (string.len(obj.text) >= obj.width) then
+                                if not (string.len(obj.text) > obj.charLimit) then
+                                    obj.text = obj.text .. key or ""
+                                end
+                            end
+                        end
+                    end
                 end
                 obj.dirty = true
             end
@@ -507,8 +529,10 @@ gui.textbox = function(x,y,w,h,charLimit,fore,back)
 
 
     obj._mousedown = function(x,y,btn)
-        obj.selected = true
-        obj.onSelected()
+        if obj.enabled then
+            obj.selected = true
+            obj.onSelected()
+        end
     end
 
     return obj
