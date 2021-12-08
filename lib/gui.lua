@@ -555,10 +555,11 @@ gui.panel = function(x,y,w,h,color)
     obj.height = h
     obj.color = color or 0xffffff
     obj.dirty = true
+    obj.opacity = 1
     obj._draw = function(buf)
         if not obj.visible then return end
         buf.setBackground(obj.color)
-        buf.fill(obj.x,obj.y,obj.width,obj.height," ")
+        buf.fill(obj.x,obj.y,obj.width,obj.height," ", obj.opacity, obj.opacity)
 
         obj.dirty = false
     end
@@ -639,6 +640,7 @@ gui.window = function(x,y,w,h,title)
     obj.title = title or "Untitled window"
     obj.titlebar = gui.container(0,0,w,1)
     obj.titlebar:addChild(gui.panel(0,0,obj.titlebar.width, 1, 0xCCCCCC))
+    obj.titlebar.children[1].opacity = 0.75
     local txt = gui.text(0,0,obj.title)
     txt.backColor = 0xCCCCCC
     obj.titlebar:addChild(txt)

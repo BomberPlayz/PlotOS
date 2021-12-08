@@ -50,6 +50,24 @@ function api.new(w,h,proxy)
     ret.height = h
     ret.dirty = true
 
+    --p is the opacity
+    function ret.calcTransparency(c1,c2,p)
+
+        if p == 1 then return c2 end
+
+        --c1, c2, p are numbers. 0xrrggbb
+
+        local r1,g1,b1 = bit32.extract(c1,16,8),bit32.extract(c1,8,8),bit32.extract(c1,0,8)
+        local r2,g2,b2 = bit32.extract(c2,16,8),bit32.extract(c2,8,8),bit32.extract(c2,0,8)
+
+        local r = math.floor((1-p)*r1 + p*r2)
+        local g = math.floor((1-p)*g1 + p*g2)
+        local b = math.floor((1-p)*b1 + p*b2)
+        return bit32.lshift(r, 16) + bit32.lshift(g,8) + b
+
+
+    end
+
     ret.index = function(x,y)
         return x + ((y-1)*ret.width)
     end
@@ -64,11 +82,27 @@ function api.new(w,h,proxy)
 
 
 
-    ret.set = function(x,y,char)
+    ret.set = function(x,y,char,opacity)
+        local chor = char
         for i=1,char:len() do
+            local coco = ret.buffer[ret.index(x+i-1,y)]
+            if coco == nil then coco = {" ",0,0} end
+            local char = char
 
-            ret.buffer[ret.index(x+i-1,y)] = {char:sub(i,i),math.max(ret.foreground-(darkmode and 0x505050 or 0),0),math.max(ret.background-(darkmode and 0x505050 or 0),0)}
+            if char:len() > 1 then
+                char = unicode.sub(chor,i,i)
+
+            end
+
+
+
+            ret.buffer[ret.index(x+i-1,y)] = {(opacity or 1) < 1 and char == " " and coco[1] or char,ret.calcTransparency(coco[2],ret.foreground,opacity or 1),ret.calcTransparency(coco[3],ret.background,opacity or 1)}
+
+
         end
+
+
+
         ret.dirty = true
 
     end
@@ -77,10 +111,10 @@ function api.new(w,h,proxy)
         return table.unpack(ret.buffer[ret.index(x,y)])
     end
 
-    ret.fill = function(sx,sy,ex,ey,char)
+    ret.fill = function(sx,sy,ex,ey,char,opacity)
         for x=sx,sx+ex-1 do
             for y = sy, sy+ey-1 do
-                ret.set(x,y,char)
+                ret.set(x,y,char,opacity)
             end
         end
         ret.dirty = true

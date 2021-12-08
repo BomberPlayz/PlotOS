@@ -107,14 +107,27 @@ while true do
                 if not ni then ni = 1 end
                 for k,v in ipairs(processes) do
 
-
+                    local na = ni
                     i = i+1
-                    local p = gui.text(ni,i,v.name.." :: "..(math.floor((v:getAvgCpuTime()*1000))).."ms".." :: "..(math.floor(v:getAvgCpuPercentage()*10)/10).."%",0x000000,v == selectedProcess and 0xaaaaaa or 0xffffff)
+                    local tux = v.name.." :: "..(math.floor((v:getAvgCpuTime()*1000))).."ms".." :: "..(math.floor(v:getAvgCpuPercentage()*10)/10).."%"
+                    if na > 1 then
+                        na = na-1
+                        if k == 1 and processes[k+1] == nil then
+                            tux = "╚"..tux
+                        elseif k == #processes then
+                            tux = "╚"..tux
+                        else
+                            tux = "╠"..tux
+                        end
+                    end
+                    local p = gui.text(na,i,tux,0x000000,v == selectedProcess and 0xaaaaaa or 0xffffff)
                     function p.onMouseDown()
                         selectedProcess = v
                         p.backColor = 0xbcbcbc
+                        p.dirty = true
                         for k,v in ipairs(texts) do
                             v.backColor = 0xffffff
+                            v.dirty = true
                         end
                     end
 
