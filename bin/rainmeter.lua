@@ -1,4 +1,4 @@
---[[local gpu = component.gpu
+local gpu = component.gpu
 local process = require("process")
 local avg = {}
 while true do
@@ -70,4 +70,4 @@ while true do
 
 
     os.sleep(0.25)
-end]]
+end

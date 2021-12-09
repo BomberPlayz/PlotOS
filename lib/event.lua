@@ -28,7 +28,7 @@ end
 
 function event.listen(event, callback)
   local process = require("process")
-  process.load("eventlistener-"..event.."-"..math.floor(math.random(1,999999999)), "/lib/event_listener.lua", nil, event, callback )
+  process.load("eventlistener-"..event.."-"..math.floor(math.random(1,999999999)), "/lib/event_listener.lua", nil,nil, event, callback )
 end
 
 function event.emitter()

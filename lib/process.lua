@@ -294,7 +294,7 @@ api.isProcess = function()
 end
 
 
-api.new = function(name, code, perms,...)
+api.new = function(name, code, perms,forceRoot,...)
 
 
     local ret = {}
@@ -367,7 +367,7 @@ api.new = function(name, code, perms,...)
     end
     security.attach(ret)
 
-    if api.isProcess() then
+    if api.isProcess() and not forceRoot then
         local p = api.findByThread(coroutine.running())
         table.insert(p.processes,ret)
         ret.parent = p
@@ -380,7 +380,7 @@ api.new = function(name, code, perms,...)
     return ret
 end
 
-api.load = function(name, path, perms, ...)
+api.load = function(name, path, perms, forceRoot,...)
     local fs = require("fs")
     --kern_info("loaded fs")
     if path:sub(1,1) ~= "/" then
@@ -405,7 +405,7 @@ api.load = function(name, path, perms, ...)
         end
         buffer[#buffer + 1] = data
     end
-    return api.new(name,table.concat(buffer),perms,...)
+    return api.new(name,table.concat(buffer),perms,forceRoot,...)
 end
 
 local toRemoveFromProc = {}
@@ -444,15 +444,10 @@ api.tickProcess = function(v)
                     end
                     local et = computer.uptime()*1000
                     v.lastCpuTime = et/1000-st/1000
-                    local function cpuCTime(v)
-                        for kk,vv in ipairs(v.processes) do
-                            v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
-                            if #vv.processes > 0 then
-                                cpuCTime(vv)
-                            end
-                        end
+                    for kk,vv in ipairs(v.processes) do
+                        v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
+
                     end
-                    cpuCTime(v)
 
                     usedTime = usedTime + v.lastCpuTime
                     table.insert(v.cputime_avg, v.lastCpuTime)
@@ -463,15 +458,10 @@ api.tickProcess = function(v)
                 else
                     v.status = "idle"
                     v.lastCpuTime = 0
-                    local function cpuCTime(v)
-                        for kk,vv in ipairs(v.processes) do
-                            v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
-                            if #vv.processes > 0 then
-                                cpuCTime(vv)
-                            end
-                        end
+                    for kk,vv in ipairs(v.processes) do
+                        v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
+
                     end
-                    cpuCTime(v)
                     usedTime = usedTime + v.lastCpuTime
                     table.insert(v.cputime_avg, v.lastCpuTime)
                     if #v.cputime_avg > 24 then
@@ -492,15 +482,11 @@ api.tickProcess = function(v)
                 end
                 local et = computer.uptime()*1000
                 v.lastCpuTime = et/1000-st/1000
-                local function cpuCTime(v)
-                    for kk,vv in ipairs(v.processes) do
-                        v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
-                        if #vv.processes > 0 then
-                            cpuCTime(vv)
-                        end
-                    end
+                for kk,vv in ipairs(v.processes) do
+                    v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
+
                 end
-                cpuCTime(v)
+
                 usedTime = usedTime + v.lastCpuTime
                 table.insert(v.cputime_avg, v.lastCpuTime)
                 if #v.cputime_avg > 32 then
@@ -541,12 +527,13 @@ api.tick = function()
     local function ticker(processes)
         for k,v in ipairs(processes) do
             ae = ae+1
-            local a,e = api.tickProcess(v)
             if #v.processes > 0 then
                 --print(#v.processes)
                 ticker(v.processes)
 
             end
+            local a,e = api.tickProcess(v)
+
 
             --ticker(v.processes)
            -- print(v.name)
