@@ -1,5 +1,19 @@
 local keyboard = {pressedChars = {}, pressedCodes = {}}
 
+keyboard.event = require("event").emitter()
+
+require("process").new("KeyboardInterrupts", [[
+  local kb = require("keyboard")
+  while true do
+    local _,_,_,key = require("event").pull("key_down")
+    if key ~= nil then
+      pcall(function()
+        kb.event.emit("key_pressed",key)
+      end)
+    end
+  end
+]],{["*"]=true})
+
 keyboard.keys = {
   ["1"]           = 0x02,
   ["2"]           = 0x03,
