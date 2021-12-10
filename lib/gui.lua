@@ -377,6 +377,8 @@ gui.textbox = function(x, y, w, h, charLimit, fore, back, selectedColor, cursorB
     obj.text = ""
     obj.selected = false
     obj.enabled = true
+    obj.internal = {}
+    obj.internal.listening = false
 
     obj._draw = function(buf)
         local txtToSet = obj.text
@@ -399,14 +401,13 @@ gui.textbox = function(x, y, w, h, charLimit, fore, back, selectedColor, cursorB
         obj.dirty = false
     end
 
-    local macska = function(a1, a2, key, a4, a5)
+    function obj.pressListener(key)
         if obj.selected then
             key = require("keyboard").keys[key]
-
             if key ~= nil then
                 if key == "enter" then
                     obj.selected = false
-                    gui.event.remove("key_down", macska)
+                    require("keyboard").event.remove("key_pressed",obj.pressListener)
                 elseif key == "back" then
                     if obj.enabled then
                         if string.len(obj.text) > 0 then
@@ -433,8 +434,10 @@ gui.textbox = function(x, y, w, h, charLimit, fore, back, selectedColor, cursorB
     end
 
     obj.onSelected = function()
-        gui.event.remove("key_down", macska)
-        gui.event.on("key_down", macska)
+        if obj.internal.listening == false then
+            obj.internal.listening = true
+            require("keyboard").event.on("key_pressed",obj.pressListener)
+        end
     end
 
     obj.tick = function()
