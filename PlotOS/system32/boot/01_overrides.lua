@@ -30,4 +30,4 @@ computer.pullSignal = function(tout)
         local a,b,c,d,e,f,g,h,i,j,k = table.unpack(computer._signal)
         return a,b,c,d,e,f,g,h,i,j,k
     end
-end 
+end

@@ -3,6 +3,8 @@ local keyboard = require("keyboard")
 local gpu = require("driver").load("gpu")
 local w,h = gpu.getResolution()
 
+
+
 local codeMap = {
   space=" ",
   numpad0="0",
@@ -92,7 +94,7 @@ function io.read()
         if pusy > 0 then
           pusy = pusy-1
           txt = string.sub(txt,1,(string.len(txt)-1))
-          component.gpu.fill(prt_x-1,prt_y,1,1, " ")
+          gpu.fill(prt_x-1,prt_y,1,1, " ")
           prt_x = prt_x-1
           cursor.x = prt_x+1
           cursor.setBlink(false)
@@ -134,7 +136,7 @@ function io.read()
 end
 
 function io.write(txt)
-  component.gpu.set(prt_x,prt_y,txt)
+  gpu.set(prt_x,prt_y,txt)
   prt_x = prt_x+string.len(txt)
 end
 

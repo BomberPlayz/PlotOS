@@ -16,11 +16,12 @@ function split (inputstr, sep)
         return t
 end
 
+local gpu = require("driver").load("gpu")
 
 while true do
-  component.gpu.setForeground(0x00FF00)
+  gpu.setForeground(0x00FF00)
   io.write(os.getEnv("user").."@"..computerName..":")
-  component.gpu.setForeground(0x2fa1c6)
+  gpu.setForeground(0x2fa1c6)
   io.write("~"..os.currentDirectory)
   local cmd = io.read()
   local args = split(cmd, " ")

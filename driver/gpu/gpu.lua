@@ -1,9 +1,16 @@
-local cp = require("component")
+
+
 local ret = {}
 
+ret.cp = {}
+
+
+
 ret.compatible = function(adr)
-    return cp.proxy(adr).type == "gpu"
+    return ret.cp.proxy(adr).type == "gpu"
 end
+
+ret.driverProc = {}
 
 
 ret.getName = function()
@@ -19,7 +26,7 @@ local index = function(x,y,w)
 end
 
 ret.new = function(adr)
-    local com = cp.proxy(adr)
+    local com = ret.cp.proxy(adr)
     local drv = {}
 
     drv.bind = function(adr)

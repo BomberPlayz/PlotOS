@@ -1,5 +1,6 @@
 local api = {}
-local w,h = component.gpu.maxResolution()
+local gpu = require("driver").load("gpu")
+local w,h = gpu.maxResolution()
 api.main = nil
 api.darkmode = false
 api.getMain = function()
@@ -7,7 +8,7 @@ api.getMain = function()
     return api.main
 end
 
-local gpu = require("driver").load("gpu")
+
 
 local function deepcopy(orig, copies)
     copies = copies or {}

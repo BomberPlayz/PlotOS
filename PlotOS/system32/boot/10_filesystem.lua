@@ -1,5 +1,4 @@
 local fs = require("fs")
-fs.mount(rawFs, "/")
 local event = require("event")
 local process = require("process")
 local reserveList = {}

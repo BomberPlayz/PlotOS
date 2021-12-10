@@ -1,10 +1,10 @@
 local ret = {}
-local fs = require("fs")
+local fs = package.require("fs")
 local cp = component
 ret.loaded = {}
 function ret.getDriver(path)
     if not ret.loaded[path] then
-        ret.loaded[path] = dofile("/driver/"..path)
+        ret.loaded[path] = raw_dofile("/driver/"..path)
     end
     local d = ret.loaded[path]
     return d
@@ -41,18 +41,26 @@ function ret.load(type, addr)
 
     if addr == "default" then
         local d,addra = ret.getDefault(type)
-        local dd = d.new(addra)
-        dd.getDriverName = d.getName
-        dd.getDriverVersion = d.getDriverVersion
-        dd.address = addra
-        return d.new(addra)
+        if d then
+            local dd = d.new(addra)
+            dd.getDriverName = d.getName
+            dd.getDriverVersion = d.getDriverVersion
+            dd.address = addra
+            return d.new(addra)
+        else
+            return nil, "No drivers found"
+        end
     else
         local d = ret.getBest(type, addr)
-        local dd = d.new(addr)
-        dd.getDriverName = d.getName
-        dd.getDriverVersion = d.getVersion
-        dd.address = addr
-        return dd
+        if d then
+            local dd = d.new(addr)
+            dd.getDriverName = d.getName
+            dd.getDriverVersion = d.getVersion
+            dd.address = addr
+            return dd
+        else
+            return nil, "No drivers found"
+        end
     end
 
 end

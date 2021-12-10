@@ -3,7 +3,7 @@ cursor.x = 1
 cursor.y = 1
 
 cursor.blink = true
-local gpu = component.gpu
+local gpu = require("driver").load("gpu")
 
 function cursor.set(x, y)
   cursor.x = x

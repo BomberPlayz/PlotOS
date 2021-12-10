@@ -92,18 +92,7 @@ gpu.fill(1,1,w,h," ")
   end
 end
 
-kern_info("Loading package managment...")
-local package = raw_dofile("/lib/package.lua")
-
-_G.package = package
-package.loaded = {}
-package.loaded.component = component
-package.loaded.computer = computer
-package.loaded.filesystem = fs
-package.loaded.package = package
-kern_info("Loading other files...")
-
- function bsod(reason,isKern)
+ local function bsod(reason,isKern)
      if gpu then
          gpu.setBackground(0x2665ed)
          gpu.setForeground(0xffffff)
@@ -133,6 +122,45 @@ kern_info("Loading other files...")
          return reason
      end
  end
+
+kern_info("Loading package managment...")
+local package = raw_dofile("/lib/package.lua")
+
+_G.package = package
+package.loaded = {}
+package.loaded.component = component
+package.loaded.computer = computer
+package.loaded.filesystem = fs
+package.loaded.package = package
+
+ kern_info("Mounting system drive")
+ local fs = package.require("fs")
+ fs.mount(rawFs, "/")
+
+ kern_info("Loading drivers...")
+
+ local driver = package.require("driver")
+
+ for ka,va in fs.list("/driver/") do
+     for k,v in fs.list("/driver/"..ka) do
+         --kern_info(ka..k)
+         --computer.pullSignal(0.5)
+         local d = driver.getDriver(ka..k)
+         d.cp = {
+             proxy = component.proxy,
+             list = component.list,
+             get = component.get,
+
+
+         }
+     end
+
+ end
+
+
+kern_info("Loading other files...")
+
+
 
 local function rom_invoke(method, ...)
   return component.invoke(computer.getBootAddress(), method, ...)

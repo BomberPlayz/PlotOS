@@ -294,7 +294,7 @@ api.isProcess = function()
 end
 
 
-api.new = function(name, code, perms,forceRoot,...)
+api.new = function(name, code, perms,inService,...)
 
 
     local ret = {}

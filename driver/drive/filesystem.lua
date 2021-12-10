@@ -1,5 +1,10 @@
-local cp = require("component")
+
+
 local ret = {}
+
+ret.cp = {}
+
+local cp = ret.cp
 
 ret.compatible = function(adr)
     return cp.proxy(adr).type == "filesystem"
@@ -13,7 +18,6 @@ end
 ret.getVersion = function()
     return 1
 end
-
 
 
 ret.new = function(adr)
