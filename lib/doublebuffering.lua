@@ -8,8 +8,6 @@ api.getMain = function()
     return api.main
 end
 
-
-
 local function deepcopy(orig, copies)
     copies = copies or {}
     local orig_type = type(orig)
@@ -31,8 +29,6 @@ local function deepcopy(orig, copies)
     return copy
 end
 
-
-
 function api.new(w,h,proxy)
     local ret = {}
 
@@ -53,11 +49,9 @@ function api.new(w,h,proxy)
 
     --p is the opacity
     function ret.calcTransparency(c1,c2,p)
-
         if p == 1 then return c2 end
 
         --c1, c2, p are numbers. 0xrrggbb
-
         local r1,g1,b1 = bit32.extract(c1,16,8),bit32.extract(c1,8,8),bit32.extract(c1,0,8)
         local r2,g2,b2 = bit32.extract(c2,16,8),bit32.extract(c2,8,8),bit32.extract(c2,0,8)
 
@@ -65,8 +59,6 @@ function api.new(w,h,proxy)
         local g = math.floor((1-p)*g1 + p*g2)
         local b = math.floor((1-p)*b1 + p*b2)
         return bit32.lshift(r, 16) + bit32.lshift(g,8) + b
-
-
     end
 
     ret.index = function(x,y)
@@ -80,32 +72,19 @@ function api.new(w,h,proxy)
     end
 
     ret.lastbuffer = table.pack(table.unpack(ret.buffer))
-
-
-
+    
     ret.set = function(x,y,char,opacity)
         local chor = char
         for i=1,char:len() do
             local coco = ret.buffer[ret.index(x+i-1,y)]
             if coco == nil then coco = {" ",0,0} end
             local char = char
-
             if char:len() > 1 then
                 char = unicode.sub(chor,i,i)
-
             end
-
-
-
             ret.buffer[ret.index(x+i-1,y)] = {(opacity or 1) < 1 and char == " " and coco[1] or char,ret.calcTransparency(coco[2],ret.foreground,opacity or 1),ret.calcTransparency(coco[3],ret.background,opacity or 1)}
-
-
         end
-
-
-
         ret.dirty = true
-
     end
 
     ret.get = function(x,y)
@@ -120,8 +99,6 @@ function api.new(w,h,proxy)
         end
         ret.dirty = true
     end
-
-
 
     ret.setForeground = function(fore)
         ret.foreground = fore
@@ -149,23 +126,16 @@ function api.new(w,h,proxy)
         return ret.width,ret.height
     end
 
-
     ret.draw = function(xx,yy)
         if not ret.dirty then return end
         if not xx then xx = 1 end
         if not yy then yy = 1 end
         --print(tostring(xx))
-
         local fore = gpu.getForeground()
         local back = gpu.getBackground()
         -- for y=yy,ret.height+yy-1,1 do
         -- for x=xx,ret.width+xx-1,1 do
-
-
-
         -- draw efficiently: cache foreground, background color and only change when needed. Also, only draw when the pixel changed.
-
-
         -- use lastbuffer too, and only set foreground and background when needed.
         if ret.buffer ~= ret.lastbuffer then
             for y=yy,ret.height+yy-1,1 do
@@ -188,39 +158,6 @@ function api.new(w,h,proxy)
             end
 
         end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         --ret.lastgroups = drawGroups
         ret.lastbuffer = table.pack(table.unpack(ret.buffer))
 
