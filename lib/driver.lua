@@ -4,23 +4,24 @@ local cp = component
 ret.loaded = {}
 function ret.getDriver(path)
     if not ret.loaded[path] then
-        ret.loaded[path] = raw_dofile("/driver/"..path)
+        local driverPath = "/driver/"..path
+        if fs.exists(driverPath) then
+            ret.loaded[path] = raw_dofile(driverPath)
+        else
+            error('Driver doesn\'t exist') 
+        end
     end
     local d = ret.loaded[path]
     return d
 end
 
 function ret.getBest(type, addr)
-
-
     for k,v in fs.list("/driver/"..type) do
         local d = ret.getDriver(type.."/"..k)
         if d.compatible(addr) then
             return d
         end
     end
-
-
 end
 
 function ret.getDefault(type)
