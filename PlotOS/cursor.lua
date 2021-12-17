@@ -16,14 +16,24 @@ end
 
 function cursor.setBlink(blink)
   cursor.blink = blink
+  w,h = gpu.getResolution()
+
+  if cursor.x > w then
+    cursor.x = 1
+    cursor.y = cursor.y + 1
+  end
+  if cursor.y > h then
+    cursor.y = cursor.y - 1
+  end
+
   -- if blink is true, set foreground to background, and vica versa. If blink is false, switch them back. Then make a dot at the cursor's position.
   local bg = gpu.getBackground()
   local fg = gpu.getForeground()
   local cc = {gpu.get(cursor.x, cursor.y)}
-  if blink then
+  if blink then 
     gpu.setBackground(fg)
     gpu.setForeground(bg)
-
+    
     gpu.set(cursor.x, cursor.y, cc[1])
   else
 
@@ -34,6 +44,9 @@ function cursor.setBlink(blink)
   gpu.setBackground(bg)
 
 end
+
+
+
 
 
 
