@@ -136,6 +136,16 @@ function io.read()
 end
 
 function io.write(txt)
+  w,h = gpu.getResolution()
+  if prt_x > w then
+    prt_x = 1
+    prt_y = prt_y + 1
+  end
+  if prt_y > h then
+    prt_y = prt_y - 1
+    gpu.copy(1,2,w,h,0,-1)
+    gpu.fill(1,h,w,1," ")
+  end
   gpu.set(prt_x,prt_y,txt)
   prt_x = prt_x+string.len(txt)
 end
