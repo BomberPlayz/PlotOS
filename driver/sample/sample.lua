@@ -3,7 +3,6 @@ local ret = {}
 
 ret.cp = {}
 
-local cp = ret.cp
 
 ret.compatible = function(adr)
     return cp.proxy(adr).type == "sample"
@@ -22,7 +21,11 @@ end
 
 
 ret.new = function(adr)
-    local com = cp.proxy(adr)
+    local com = {}
+    local methods = component.methods(adr)
+    for k,v in pairs(methods) do
+        com[k] = "sa"
+    end
     local drv = {}
 
     function drv.sample(sample)

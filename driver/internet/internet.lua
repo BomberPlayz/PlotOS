@@ -22,7 +22,8 @@ end
 
 
 ret.new = function(adr)
-    local com = ret.cp.proxy(adr)
+    local com = cp.proxy(adr)
+
     local drv = {}
 
     function drv.isTcpEnabled()

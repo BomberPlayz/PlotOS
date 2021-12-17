@@ -4,6 +4,8 @@ _G.OSNAME = "PlotOS"
 _G.OSVERSION = "0.0.3"
 _G.OSRELEASE = "alpha"
 
+ local component_invoke = component.invoke
+
 local gpu = component.proxy(component.list("gpu")())
 local fs = component.proxy(computer.getBootAddress())
 local w,h = gpu.getResolution()
@@ -150,7 +152,8 @@ package.loaded.package = package
              proxy = component.proxy,
              list = component.list,
              get = component.get,
-
+             invoke = component.invoke,
+             methods = component.methods,
 
          }
      end
@@ -163,7 +166,7 @@ kern_info("Loading other files...")
 
 
 local function rom_invoke(method, ...)
-  return component.invoke(computer.getBootAddress(), method, ...)
+  return component_invoke(computer.getBootAddress(), method, ...)
 end
 
 local scripts = {}

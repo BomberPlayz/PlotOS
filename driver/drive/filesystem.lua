@@ -19,9 +19,18 @@ ret.getVersion = function()
     return 1
 end
 
+local component = cp
+
 
 ret.new = function(adr)
-    local com = cp.proxy(adr)
+    local com = ret.cp.proxy(adr)
+
+    for k,v in pairs(methods) do
+        com[k] = v
+    end
+    for k,v in pairs(methods) do
+        com[k] = v
+    end
     local drv = {}
 
     drv.spaceUsed = function()

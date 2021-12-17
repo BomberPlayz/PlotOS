@@ -132,7 +132,7 @@ function io.read()
       end
     end
 
-    end
+  end
 end
 
 function io.write(txt)
@@ -140,16 +140,35 @@ function io.write(txt)
   prt_x = prt_x+string.len(txt)
 end
 
+local function split(string,sep)
+  local sep, fields = sep or ":", {}
+  local pattern = string.format("([^%s]+)", sep)
+  string:gsub(pattern, function(c) fields[#fields+1] = c end)
+  return fields
+end
+
 function io.writeline(txt)
-  io.write(txt)
-  local w,h = gpu.getResolution()
-  if prt_y == h-1 then
-    gpu.copy(1,1,w,h,0,-1)
-    gpu.fill(1,h,w,1," ")
-  else
-    prt_y = prt_y + 1
+  local dat = split(txt,"\n")
+  for i=1,#dat do
+    io.write(dat[i])
+    local w,h = gpu.getResolution()
+    if prt_y == h-1 then
+      gpu.copy(1,1,w,h,0,-1)
+      gpu.fill(1,h,w,1," ")
+    else
+      prt_y = prt_y + 1
+    end
+    prt_x = 1
   end
-  prt_x = 1
+  if #dat == 0 then
+    if prt_y == h-1 then
+      gpu.copy(1,1,w,h,0,-1)
+      gpu.fill(1,h,w,1," ")
+    else
+      prt_y = prt_y + 1
+    end
+    prt_x = 1
+  end
 end
 
 _G.io = io

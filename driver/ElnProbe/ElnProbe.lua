@@ -21,7 +21,11 @@ end
 
 
 ret.new = function(adr)
-    local com = cp.proxy(adr)
+    local com = {}
+    local methods = ret.cp.methods(adr)
+    for k,v in pairs(methods) do
+        com[k] = v
+    end
     local drv = {}
 
     drv.signalSetDir = function(s,sin)

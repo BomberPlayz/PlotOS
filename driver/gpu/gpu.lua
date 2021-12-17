@@ -27,6 +27,7 @@ end
 
 ret.new = function(adr)
     local com = ret.cp.proxy(adr)
+
     local drv = {}
 
     drv.bind = function(adr)

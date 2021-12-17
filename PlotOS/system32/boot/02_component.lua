@@ -1,11 +1,12 @@
 local cp = component.proxy
+local ci = component.invoke
 
 local security = require("security")
 local process = require("process")
 component.proxy = function(addr)
   if process.isProcess() then
     local proc = process.findByThread(coroutine.running())
-    if proc.security.hasPermission("component.access_all") then
+    if proc.security.hasPermission("component.access.*") or proc.security.hasPermission("component.access."..cp(addr).type) then
       return cp(addr)
     else
       return nil, "EPERM", "Permission denied for accessing component"
@@ -14,6 +15,10 @@ component.proxy = function(addr)
     return cp(addr)
   end
 end
+
+
+
+
 
 setmetatable(component, {
   __index = function(_,k)
