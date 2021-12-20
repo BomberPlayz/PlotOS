@@ -84,9 +84,9 @@ local disabledCodeMap = {
 function gui.isObstructed(_, object)
     -- check if the object is obstructed by checking if coordinates overlap. If yes, return true, else return fals
 
-    for _, loopObj in pairs(object.parent.children) do
+    for i, loopObj in pairs(object.parent.children) do
         if
-            (loopObj ~= object) and (loopObj._parentIndex > object._parentIndex) and
+            (loopObj ~= object) and (i > object._parentIndex) and
             (loopObj.x <= object.x + object.width) and
             (loopObj.x >= object.x) and
             (loopObj.y <= object.y + object.height) and
@@ -101,16 +101,17 @@ end
 function gui.isObstructedAt(object, x, y)
     -- check if the object is obstructer by checking if coordinates overlap.
 
-    for _, obj in pairs(object.parent.children) do
+    for i, loopObj in pairs(object.parent.children) do
         if
-            obj ~= object and obj._parentIndex > object._parentIndex and obj.x <= x and obj.x + obj.width >= x and
-                obj.y <= y and
-                obj.y + obj.height >= y
+            (loopObj ~= object) and (i > object._parentIndex) and
+            (loopObj.x <= x + object.width) and
+            (loopObj.x >= x) and
+            (loopObj.y <= y + object.height) and
+            (loopObj.y >= y)
          then
-            return false
+            return true
         end
     end
-    return false
 end
 
 local isObstructed = gui.isObstructed
