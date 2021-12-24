@@ -143,4 +143,17 @@ log4po.log = function(...)
   end
 end
 
+log4po.error = function(...)
+  local args = {...};
+  local toPrint = "";
+
+  for i=1,#args do
+    toPrint = toPrint .. tostring(args[i])
+    if i < #args then
+      toPrint = toPrint .. ",  " 
+    end
+  end
+  log4po.textComponentLog(log4po.newTextComponent(toPrint, 0x000000, 0xff0000))
+end
+
 return log4po

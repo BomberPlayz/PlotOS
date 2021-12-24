@@ -132,7 +132,7 @@ gpu.fill(1,1,w,h," ")
   else
       kern_info("Error loading file "..file, "error")
 
-    error(reason.." is reeson")
+    error(reason)
   end
 end
 
@@ -238,26 +238,31 @@ kern_info("Starting shell...")
 require("screen").clear()
 
 dofile("/PlotOS/cursor.lua")
---local ok, reason = xpcall(dofile, erred,"/sys/shell.lua")
 
- local e,process = xpcall(require, function(e) bsod(e,true) end, "process")
- if not e then
-   while true do pcps() end
- end
+local e,process = xpcall(require, function(e) bsod(e,true) end, "process")
+if not e then
+  while true do pcps() end
+end
 
+local fs = require("fs")
+local logger = require("log4po")
 
- local fs = require("fs")
+local s1,e1 = pcall(function()
+  dofile("/PlotOS/systemAutorun.lua")
+end)
 
+if not s1 then
+  logger.error("Error running system autorun: "..e1)
+end
 
- process.load("Shell", os.getEnv("SHELL"))
+local s2,e2 = pcall(function()
+  dofile("/autorun.lua")
+end)
 
- process.load("cursorblink","/bin/cursorblink.lua")
+if not s2 then
+  logger.error("Error running autorun: "..e2)
+end
 
- process.load("Rainmeter","/bin/rainmeter.lua")
-
-
-
- process.autoTick()
-
+process.autoTick()
 computer.beep(1000)
 kern_panic("System halted!")
