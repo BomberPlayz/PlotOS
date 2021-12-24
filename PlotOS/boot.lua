@@ -29,6 +29,13 @@ local function split (inputstr, sep)
         end
         return t
 end
+ local function splitByChunk(text, chunkSize)
+     local s = {}
+     for i=1, #text, chunkSize do
+         s[#s+1] = text:sub(i,i+chunkSize - 1)
+     end
+     return s
+ end
 
  local logfile = 0
  local logsToWrite = ""
@@ -79,9 +86,12 @@ function _G.kern_info(msg,state)
     else
         local fs = require("fs")
         if type(loggingHandle) == "nil" then
-            loggingHandle = fs.open("/logs.log", "a")
+            logsToWrite = logsToWrite..pre.." "..msg.."\n"
+            return
         end
+
         loggingHandle:write(pre.." "..msg.."\n")
+        logsToWrite = ""
 
 
 
@@ -171,6 +181,7 @@ package.loaded.package = package
  local fs = package.require("fs")
  fs.mount(rawFs, "/")
 
+
  kern_info("Loading drivers...")
 
  local driver = package.require("driver")
@@ -214,7 +225,15 @@ for i = 1, #scripts do
   kern_info("Running boot script "..scripts[i])
   raw_dofile(scripts[i])
 end
+
 kern_info("Starting shell...")
+ _G.OSSTATUS = 1
+ loggingHandle = fs.open("/logs.log", "w")
+ local con = splitByChunk(logsToWrite,1024)
+ for k,v in ipairs(con) do
+     loggingHandle:write(v)
+ end
+
 --os.sleep(2)
 require("screen").clear()
 
@@ -226,11 +245,9 @@ dofile("/PlotOS/cursor.lua")
    while true do pcps() end
  end
 
- _G.OSSTATUS = 1
+
  local fs = require("fs")
- local f = fs.open("/logs.log", "w")
- f:write(logsToWrite)
- f:close()
+
 
  process.load("Shell", os.getEnv("SHELL"))
 

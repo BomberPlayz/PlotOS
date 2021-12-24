@@ -9,6 +9,7 @@ component.proxy = function(addr)
     if proc.security.hasPermission("component.access.*") or proc.security.hasPermission("component.access."..cp(addr).type) then
       return cp(addr)
     else
+      kern_info("Permission denied to access component by proxy for "..proc.pid.." ("..proc.name..")","warn")
       return nil, "EPERM", "Permission denied for accessing component"
     end
   else

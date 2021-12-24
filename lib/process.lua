@@ -533,7 +533,7 @@ api.tick = function()
 
             end
             local a,e = api.tickProcess(v)
-            if v.lastCpuTime*1000 > 50 then
+            if v.lastCpuTime*1000 > 65 then
                 kern_info("Detected process "..v.pid.." ("..v.name..") slowing down system: "..(v.lastCpuTime*1000).." ms CPU time", "warn")
             end
 

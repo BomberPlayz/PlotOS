@@ -4,16 +4,19 @@ local process = require("process")
 local reserveList = {}
 event.listen("component_added", function(addr, type)
     if type == "filesystem" then
+
         local lab = fs.getFreeLabel()
         fs.reserveLabel(lab)
         reserveList[addr] = lab
         fs.mount(require("driver").load("drive",addr),"/"..lab)
+        kern_info("New disk "..addr.." has been mounted")
     end
 end)
 event.listen("component_removed", function(addr, type)
     if type == "filesystem" then
         fs.umount(addr)
         fs.freeLabel(reserveList[addr] or "")
+        kern_info("disk "..addr.." has been unmounted")
     end
 end)
 
