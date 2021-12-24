@@ -533,6 +533,9 @@ api.tick = function()
 
             end
             local a,e = api.tickProcess(v)
+            if v.lastCpuTime*1000 > 50 then
+                kern_info("Detected process "..v.pid.." ("..v.name..") slowing down system: "..(v.lastCpuTime*1000).." ms CPU time", "warn")
+            end
 
 
             --ticker(v.processes)
@@ -565,9 +568,14 @@ api.tick = function()
     end
     local e = computer.uptime()
     usedTime = 0
+
+
+
     for k,v in ipairs(api.processes) do
         usedTime = usedTime + v.lastCpuTime
+
     end
+
     unusedTime = e-s
     unusedTime = unusedTime - usedTime
     table.insert(idleTimeAvg, unusedTime)

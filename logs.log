@@ -1,0 +1,65 @@
+[0] [   OK   ] Loading package managment...
+[0] [   OK   ] Loading file /lib/package.lua
+[0] [   OK   ] Successfully loaded file /lib/package.lua
+[0] [   OK   ] Mounting system drive
+[  0.15] [   OK   ] Loading file /lib/fs.lua
+[  0.15] [   OK   ] Successfully loaded file /lib/fs.lua
+[  0.15] [   OK   ] Loading drivers...
+[  0.15] [   OK   ] Loading file /lib/driver.lua
+[  0.15] [   OK   ] Successfully loaded file /lib/driver.lua
+[  0.25] [   OK   ] Giving direct component proxy access to driver drive/filesystem.lua
+[  0.25] [   OK   ] Loading file /driver/drive/filesystem.lua
+[  0.25] [   OK   ] Successfully loaded file /driver/drive/filesystem.lua
+[  0.3 ] [   OK   ] Giving direct component proxy access to driver gpu/gpu.lua
+[  0.3 ] [   OK   ] Loading file /driver/gpu/gpu.lua
+[  0.3 ] [   OK   ] Successfully loaded file /driver/gpu/gpu.lua
+[  0.35] [   OK   ] Giving direct component proxy access to driver ElnProbe/ElnProbe.lua
+[  0.35] [   OK   ] Loading file /driver/ElnProbe/ElnProbe.lua
+[  0.35] [   OK   ] Successfully loaded file /driver/ElnProbe/ElnProbe.lua
+[  0.4 ] [   OK   ] Giving direct component proxy access to driver internet/internet.lua
+[  0.4 ] [   OK   ] Loading file /driver/internet/internet.lua
+[  0.4 ] [   OK   ] Successfully loaded file /driver/internet/internet.lua
+[  0.45] [   OK   ] Giving direct component proxy access to driver sample/sample.lua
+[  0.45] [   OK   ] Loading file /driver/sample/sample.lua
+[  0.45] [   OK   ] Successfully loaded file /driver/sample/sample.lua
+[  0.5 ] [   OK   ] Giving direct component proxy access to driver printer/openprinter.lua
+[  0.5 ] [   OK   ] Loading file /driver/printer/openprinter.lua
+[  0.5 ] [   OK   ] Successfully loaded file /driver/printer/openprinter.lua
+[  0.5 ] [   OK   ] Loading other files...
+[  0.55] [   OK   ] Indexed boot script at PlotOS/system32/boot/00_base.lua
+[  0.55] [   OK   ] Indexed boot script at PlotOS/system32/boot/01_overrides.lua
+[  0.55] [   OK   ] Indexed boot script at PlotOS/system32/boot/02_component.lua
+[  0.55] [   OK   ] Indexed boot script at PlotOS/system32/boot/05_OS.lua
+[  0.55] [   OK   ] Indexed boot script at PlotOS/system32/boot/10_filesystem.lua
+[  0.55] [   OK   ] Indexed boot script at PlotOS/system32/boot/80_io.lua
+[  0.55] [   OK   ] Running boot script PlotOS/system32/boot/00_base.lua
+[  0.55] [   OK   ] Loading file PlotOS/system32/boot/00_base.lua
+[  0.55] [   OK   ] Loading base components
+[  0.55] [   OK   ] Successfully loaded file PlotOS/system32/boot/00_base.lua
+[  0.55] [   OK   ] Running boot script PlotOS/system32/boot/01_overrides.lua
+[  0.6 ] [   OK   ] Loading file PlotOS/system32/boot/01_overrides.lua
+[  0.8 ] [   OK   ] Loading file /lib/process.lua
+[  0.8 ] [   OK   ] Loading file /lib/security.lua
+[  0.8 ] [   OK   ] Successfully loaded file /lib/security.lua
+[  0.8 ] [   OK   ] Successfully loaded file /lib/process.lua
+[  0.8 ] [   OK   ] Successfully loaded file PlotOS/system32/boot/01_overrides.lua
+[  0.8 ] [   OK   ] Running boot script PlotOS/system32/boot/02_component.lua
+[  0.85] [   OK   ] Loading file PlotOS/system32/boot/02_component.lua
+[  0.85] [   OK   ] Successfully loaded file PlotOS/system32/boot/02_component.lua
+[  0.85] [   OK   ] Running boot script PlotOS/system32/boot/05_OS.lua
+[  0.85] [   OK   ] Loading file PlotOS/system32/boot/05_OS.lua
+[  0.85] [   OK   ] Successfully loaded file PlotOS/system32/boot/05_OS.lua
+[  0.85] [   OK   ] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[  0.9 ] [   OK   ] Loading file PlotOS/system32/boot/10_filesystem.lua
+[  0.95] [   OK   ] Loading file /lib/event.lua
+[  0.95] [   OK   ] Successfully loaded file /lib/event.lua
+[   1   ] [   OK   ] Successfully loaded file PlotOS/system32/boot/10_filesystem.lua
+[   1   ] [   OK   ] Running boot script PlotOS/system32/boot/80_io.lua
+[  1.05] [   OK   ] Loading file PlotOS/system32/boot/80_io.lua
+[  1.1 ] [   OK   ] Loading file /lib/keyboard.lua
+[  1.1 ] [   OK   ] Successfully loaded file /lib/keyboard.lua
+[  1.5 ] [   OK   ] Successfully loaded file PlotOS/system32/boot/80_io.lua
+[  1.5 ] [   OK   ] Starting shell...
+[  1.5 ] [   OK   ] Loading file /lib/screen.lua
+[  1.5 ] [   OK   ] Successfully loaded file /lib/screen.lua
+[  2.45] [  WARN  ] Detected process 6 (Shell) slowing down system: 400 ms CPU time

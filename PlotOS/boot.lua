@@ -3,6 +3,9 @@
 _G.OSNAME = "PlotOS"
 _G.OSVERSION = "0.0.3"
 _G.OSRELEASE = "alpha"
+ _G.OSSTATUS = 0
+ _G.OS_LOGGING_START_TIME = math.floor(computer.uptime()*1000)/1000
+ _G.OS_LOGGING_MAX_NUM_WIDTH = 0
 
  local component_invoke = component.invoke
 
@@ -16,6 +19,7 @@ local y = 1
  local pcps = computer.pullSignal
 
 local function split (inputstr, sep)
+
         if sep == nil then
                 sep = "%s"
         end
@@ -26,6 +30,9 @@ local function split (inputstr, sep)
         return t
 end
 
+ local logfile = 0
+ local logsToWrite = ""
+ local loggingHandle = nil
 
 function _G.kern_info(msg,state)
   if type(state) == "nil" then
@@ -39,28 +46,46 @@ function _G.kern_info(msg,state)
   end
   local lc = gpu.getForeground()
   local c = 0xffffff
-  local pre = "[ ???????? ]"
+  local pre = "["..computer.uptime()-OS_LOGGING_START_TIME.."] "
+    local num = math.floor(computer.uptime()*1000)/1000-OS_LOGGING_START_TIME
+    local num_width = #tostring(num)
+    if num_width > OS_LOGGING_MAX_NUM_WIDTH then
+        OS_LOGGING_MAX_NUM_WIDTH = num_width
+    end
+
   if state == "info" then
-    pre = "[   OK   ]"
+    pre = "["..string.rep(" ",OS_LOGGING_MAX_NUM_WIDTH-(num_width/2))..""..num..""..string.rep(" ",OS_LOGGING_MAX_NUM_WIDTH-(num_width/2)-(num_width/2)).."] ".."[   OK   ]"
     c = 0x10ff10
   elseif state == "warn" then
     c = 0xff10ff
-    pre = "[  WARN  ]"
+    pre = "["..string.rep(" ",OS_LOGGING_MAX_NUM_WIDTH-(num_width/2))..""..num..""..string.rep(" ",OS_LOGGING_MAX_NUM_WIDTH-(num_width/2)-(num_width/2)).."] ".. "[  WARN  ]"
   elseif state == "error" then
     c = 0xff1010
-    pre = "[ ERROR  ]"
+    pre = "["..string.rep(" ",OS_LOGGING_MAX_NUM_WIDTH-(num_width/2))..""..num..""..string.rep(" ",OS_LOGGING_MAX_NUM_WIDTH-(num_width/2)-(num_width/2)).."] ".. "[ ERROR  ]"
   end
-  gpu.setForeground(c)
-  
-  gpu.set(x,y,pre.." "..msg)
-  x = 1
-  if y > h-1 then
-    gpu.copy(1,1,w,h,0,-1)
-    gpu.fill(1,h,w,1," ")
-  else
-    y = y+1
-  end
-  gpu.setForeground(lc)
+    if OSSTATUS < 1 then
+        logsToWrite = logsToWrite..pre.." "..msg.."\n"
+        gpu.setForeground(c)
+
+        gpu.set(x,y,pre.." "..msg)
+        x = 1
+        if y > h-1 then
+            gpu.copy(1,1,w,h,0,-1)
+            gpu.fill(1,h,w,1," ")
+        else
+            y = y+1
+        end
+        gpu.setForeground(lc)
+    else
+        local fs = require("fs")
+        if type(loggingHandle) == "nil" then
+            loggingHandle = fs.open("/logs.log", "a")
+        end
+        loggingHandle:write(pre.." "..msg.."\n")
+
+
+
+    end
 end
 
 gpu.fill(1,1,w,h," ")
@@ -82,14 +107,21 @@ gpu.fill(1,1,w,h," ")
  function _G.raw_dofile(file)
   local program, reason = raw_loadfile(file)
   --kernel_info(file.." and is the: "..program)
+     kern_info("Loading file "..file)
   if program then
     local result = table.pack(xpcall(program,debug.traceback))
     if result[1] then
+        kern_info("Successfully loaded file "..file)
+
       return table.unpack(result, 2, result.n)
     else
+        kern_info("Error loading file "..file, "error")
+
       error(result[2].." is the error")
     end
   else
+      kern_info("Error loading file "..file, "error")
+
     error(reason.." is reeson")
   end
 end
@@ -145,7 +177,7 @@ package.loaded.package = package
 
  for ka,va in fs.list("/driver/") do
      for k,v in fs.list("/driver/"..ka) do
-         --kern_info(ka..k)
+         kern_info("Giving direct component proxy access to driver "..ka..k)
          --computer.pullSignal(0.5)
          local d = driver.getDriver(ka..k)
          d.cp = {
@@ -173,15 +205,16 @@ local scripts = {}
 for _, file in ipairs(rom_invoke("list", "PlotOS/system32/boot/")) do
   local path = "PlotOS/system32/boot/" .. file
   if not rom_invoke("isDirectory", path) then
+      kern_info("Indexed boot script at "..path)
     table.insert(scripts, path)
   end
 end
 table.sort(scripts)
 for i = 1, #scripts do
-  kern_info("loading module --> "..scripts[i])
+  kern_info("Running boot script "..scripts[i])
   raw_dofile(scripts[i])
 end
-kern_info("Starting shell!")
+kern_info("Starting shell...")
 --os.sleep(2)
 require("screen").clear()
 
@@ -192,6 +225,12 @@ dofile("/PlotOS/cursor.lua")
  if not e then
    while true do pcps() end
  end
+
+ _G.OSSTATUS = 1
+ local fs = require("fs")
+ local f = fs.open("/logs.log", "w")
+ f:write(logsToWrite)
+ f:close()
 
  process.load("Shell", os.getEnv("SHELL"))
 
