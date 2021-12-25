@@ -98,14 +98,23 @@ log4po.textComponentLog = function(textComponent)
         if v["bg"] == nil then v["bg"] = 0x000000 end
         gpu.setForeground(v["fg"])
         gpu.setBackground(v["bg"])
-        io.write(tostring(v["text"]))
+        --more bad code
+        for a=1,string.len(tostring(textComponent["text"]))+1 do
+          io.write(string.sub(tostring(textComponent["text"]), a,a))
+        end 
       end
     elseif tablelength(textComponent) > 0 then
       if textComponent["fg"] == nil then textComponent["fg"] = 0xffffff end
       if textComponent["bg"] == nil then textComponent["bg"] = 0x000000 end
       gpu.setForeground(textComponent["fg"])
       gpu.setBackground(textComponent["bg"])
-      io.write(tostring(textComponent["text"]))
+      --Bad code, but it works for now lol
+      --io.write doesnt check if the string is longer then the screen width left. it only checks if the cursor isnt past the screen end and then it writes the string so im just gonna do this for now 
+      --inefficiency 100
+      
+      for a=1,string.len(tostring(textComponent["text"]))+1 do
+        io.write(string.sub(tostring(textComponent["text"]), a,a))
+      end 
     else
       print("Invalid text component")
     end
@@ -134,7 +143,7 @@ log4po.log = function(...)
         toPrint = toPrint .. ",  " 
       end
     end
-    print(toPrint)
+    log4po.textComponentLog(log4po.newTextComponent(toPrint, 0x000000, 0xffffff))
   elseif argTypes[1] == "table" then
     for i=1,#args do
       local tc = log4po.tableToTextComponentList(args[i])
