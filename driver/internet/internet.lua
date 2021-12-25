@@ -22,7 +22,7 @@ end
 
 
 ret.new = function(adr)
-    local com = cp.proxy(adr)
+    local com = ret.cp.proxy(adr)
 
     local drv = {}
 
@@ -41,12 +41,7 @@ ret.new = function(adr)
     function drv.request(url,postData,headers)
         return com.request(url,postData,headers)
     end
-
-
-
-
-
-
+    
     return drv
 end
 
