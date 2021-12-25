@@ -98,9 +98,9 @@ log4po.textComponentLog = function(textComponent)
         if v["bg"] == nil then v["bg"] = 0x000000 end
         gpu.setForeground(v["fg"])
         gpu.setBackground(v["bg"])
-        --more bad code
-        for a=1,string.len(tostring(textComponent["text"]))+1 do
-          io.write(string.sub(tostring(textComponent["text"]), a,a))
+        
+        for a=1,string.len(tostring(v["text"]))+1 do
+          io.write(string.sub(tostring(v["text"]), a,a))
         end 
       end
     elseif tablelength(textComponent) > 0 then
