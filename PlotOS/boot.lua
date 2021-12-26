@@ -177,9 +177,29 @@ package.loaded.computer = computer
 package.loaded.filesystem = fs
 package.loaded.package = package
 
+
+
  kern_info("Mounting system drive")
  local fs = package.require("fs")
  fs.mount(rawFs, "/")
+
+ kern_info("Reading boot config file")
+ local serialization = package.require("serialization")
+ local ini = serialization.ini
+ local data = ""
+ local bootConfHandle = fs.open("/PlotOS/$BootInfo.ini", "r")
+ if bootConfHandle then
+     data = bootConfHandle:read(math.huge)
+     bootConfHandle:close()
+ end
+ local bootConf = ini.decode(data)
+
+ local safemode = false
+
+ if bootConf.safemode.enable then
+     kern_info("Safemode is enabled!", "warn")
+     safemode = true
+ end
 
 
  kern_info("Loading drivers...")
@@ -213,13 +233,18 @@ local function rom_invoke(method, ...)
 end
 
 local scripts = {}
-for _, file in ipairs(rom_invoke("list", "PlotOS/system32/boot/")) do
-  local path = "PlotOS/system32/boot/" .. file
-  if not rom_invoke("isDirectory", path) then
-      kern_info("Indexed boot script at "..path)
-    table.insert(scripts, path)
-  end
-end
+ if not safemode then
+     for _, file in ipairs(rom_invoke("list", "PlotOS/system32/boot/")) do
+         local path = "PlotOS/system32/boot/" .. file
+         if not rom_invoke("isDirectory", path) then
+             kern_info("Indexed boot script at "..path)
+             table.insert(scripts, path)
+         end
+     end
+ else
+     kern_info("Safemode is enabled, loading only critical bootscripts.")
+     scripts = {"/PlotOS/system32/boot/00_base.lua","/PlotOS/system32/boot/05_OS.lua","/PlotOS/system32/boot/80_io.lua","/PlotOS/system32/safemode_component.lua","/PlotOS/system32/boot/01_overrides.lua","/PlotOS/system32/safemode_warn.lua","/PlotOS/system32/zzzz_safemode_shell.lua"}
+ end
 table.sort(scripts)
 for i = 1, #scripts do
   kern_info("Running boot script "..scripts[i])
@@ -237,7 +262,7 @@ kern_info("Starting shell...")
 --os.sleep(2)
 require("screen").clear()
 
-dofile("/PlotOS/cursor.lua")
+
 
 local e,process = xpcall(require, function(e) bsod(e,true) end, "process")
 if not e then
@@ -247,21 +272,30 @@ end
 local fs = require("fs")
 local logger = require("log4po")
 
-local s1,e1 = pcall(function()
-  dofile("/PlotOS/systemAutorun.lua")
-end)
+ if not safemode then
+     dofile("/PlotOS/cursor.lua")
+     local s1,e1 = pcall(function()
+         dofile("/PlotOS/systemAutorun.lua")
+     end)
 
-if not s1 then
-  logger.error("Error running system autorun: "..e1)
-end
+     if not s1 then
+         logger.error("Error running system autorun: "..e1)
+     end
+ else
+     kern_info("Safemode is enabled, skipping system autorun.","warn")
+ end
 
-local s2,e2 = pcall(function()
-  dofile("/autorun.lua")
-end)
+ if not safemode then
+     local s2,e2 = pcall(function()
+         dofile("/autorun.lua")
+     end)
 
-if not s2 then
-  logger.error("Error running autorun: "..e2)
-end
+     if not s2 then
+         logger.error("Error running autorun: "..e2)
+     end
+ else
+     kern_info("Safemode is enabled, skipping autorun.","warn")
+ end
 
 process.autoTick()
 computer.beep(1000)

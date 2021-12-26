@@ -8,7 +8,8 @@ end
 
 local log4po = {}
 
---add a check if that type doesnt exist write the raw data
+--- Returns a text component list with syntax highlighting and basic formatting of a lua table.
+--- @param t table The table
 log4po.tableToTextComponentList = function(t)
   local textComponentList = {}
 
@@ -71,6 +72,10 @@ log4po.tableToTextComponentList = function(t)
   return textComponentList
 end
 
+--- Returns a text component with the data passed to the function.
+--- @param data string The data
+--- @param color number The background color
+--- @param textColor number The text color
 log4po.newTextComponent = function(text,bg,fg)
   local t = {}
   t.text = text
@@ -79,6 +84,8 @@ log4po.newTextComponent = function(text,bg,fg)
   return t
 end
 
+--- Returns a string from all of the text components in the text component list that was given to the function.
+--- @param textComponentList table The text component list
 log4po.textComponentListToString = function(textComponentList)
   local str = ""
   for i,v in ipairs(textComponentList) do
@@ -87,6 +94,8 @@ log4po.textComponentListToString = function(textComponentList)
   return str
 end
 
+--- Logs out a list of text components.
+--- @param textComponentList table The text component list
 log4po.textComponentLog = function(textComponent)
   local prevfg = gpu.getForeground()
   local prevbg = gpu.getBackground()
@@ -126,7 +135,8 @@ log4po.textComponentLog = function(textComponent)
   gpu.setBackground(prevbg)
   print("")
 end
-
+--- Logs out all objects that have been passed to it
+--- @param ... any The objects to log
 log4po.log = function(...)
   local args = {...};
   local toPrint = "";
@@ -152,6 +162,8 @@ log4po.log = function(...)
   end
 end
 
+--- Logs out all strings that were passed to it in red
+--- @param ... any The strings to log
 log4po.error = function(...)
   local args = {...};
   local toPrint = "";

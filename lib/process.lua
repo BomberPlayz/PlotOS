@@ -3,6 +3,7 @@ api.processes = {}
 api.signal = {}
 local unusedTime = 0
 local security = require("security")
+local gpu = require("driver").load("gpu")
 local as_pid = 1
 local usedTime = 0
 local function setfenv(f, env)
@@ -323,6 +324,14 @@ api.new = function(name, code, perms,inService,...)
     ret.lastCpuTime = 0
     ret.cputime_avg = {}
     ret.processes = {}
+    ret.io.screen = {
+
+    }
+    ret.io.screen.width,ret.io.screen.height = gpu.getResolution()
+    ret.io.screen.offset = {
+        x = 0,
+        y = 0
+    }
     as_pid = as_pid+1
 
     function ret:getCpuTime()
@@ -375,7 +384,7 @@ api.new = function(name, code, perms,inService,...)
         table.insert(api.processes,ret)
     end
 
-
+    kern_info("New process named "..ret.name.." with pid"..ret.pid.." created")
 
     return ret
 end
@@ -512,6 +521,7 @@ api.tickProcess = function(v)
         v.err = ""
         v.lastCpuTime = 0
         v.status = "dead"
+        kern_info("Process with name "..v.name.." with pid "..v.pid.." has died")
 
     end
 end

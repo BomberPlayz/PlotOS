@@ -6,17 +6,33 @@ cursor.blink = true
 local gpu = require("driver").load("gpu")
 
 function cursor.set(x, y)
-  cursor.x = x
-  cursor.y = y
+  local ox,oy = 0,0
+  local proc = require("process")
+  if proc.isProcess() then
+    local p = proc.findByThread(coroutine.running())
+    ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
+  else
+
+  end
+  cursor.x = x+ox
+  cursor.y = y+oy
 end
 
 function cursor.get()
   return {x=cursor.x,y=cursor.y}
 end
 
+local w,h = gpu.getResolution()
+
 function cursor.setBlink(blink)
   cursor.blink = blink
-  w,h = gpu.getResolution()
+  local proc = require("process")
+  if proc.isProcess() then
+    local p = proc.findByThread(coroutine.running())
+    w,h = p.io.screen.width, p.io.screen.height
+  else
+    w,h = gpu.getResolution()
+  end
 
   if cursor.x > w then
     cursor.x = 1

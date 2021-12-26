@@ -77,6 +77,20 @@ function io.read()
   cursor.setBlink(true)
   while true do
     local a,b,_,c,d = computer.pullSignal(0.5)
+    local proc = require("process")
+    if proc.isProcess() then
+      local p = proc.findByThread(coroutine.running())
+      w,h = p.io.screen.width, p.io.screen.height
+    else
+      w,h = gpu.getResolution()
+    end
+    local ox,oy = 0,0
+    if proc.isProcess() then
+      local p = proc.findByThread(coroutine.running())
+      ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
+    else
+
+    end
 
     if a == "key_down" then
       c = keyboard.keys[c]
@@ -136,15 +150,28 @@ function io.read()
 end
 
 function io.write(txt)
-  w,h = gpu.getResolution()
+  local proc = require("process")
+  if proc.isProcess() then
+    local p = proc.findByThread(coroutine.running())
+    w,h = p.io.screen.width, p.io.screen.height
+  else
+    w,h = gpu.getResolution()
+  end
+  local ox,oy = 0,0
+  if proc.isProcess() then
+    local p = proc.findByThread(coroutine.running())
+    ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
+  else
+
+  end
   if prt_x > w then
     prt_x = 1
     prt_y = prt_y + 1
   end
   if prt_y > h then
     prt_y = prt_y - 1
-    gpu.copy(1,2,w,h,0,-1)
-    gpu.fill(1,h,w,1," ")
+    gpu.copy(1+ox,2+oy,w,h,0,-1)
+    gpu.fill(1+ox,h+oy,w,1," ")
   end
   gpu.set(prt_x,prt_y,txt)
   prt_x = prt_x+string.len(txt)
@@ -159,12 +186,25 @@ end
 
 function io.writeline(txt)
   local dat = split(txt,"\n")
+  local proc = require("process")
+  if proc.isProcess() then
+    local p = proc.findByThread(coroutine.running())
+    w,h = p.io.screen.width, p.io.screen.height
+  else
+    w,h = gpu.getResolution()
+  end
+  local ox,oy = 0,0
+  if proc.isProcess() then
+    local p = proc.findByThread(coroutine.running())
+    ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
+  end
   for i=1,#dat do
     io.write(dat[i])
+
     local w,h = gpu.getResolution()
     if prt_y == h-1 then
-      gpu.copy(1,1,w,h,0,-1)
-      gpu.fill(1,h,w,1," ")
+      gpu.copy(1+ox,1+oy,w,h,0,-1)
+      gpu.fill(1+ox,h+oy,w,1," ")
     else
       prt_y = prt_y + 1
     end
@@ -172,12 +212,23 @@ function io.writeline(txt)
   end
   if #dat == 0 then
     if prt_y == h-1 then
-      gpu.copy(1,1,w,h,0,-1)
-      gpu.fill(1,h,w,1," ")
+      gpu.copy(1+ox,1+oy,w,h,0,-1)
+      gpu.fill(1+ox,h+oy,w,1," ")
     else
       prt_y = prt_y + 1
     end
     prt_x = 1
+  end
+end
+
+function io.setScreenSize(w,h)
+  local proc = require("process")
+  if proc.isProcess() then
+    local p = proc.findByThread(coroutine.running())
+    p.io.screen.width = w
+    p.io.screen.height = h
+  else
+
   end
 end
 

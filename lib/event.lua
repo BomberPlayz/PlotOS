@@ -96,6 +96,8 @@ function event.setInterval(fun, timeout)
   })
 end
 
+
+
 proc.new("TimeoutHandler", [[
 
 local event = require("event")
@@ -115,5 +117,6 @@ while true do
 end
 
 ]])
+
 
 return event

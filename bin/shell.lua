@@ -17,7 +17,7 @@ function split (inputstr, sep)
 end
 
 local gpu = require("driver").load("gpu")
-
+--io.setScreenSize(20,20)
 while true do
   gpu.setForeground(0x00FF00)
   io.write(os.getEnv("user").."@"..computerName..":")
