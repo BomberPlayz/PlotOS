@@ -196,7 +196,7 @@ package.loaded.package = package
 
  local safemode = false
 
- if bootConf.safemode.enable then
+ if bootConf.safemode.enable == "true" then
      kern_info("Safemode is enabled!", "warn")
      safemode = true
  end
