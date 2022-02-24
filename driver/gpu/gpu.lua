@@ -14,7 +14,7 @@ ret.driverProc = {}
 
 
 ret.getName = function()
-    return "MightyPirates GmbH OC GPU Driver by InPixel Inc."
+    return "MightyPirates GmbH OC GPU Driver by PixelTech Inc."
 end
 
 ret.getVersion = function()
