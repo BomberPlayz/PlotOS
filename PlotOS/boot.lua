@@ -121,6 +121,7 @@ end
 gpu.fill(1, 1, w, h, " ")
 
 function _G.kern_panic(reason)
+
     kern_info("KERNEL PANIC", "error")
     kern_info("A kernel panic occured! Traceback:", "error")
     kern_info("----------------------------------------------------", "error")
@@ -154,13 +155,13 @@ function _G.raw_dofile(file)
     end
 end
 
-local function bsod(reason, isKern)
+_G.bsod = function(reason, isKern)
     if gpu then
         gpu.setBackground(0x2665ed)
         gpu.setForeground(0xffffff)
         gpu.fill(1, 1, w, h, " ")
         gpu.set(10, 10, "Oops! Something went wrong!")
-        gpu.set(10, 11, "BSOD reason: ")
+        gpu.set(10, 11, "reason: ")
         local splitReason = split(reason, "\n")
         local kaka = 1
         for k, v in ipairs(splitReason) do
@@ -383,8 +384,14 @@ local function boot(type)
     kern_info("Running boot script "..scripts[i])
     raw_dofile(scripts[i])
   end
+    kern_info("Giving special permissions to core modules.")
+
+
   
   kern_info("Starting shell...")
+
+
+
    _G.OSSTATUS = 1
    loggingHandle = fs.open("/logs.log", "w")
    local con = splitByChunk(logsToWrite,1024)

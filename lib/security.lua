@@ -1,6 +1,8 @@
 local sec = {}
 local procPerms = {}
 
+local com = component
+
 
 function sec.attach(proc)
     local process = require("process")
@@ -53,5 +55,30 @@ function sec.attach(proc)
 
     return ret
 end
+
+function sec.requestPermission(perm)
+    local process = require("process")
+
+    local proca = process.findByThread(coroutine.running())
+    if proca then
+        if proca.security.hasPermission(perm) then
+            return true
+        end
+    end
+
+
+end
+
+function sec.hasPermission(perm)
+    local process = require("process")
+
+    local proca = process.findByThread(coroutine.running())
+    if proca then
+        return proca.security.hasPermission(perm)
+    end
+    return false
+end
+
+
 
 return sec

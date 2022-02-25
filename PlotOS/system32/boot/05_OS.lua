@@ -1,3 +1,4 @@
+local security = require("security")
 _G.os = {}
 
 os.env = {}
@@ -20,6 +21,13 @@ end
 function os.getEnv(env)
   checkArg(1,env,"string")
   return os.env[env]
+end
+
+
+
+function os.requestPermission(perm)
+  checkArg(1,perm,"string")
+
 end
 
 os.setEnv("SHELL","/bin/shell.lua")

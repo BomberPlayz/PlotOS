@@ -653,5 +653,22 @@ api.list = function(filter)
     return ret
 end
 
+api.setStatus = function(pid,status)
+    for k,v in ipairs(api.processes) do
+        if v.pid == pid then
+            v.status = status
+        end
+    end
+    return false
+end
+
+api.suspend = function(pid)
+    api.setStatus(pid, "suspended")
+end
+
+api.resume = function(pid)
+    api.setStatus(pid, "running")
+end
+
 
 return api
