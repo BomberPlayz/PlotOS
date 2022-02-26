@@ -10,6 +10,14 @@ local function screenshot()
         end
     end
 
+    function screen.loop(func)
+        for y=1,#screen do
+            for x=1,#screen[y] do
+               func(x,y,screen[y][x])
+            end
+        end
+    end
+
     return screen
 end
 

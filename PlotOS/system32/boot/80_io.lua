@@ -178,6 +178,8 @@ function io.write(txt)
 end
 
 local function split(string,sep)
+  string = tostring(string)
+  sep = tostring(sep)
   local sep, fields = sep or ":", {}
   local pattern = string.format("([^%s]+)", sep)
   string:gsub(pattern, function(c) fields[#fields+1] = c end)
