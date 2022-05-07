@@ -70,7 +70,7 @@ function _G.kern_info(msg, state)
                     num ..
                         "" ..
                             string.rep(" ", OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2) - (num_width / 2)) ..
-                                "] " .. "[   OK   ]"
+                                "] " .. "[OK]"
         c = 0x10ff10
     elseif state == "warn" then
         c = 0xff10ff
@@ -81,7 +81,7 @@ function _G.kern_info(msg, state)
                     num ..
                         "" ..
                             string.rep(" ", OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2) - (num_width / 2)) ..
-                                "] " .. "[  WARN  ]"
+                                "] " .. "[WARN]"
     elseif state == "error" then
         c = 0xff1010
         pre =
@@ -91,7 +91,7 @@ function _G.kern_info(msg, state)
                     num ..
                         "" ..
                             string.rep(" ", OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2) - (num_width / 2)) ..
-                                "] " .. "[ ERROR  ]"
+                                "] " .. "[ERROR]"
     end
     if OSSTATUS < 1 then
         logsToWrite = logsToWrite .. pre .. " " .. msg .. "\n"
@@ -268,7 +268,7 @@ local doBootSelection = false
 local try = 0
 gpu.set(1,h, "Press delete to enter boot selection")
 while true do
-  if try > 6 then break end
+  if try > 4 then break end
   local ev,_,_,key = computer.pullSignal(0.5)
   if ev == "key_down" then
     if key == 211 then

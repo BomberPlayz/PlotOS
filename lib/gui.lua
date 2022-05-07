@@ -81,40 +81,33 @@ local disabledCodeMap = {
     delete = true
 }
 
-function gui.isObstructed(_, object)
-    -- check if the object is obstructed by checking if coordinates overlap. If yes, return true, else return fals
 
-    for i, loopObj in pairs(object.parent.children) do
-        if
-            (loopObj ~= object) and (i > object._parentIndex) and
-            (loopObj.x <= object.x + object.width) and
-            (loopObj.x >= object.x) and
-            (loopObj.y <= object.y + object.height) and
-            (loopObj.y >= object.y)
-         then
-            return true
-        end
-    end
-    return false
-end
 
 function gui.isObstructedAt(object, x, y)
     -- check if the object is obstructer by checking if coordinates overlap.
 
+    --print("obj = " .. object.x .. "," .. object.y .. "," .. object.width .. "," .. object.height)
+
+    gpu.set(1,1,"Check X: " .. x .. " Y: " .. y)
+
     for i, loopObj in pairs(object.parent.children) do
         if
-            (loopObj ~= object) and (i > object._parentIndex) and
-            (loopObj.x <= x + object.width) and
-            (loopObj.x >= x) and
-            (loopObj.y <= y + object.height) and
-            (loopObj.y >= y)
-         then
+        (loopObj ~= object) and (i > object._parentIndex) and
+                (loopObj.gx <= x + object.width) and
+                (loopObj.gx >= x) and
+                (loopObj.gy <= y + object.height) and
+                (loopObj.gy >= y)
+        then
+            gpu.set(1,2,"Obstructed")
             return true
         end
     end
+
+    gpu.set(1,2,"Not Obstructed")
+    return false
 end
 
-local isObstructed = gui.isObstructed
+
 
 gui.isInRect = function(x, y, w, h, px, py)
     --print("x: "..x.." y: "..y.." mx: "..x+w.." my: "..y+h.." mousex: "..gui.cx.." mousey: "..gui.cy)
@@ -131,6 +124,10 @@ gui.component = function()
 
     obj.x = 0
     obj.y = 0
+
+    obj.gx = 0
+    obj.gy = 0
+
     obj.width = 1
     obj.height = 1
     obj.dirty = true
@@ -208,9 +205,12 @@ gui.container = function(x, y, w, h)
         --buf.setBackground(0x000000)
         --buf.fill(obj.x,obj.y,obj.width,obj.height," ")
         end
+        --gpu.setBackground(obj.x*obj.y/obj.width*obj.height)
         for k, v in ipairs(obj.children) do
             v.x = v.x + obj.x
             v.y = v.y + obj.y
+            v.gx = v.x + obj.x
+            v.gy = v.y + obj.y
             if v.dirty then
             end
             v._draw(buf)
@@ -653,6 +653,8 @@ gui.window = function(x, y, w, h, title)
             if object.visible then
                 object.x = object.x + obj.titlebar.x
                 object.y = object.y + obj.titlebar.y
+                object.gx = object.x + obj.titlebar.x
+                object.gy = object.y + obj.titlebar.y
                 if
                     gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
                         gui.cy <= object.y + object.height
@@ -678,6 +680,8 @@ gui.window = function(x, y, w, h, title)
             if object.visible then
                 object.x = object.x + obj.titlebar.x
                 object.y = object.y + obj.titlebar.y
+                object.gx = object.x + obj.titlebar.x
+                object.gy = object.y + obj.titlebar.y
                 if
                     gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
                         gui.cy <= object.y + object.height
@@ -702,6 +706,8 @@ gui.window = function(x, y, w, h, title)
             if object.visible then
                 object.x = object.x + obj.titlebar.x
                 object.y = object.y + obj.titlebar.y
+                object.gx = object.x + obj.titlebar.x
+                object.gy = object.y + obj.titlebar.y
                 if
                     gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
                         gui.cy <= object.y + object.height
@@ -749,6 +755,8 @@ gui.window = function(x, y, w, h, title)
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
+                object.gx = object.x + obj.x
+                object.gy = object.y + obj.y
                 if
                     gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
                         gui.cy <= object.y + object.height
@@ -789,6 +797,8 @@ gui.window = function(x, y, w, h, title)
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
+                object.gx = object.x + obj.x
+                object.gy = object.y + obj.y
                 if
                     gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
                         gui.cy <= object.y + object.height
@@ -828,6 +838,8 @@ gui.window = function(x, y, w, h, title)
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
+                object.gx = object.x + obj.x
+                object.gy = object.y + obj.y
                 if
                     gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
                         gui.cy <= object.y + object.height
