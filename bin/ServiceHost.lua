@@ -1,0 +1,3 @@
+local args = ...
+local service = args[1]
+
