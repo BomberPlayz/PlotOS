@@ -46,6 +46,12 @@ function api.new(w,h,proxy)
     ret.width = w
     ret.height = h
     ret.dirty = true
+    ret.mask = {
+        x = 1,
+        y = 1,
+        w = w,
+        h = h
+    }
 
     --p is the opacity
     function ret.calcTransparency(c1,c2,p)
@@ -61,6 +67,15 @@ function api.new(w,h,proxy)
         return bit32.lshift(r, 16) + bit32.lshift(g,8) + b
     end
 
+    function ret.setMask(x,y,w,h)
+        ret.mask = {
+            x = x,
+            y = y,
+            w = w,
+            h = h
+        }
+    end
+
     ret.index = function(x,y)
         return x + ((y-1)*ret.width)
     end
@@ -74,6 +89,9 @@ function api.new(w,h,proxy)
     ret.lastbuffer = table.pack(table.unpack(ret.buffer))
     
     ret.set = function(x,y,char,opacity)
+
+        if x < ret.mask.x or x > ret.mask.x + ret.mask.w - 1 or y < ret.mask.y or y > ret.mask.y + ret.mask.h - 1 then return end
+
         local chor = char
         for i=1,char:len() do
             local coco = ret.buffer[ret.index(x+i-1,y)]
@@ -92,6 +110,15 @@ function api.new(w,h,proxy)
     end
 
     ret.fill = function(sx,sy,ex,ey,char,opacity)
+
+        -- optimization: we make only draw what is in the mask
+        if sx < ret.mask.x then sx = ret.mask.x end
+        if sy < ret.mask.y then sy = ret.mask.y end
+        if sx + ex - 1 > ret.mask.x + ret.mask.w - 1 then ex = ret.mask.x + ret.mask.w - sx end
+        if sy + ey - 1 > ret.mask.y + ret.mask.h - 1 then ey = ret.mask.y + ret.mask.h - sy end
+
+
+
         for x=sx,sx+ex-1 do
             for y = sy, sy+ey-1 do
                 ret.set(x,y,char,opacity)

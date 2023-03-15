@@ -18,7 +18,7 @@ else
     end
 end
 
-local noco = 0
+--[[local noco = 0
 while true do
     if #proc.processes < 1 then
         noco = noco + 1
@@ -30,4 +30,4 @@ while true do
         break
     end
     computer.pullSignal(0)
-end
+end]]

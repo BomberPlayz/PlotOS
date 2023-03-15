@@ -49,6 +49,8 @@ gui.component = function()
 
     obj.x = 0
     obj.y = 0
+    obj.gx = 0
+    obj.gy = 0
     obj.width = 1
     obj.height = 1
     obj.dirty = true
@@ -121,6 +123,8 @@ gui.container = function(x,y,w,h)
         for k,v in ipairs(obj.children) do
             v.x = v.x + obj.x
             v.y = v.y + obj.y
+            v.gx = v.x
+            v.gy = v.y
             if v.dirty then
                 v._draw(buf)
 
@@ -147,6 +151,8 @@ gui.container = function(x,y,w,h)
             local v = obj.children[k]
             v.x = v.x + obj.x
             v.y = v.y + obj.y
+            v.gx = v.x
+            v.gy = v.y
             v._tick()
             v.x = v.x - obj.x
             v.y = v.y - obj.y
