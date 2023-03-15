@@ -48,11 +48,18 @@ function _G.kern_info(msg, state)
     if type(msg) ~= "string" then
         return
     end
+    -- check for \n\r and replace with \n
+    msg = msg:gsub("\n\r", "\n")
+    msg = msg:gsub("\r\n", "\n")
     if #split(msg, "\n") > 1 then
-        for k, v in ipairs(split(msg, "\n\r")) do
+        for k, v in ipairs(split(msg, "\n")) do
             kern_info(v, state)
         end
     end
+
+    -- replace all tabs (\t) with 4 spaces
+    msg = msg:gsub("\t", "    ")
+
     local lc = gpu.getForeground()
     local c = 0xffffff
     local pre = "[" .. computer.uptime() - OS_LOGGING_START_TIME .. "] "
@@ -169,7 +176,7 @@ _G.bsod = function(reason, isKern)
             kaka = k
         end
         gpu.set(10, 12 + kaka + 1, "Details:")
-        local splitTrace = split(debug.traceback(), "\n")
+        local splitTrace = split(debug.traceback(), "\n\r\t")
         local ka = 1
         for k, v in ipairs(splitTrace) do
             gpu.set(10, 13 + ka + kaka, v)
@@ -268,7 +275,7 @@ local doBootSelection = false
 local try = 0
 gpu.set(1,h, "Press delete to enter boot selection")
 while true do
-  if try > 4 then break end
+  if try > 2 then break end
   local ev,_,_,key = computer.pullSignal(0.5)
   if ev == "key_down" then
     if key == 211 then
@@ -310,6 +317,7 @@ local function boot(type)
    if bootConfHandle then
        data = bootConfHandle:read(math.huge)
        bootConfHandle:close()
+
    end
    local bootConf = ini.decode(data)
   
@@ -391,7 +399,6 @@ local function boot(type)
   kern_info("Starting shell...")
 
 
-
    _G.OSSTATUS = 1
    loggingHandle = fs.open("/logs.log", "w")
    local con = splitByChunk(logsToWrite,1024)
@@ -401,6 +408,7 @@ local function boot(type)
   
   --os.sleep(2)
   require("screen").clear()
+
   
   
   
@@ -440,7 +448,10 @@ local function boot(type)
   process.autoTick()
 end
 
-boot(bootType)
+local ok, err = pcall(boot, bootType)
+if not ok then
+    kern_panic("Critical system failure")
+end
 
 computer.beep(1000)
 kern_panic("System halted!")

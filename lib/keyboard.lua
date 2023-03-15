@@ -2,7 +2,7 @@ local keyboard = {pressedChars = {}, pressedCodes = {}}
 
 keyboard.event = require("event").emitter()
 
-require("process").new("KeyboardInterrupts", [[
+local kp = require("process").new("KeyboardInterrupts", [[
   local kb = require("keyboard")
   while true do
     local _,_,_,key = require("event").pull("key_down")
@@ -13,6 +13,10 @@ require("process").new("KeyboardInterrupts", [[
     end
   end
 ]],{["*"]=true})
+
+kp.on("exit", function()
+  bsod("CRITICAL_PROCESS_DIED")
+end)
 
 keyboard.keys = {
   ["1"]           = 0x02,

@@ -32,3 +32,5 @@ end
 
 os.setEnv("SHELL","/bin/shell.lua")
 os.setEnv("BOOT","/sys/system32")
+os.setEnv("PATH","/bin")
+os.setEnv("LIB_PATH","/lib")

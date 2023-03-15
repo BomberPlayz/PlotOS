@@ -56,6 +56,20 @@ function sec.attach(proc)
     return ret
 end
 
+function sec.requestPermissions(perms)
+    local process = require("process")
+
+    local proca = process.findByThread(coroutine.running())
+    if proca then
+        for k, v in pairs(perms) do
+            if proca.security.hasPermission(v) then
+                return true
+            end
+        end
+
+    end
+end
+
 function sec.requestPermission(perm)
     local process = require("process")
 

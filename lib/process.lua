@@ -298,7 +298,29 @@ end
 api.new = function(name, code, perms,inService,...)
 
 
-    local ret = {}
+    local ret = {  }
+    ret.listeners = {}
+    ret.on = function(event, callback)
+        table.insert(ret.listeners, {
+            event=event,
+            callback=callback
+        })
+    end
+    ret.off = function(event, callback)
+        for k,v in pairs(ret.listeners) do
+            if v.event == event and v.callback == callback then
+                table.remove(ret.listeners, k)
+            end
+        end
+    end
+    ret.emit = function(event, ...)
+        for k,v in pairs(ret.listeners) do
+            if v.event == event then
+                v.callback(...)
+            end
+        end
+    end
+
 
 
 
@@ -374,6 +396,13 @@ api.new = function(name, code, perms,inService,...)
         self.status = "dead"
 
     end
+
+    function ret:getStatus()
+        return self.status
+    end
+
+
+
     security.attach(ret)
 
     if api.isProcess() and not forceRoot then
@@ -510,18 +539,20 @@ api.tickProcess = function(v)
 
 
 
+
         end
     elseif v.status == "dead" then
         table.insert(toRemoveFromProc, v)
     elseif v.status == "dying" then
        -- print(v.name.." dead: "..v.err)
-
+        v.emit("exit")
+        kern_info("Process with name "..v.name.." with pid "..v.pid.." has died: "..v.err)
         v.io.signal.pull = {}
         v.io.signal.queue = {}
         v.err = ""
         v.lastCpuTime = 0
         v.status = "dead"
-        kern_info("Process with name "..v.name.." with pid "..v.pid.." has died")
+
 
     end
 end
