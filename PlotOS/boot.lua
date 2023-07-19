@@ -74,7 +74,7 @@ function _G.kern_info(msg, state)
     if state == "info" then
         pre =
             "[" ..
-            string.rep(" ", OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2)) ..
+            string.rep(" ", math.floor(OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2))) ..
                 "" ..
                     num ..
                         "" ..
@@ -85,7 +85,7 @@ function _G.kern_info(msg, state)
         c = 0xff10ff
         pre =
             "[" ..
-            string.rep(" ", OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2)) ..
+            string.rep(" ", math.floor(OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2))) ..
                 "" ..
                     num ..
                         "" ..
@@ -95,7 +95,7 @@ function _G.kern_info(msg, state)
         c = 0xff1010
         pre =
             "[" ..
-            string.rep(" ", OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2)) ..
+            string.rep(" ", math.floor(OS_LOGGING_MAX_NUM_WIDTH - (num_width / 2))) ..
                 "" ..
                     num ..
                         "" ..
