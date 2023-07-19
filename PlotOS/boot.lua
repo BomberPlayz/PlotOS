@@ -30,6 +30,7 @@ end
 
 local gpu = component.proxy(component.list("gpu")())
 local fs = component.proxy(computer.getBootAddress())
+local rawfs = fs
 local w, h = gpu.getResolution()
 _G.rawFs = fs
 local x = 1
@@ -55,6 +56,7 @@ function _G.kern_info(msg, state)
         for k, v in ipairs(split(msg, "\n")) do
             kern_info(v, state)
         end
+        return
     end
 
     -- replace all tabs (\t) with 4 spaces
@@ -127,14 +129,96 @@ end
 
 gpu.fill(1, 1, w, h, " ")
 
+local ropen = fs.open
+local rwrite = fs.write
+local rclose = fs.close
+
 function _G.kern_panic(reason)
+
+
 
     kern_info("KERNEL PANIC", "error")
     kern_info("A kernel panic occured! Traceback:", "error")
     kern_info("----------------------------------------------------", "error")
-    kern_info(debug.traceback(), "error")
+
+    -- use debug to get traceback
+    function get_trace()
+        local level = 2
+        local trace = ""
+        while true do
+            local info = debug.getinfo(level, "Sln")
+            if not info then
+                break
+            end
+            if #info.what > 16 then
+                break
+            end
+            if info.what == "C" then
+                trace = trace .. tostring(level) .. ": C function\n"
+            else
+                trace = trace .. string.format("%s: in function '%s'\n", tostring(level), tostring(info.name or ""))
+            end
+            if info.source then
+                trace = trace .. "\tsource: " .. tostring(info.source) .. "\n"
+            end
+            if info.short_src then
+                trace = trace .. "\tshort_src: " .. tostring(info.short_src) .. "\n"
+            end
+            if info.linedefined then
+                trace = trace .. "\tlinedefined: " .. tostring(info.linedefined) .. "\n"
+            end
+            if info.currentline then
+                trace = trace .. "\tcurrentline: " .. tostring(info.currentline) .. "\n"
+            end
+            level = level + 1
+        end
+        return trace
+    end
+    kern_info(get_trace(), "error")
+    kern_info("----------------------------------------------------", "error")
+    kern_info("Variable dump:", "error")
+    kern_info("----------------------------------------------------", "error")
+    -- use debug to get all variables
+    function get_vars()
+        local vars = ""
+        local level = 2
+        while true do
+            local i = 1
+            while true do
+                local name, value = debug.getlocal(level, i)
+                if not name then
+                    break
+                end
+                vars = vars .. "\t" .. tostring(name) .. " = " .. tostring(value) .. "\n"
+                i = i + 1
+            end
+            level = level + 1
+            if not debug.getinfo(level) then
+                break
+            end
+        end
+        return vars
+    end
+    kern_info(get_vars(), "error")
     kern_info("----------------------------------------------------", "error")
     kern_info("Panic reason: " .. reason, "error")
+    -- save logs
+    -- use the raw filesystem API to avoid any errors
+    function save()
+       --[[ local handle = ropen("/logs.log", "w")
+        rwrite(handle, logsToWrite)
+        rclose(handle)]]
+        local handle = component_invoke(computer.getBootAddress(), "open", "/logs.log", "w")
+        component_invoke(computer.getBootAddress(), "write", handle, logsToWrite)
+        component_invoke(computer.getBootAddress(), "close", handle)
+
+        kern_info("Logs saved to /logs.log", "error")
+    end
+    local ok, err = pcall(save)
+    if not ok then
+        kern_info("Failed to save logs: " .. err, "error")
+    end
+
     while true do
         pcps()
     end
@@ -445,13 +529,14 @@ local function boot(type)
        kern_info("Safemode is enabled, skipping autorun.","warn")
    end
   
-  process.autoTick()
+  xpcall(process.autoTick, function(e) bsod(e) end)
 end
 
-local ok, err = pcall(boot, bootType)
+--[[local ok, err = pcall(boot, bootType)
 if not ok then
     kern_panic("Critical system failure")
-end
+end]]
+xpcall(boot, function(e) kern_panic(e) end, bootType)
 
 computer.beep(1000)
 kern_panic("System halted!")

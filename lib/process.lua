@@ -18,274 +18,19 @@ local _signal = nil
 
 
 
+local function findByThread_rep(v, thread)
+    for _,process in ipairs(v) do
+        if process.thread == thread then
+            return process
+        elseif #process.processes > 0 then
+            local t = findByThread_rep(process.processes, thread)
+            if t then return t end
+        end
+    end
+end
 
 api.findByThread = function(thread)
-    -- SHITTY CODE
-    for k=1,#api.processes do
-        --os.sleep(0)
-        local v = api.processes[k]
-        --component.gpu.set(1,1,"k: "..k)
-        if v.thread == thread then
-
-            return v
-        end
-        if #v.processes > 0 then
-            for k=1,#v.processes do
-                --os.sleep(0)
-                local v = v.processes[k]
-                --component.gpu.set(1,1,"k: "..k)
-                if v.thread == thread then
-
-                    return v
-                end
-                if #v.processes > 0 then
-                    for k=1,#v.processes do
-                        --os.sleep(0)
-                        local v = v.processes[k]
-                        --component.gpu.set(1,1,"k: "..k)
-                        if v.thread == thread then
-
-                            return v
-                        end
-                        if #v.processes > 0 then
-                            for k=1,#v.processes do
-                                --os.sleep(0)
-                                local v = v.processes[k]
-                                --component.gpu.set(1,1,"k: "..k)
-                                if v.thread == thread then
-
-                                    return v
-                                end
-                                if #v.processes > 0 then
-                                    for k=1,#v.processes do
-                                        --os.sleep(0)
-                                        local v = v.processes[k]
-                                        --component.gpu.set(1,1,"k: "..k)
-                                        if v.thread == thread then
-
-                                            return v
-                                        end
-                                        if #v.processes > 0 then
-                                            for k=1,#v.processes do
-                                                --os.sleep(0)
-                                                local v = v.processes[k]
-                                                --component.gpu.set(1,1,"k: "..k)
-                                                if v.thread == thread then
-
-                                                    return v
-                                                end
-                                                if #v.processes > 0 then
-                                                    for k=1,#v.processes do
-                                                        --os.sleep(0)
-                                                        local v = v.processes[k]
-                                                        --component.gpu.set(1,1,"k: "..k)
-                                                        if v.thread == thread then
-
-                                                            return v
-                                                        end
-                                                        if #v.processes > 0 then
-                                                            for k=1,#v.processes do
-                                                                --os.sleep(0)
-                                                                local v = v.processes[k]
-                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                if v.thread == thread then
-
-                                                                    return v
-                                                                end
-                                                                if #v.processes > 0 then
-                                                                    for k=1,#v.processes do
-                                                                        --os.sleep(0)
-                                                                        local v = v.processes[k]
-                                                                        --component.gpu.set(1,1,"k: "..k)
-                                                                        if v.thread == thread then
-
-                                                                            return v
-                                                                        end
-                                                                        if #v.processes > 0 then
-                                                                            for k=1,#v.processes do
-                                                                                --os.sleep(0)
-                                                                                local v = v.processes[k]
-                                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                                if v.thread == thread then
-
-                                                                                    return v
-                                                                                end
-                                                                                if #v.processes > 0 then
-                                                                                    for k=1,#v.processes do
-                                                                                        --os.sleep(0)
-                                                                                        local v = v.processes[k]
-                                                                                        --component.gpu.set(1,1,"k: "..k)
-                                                                                        if v.thread == thread then
-
-                                                                                            return v
-                                                                                        end
-                                                                                        if #v.processes > 0 then
-                                                                                            for k=1,#v.processes do
-                                                                                                --os.sleep(0)
-                                                                                                local v = v.processes[k]
-                                                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                                                if v.thread == thread then
-
-                                                                                                    return v
-                                                                                                end
-                                                                                                if #v.processes > 0 then
-                                                                                                    for k=1,#v.processes do
-                                                                                                        --os.sleep(0)
-                                                                                                        local v = v.processes[k]
-                                                                                                        --component.gpu.set(1,1,"k: "..k)
-                                                                                                        if v.thread == thread then
-
-                                                                                                            return v
-                                                                                                        end
-                                                                                                        if #v.processes > 0 then
-                                                                                                            for k=1,#v.processes do
-                                                                                                                --os.sleep(0)
-                                                                                                                local v = v.processes[k]
-                                                                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                                                                if v.thread == thread then
-
-                                                                                                                    return v
-                                                                                                                end
-                                                                                                                if #v.processes > 0 then
-                                                                                                                    for k=1,#v.processes do
-                                                                                                                        --os.sleep(0)
-                                                                                                                        local v = v.processes[k]
-                                                                                                                        --component.gpu.set(1,1,"k: "..k)
-                                                                                                                        if v.thread == thread then
-
-                                                                                                                            return v
-                                                                                                                        end
-                                                                                                                        if #v.processes > 0 then
-                                                                                                                            for k=1,#v.processes do
-                                                                                                                                --os.sleep(0)
-                                                                                                                                local v = v.processes[k]
-                                                                                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                                                                                if v.thread == thread then
-
-                                                                                                                                    return v
-                                                                                                                                end
-                                                                                                                                if #v.processes > 0 then
-                                                                                                                                    for k=1,#v.processes do
-                                                                                                                                        --os.sleep(0)
-                                                                                                                                        local v = v.processes[k]
-                                                                                                                                        --component.gpu.set(1,1,"k: "..k)
-                                                                                                                                        if v.thread == thread then
-
-                                                                                                                                            return v
-                                                                                                                                        end
-                                                                                                                                        if #v.processes > 0 then
-                                                                                                                                            for k=1,#v.processes do
-                                                                                                                                                --os.sleep(0)
-                                                                                                                                                local v = v.processes[k]
-                                                                                                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                                                                                                if v.thread == thread then
-
-                                                                                                                                                    return v
-                                                                                                                                                end
-                                                                                                                                                if #v.processes > 0 then
-                                                                                                                                                    for k=1,#v.processes do
-                                                                                                                                                        --os.sleep(0)
-                                                                                                                                                        local v = v.processes[k]
-                                                                                                                                                        --component.gpu.set(1,1,"k: "..k)
-                                                                                                                                                        if v.thread == thread then
-
-                                                                                                                                                            return v
-                                                                                                                                                        end
-                                                                                                                                                        if #v.processes > 0 then
-                                                                                                                                                            for k=1,#v.processes do
-                                                                                                                                                                --os.sleep(0)
-                                                                                                                                                                local v = v.processes[k]
-                                                                                                                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                                                                                                                if v.thread == thread then
-
-                                                                                                                                                                    return v
-                                                                                                                                                                end
-                                                                                                                                                                if #v.processes > 0 then
-                                                                                                                                                                    for k=1,#v.processes do
-                                                                                                                                                                        --os.sleep(0)
-                                                                                                                                                                        local v = v.processes[k]
-                                                                                                                                                                        --component.gpu.set(1,1,"k: "..k)
-                                                                                                                                                                        if v.thread == thread then
-
-                                                                                                                                                                            return v
-                                                                                                                                                                        end
-                                                                                                                                                                        if #v.processes > 0 then
-                                                                                                                                                                            for k=1,#v.processes do
-                                                                                                                                                                                --os.sleep(0)
-                                                                                                                                                                                local v = v.processes[k]
-                                                                                                                                                                                --component.gpu.set(1,1,"k: "..k)
-                                                                                                                                                                                if v.thread == thread then
-
-                                                                                                                                                                                    return v
-                                                                                                                                                                                end
-                                                                                                                                                                                if #v.processes > 0 then
-
-                                                                                                                                                                                end
-
-                                                                                                                                                                            end
-                                                                                                                                                                        end
-
-                                                                                                                                                                    end
-                                                                                                                                                                end
-
-                                                                                                                                                            end
-                                                                                                                                                        end
-
-                                                                                                                                                    end
-                                                                                                                                                end
-
-                                                                                                                                            end
-                                                                                                                                        end
-
-                                                                                                                                    end
-                                                                                                                                end
-
-                                                                                                                            end
-                                                                                                                        end
-
-                                                                                                                    end
-                                                                                                                end
-
-                                                                                                            end
-                                                                                                        end
-
-                                                                                                    end
-                                                                                                end
-
-                                                                                            end
-                                                                                        end
-
-                                                                                    end
-                                                                                end
-
-                                                                            end
-                                                                        end
-
-                                                                    end
-                                                                end
-
-                                                            end
-                                                        end
-
-                                                    end
-                                                end
-
-                                            end
-                                        end
-
-                                    end
-                                end
-
-                            end
-                        end
-
-                    end
-                end
-
-            end
-        end
-
-    end
+    return findByThread_rep(api.processes, thread)
 end
 
 api.isProcess = function()
@@ -476,10 +221,11 @@ api.tickProcess = function(v)
                         table.remove(v.io.signal.queue,1)
                     end
                     local st = computer.uptime()*1000
-                    local reta, ee = coroutine.resume(v.thread, table.unpack(v.args))
-                    if not reta then
-                        v.err = ee or "Died"
+                    local reta  = {coroutine.resume(v.thread, table.unpack(v.args))}
+                    if not reta[1] then
+                        v.err = syscall[2] or "Died"
                     end
+
                     local et = computer.uptime()*1000
                     v.lastCpuTime = et/1000-st/1000
                     for kk,vv in ipairs(v.processes) do
@@ -514,10 +260,31 @@ api.tickProcess = function(v)
                 end
 
                 local st = computer.uptime()*1000
-                local reta, ee = coroutine.resume(v.thread, table.unpack(v.args))
-                if not reta then
-                    v.err = ee or "Died"
+                local reta = { coroutine.resume(v.thread, table.unpack(v.sysret or v.args)) }
+                if not reta[1] then
+                    v.err = reta[2] or "Died"
                 end
+
+                table.remove(reta,1)
+                if reta[1] ~= nil then
+                    local syscall = table.remove(reta,1)
+                    local args = reta
+                    if syscall == "driver" then
+                        if not driverCache[args[1]] then
+                            local drv = require("driver").load(args[1])
+                            driverCache[args[1]] = drv
+                        end
+                        if driverCache[args[1]] then
+                            local fn = driverCache[args[1]][args[2]]
+                            table.remove(args,1)
+                            table.remove(args,1)
+                            local ret = fn(table.unpack(args))
+                            v.sysret = ret
+
+                        end
+                    end
+                end
+
                 local et = computer.uptime()*1000
                 v.lastCpuTime = et/1000-st/1000
                 for kk,vv in ipairs(v.processes) do
