@@ -15,22 +15,17 @@ local function setfenv(f, env)
 end
 local _signal = nil
 
+api.findByThread = function(thread, process) --process is optional
+    process = process or api.processes
 
-
-
-local function findByThread_rep(v, thread)
-    for _,process in ipairs(v) do
-        if process.thread == thread then
-            return process
-        elseif #process.processes > 0 then
-            local t = findByThread_rep(process.processes, thread)
+    for _,subProcess in ipairs(process) do
+        if subProcess.thread == thread then
+            return subProcess
+        elseif #subProcess.processes > 0 then
+            local t = api.findByThread(thread, subProcess.processes)
             if t then return t end
         end
     end
-end
-
-api.findByThread = function(thread)
-    return findByThread_rep(api.processes, thread)
 end
 
 api.isProcess = function()
