@@ -142,39 +142,7 @@ function _G.kern_panic(reason)
     kern_info("----------------------------------------------------", "error")
 
     -- use debug to get traceback
-    function get_trace()
-        local level = 2
-        local trace = ""
-        while true do
-            local info = debug.getinfo(level, "Sln")
-            if not info then
-                break
-            end
-            if #info.what > 16 then
-                break
-            end
-            if info.what == "C" then
-                trace = trace .. tostring(level) .. ": C function\n"
-            else
-                trace = trace .. string.format("%s: in function '%s'\n", tostring(level), tostring(info.name or ""))
-            end
-            if info.source then
-                trace = trace .. "\tsource: " .. tostring(info.source) .. "\n"
-            end
-            if info.short_src then
-                trace = trace .. "\tshort_src: " .. tostring(info.short_src) .. "\n"
-            end
-            if info.linedefined then
-                trace = trace .. "\tlinedefined: " .. tostring(info.linedefined) .. "\n"
-            end
-            if info.currentline then
-                trace = trace .. "\tcurrentline: " .. tostring(info.currentline) .. "\n"
-            end
-            level = level + 1
-        end
-        return trace
-    end
-    kern_info(get_trace(), "error")
+    kern_info(debug.traceback("", 2), "error")
     kern_info("----------------------------------------------------", "error")
     kern_info("Variable dump:", "error")
     kern_info("----------------------------------------------------", "error")
@@ -200,7 +168,43 @@ function _G.kern_panic(reason)
         return vars
     end
     kern_info(get_vars(), "error")
+    -- also dump all globals, right here
+    function get_globals()
+        local vars = ""
+        for k, v in pairs(_G) do
+            vars = vars .. "\t" .. tostring(k) .. " = " .. tostring(v) .. "\n"
+        end
+        return vars
+    end
+    kern_info(get_globals(), "error")
     kern_info("----------------------------------------------------", "error")
+    kern_info("Hardware info:", "error")
+    kern_info("----------------------------------------------------", "error")
+    kern_info("CPU: " .. computer.getArchitecture(), "error")
+    kern_info("RAM: " .. tostring(math.floor(computer.totalMemory() / 1024)) .. " KB", "error")
+    kern_info("GPU: " .. tostring(gpu.maxResolution()) .. "x" .. tostring(gpu.maxResolution()), "error")
+    kern_info("----------------------------------------------------", "error")
+    kern_info("Connected components:", "error")
+    function get_components()
+        local vars = ""
+        for k, v in pairs(component.list()) do
+            vars = vars .. "\t" .. tostring(k) .. " = " .. tostring(v) .. "\n"
+        end
+        return vars
+    end
+    kern_info(get_components(), "error")
+    kern_info("----------------------------------------------------", "error")
+    kern_info("System info:", "error")
+    kern_info("----------------------------------------------------", "error")
+    kern_info("OS: " .. OSNAME .. " " .. OSVERSION, "error")
+    kern_info("OS Status: " .. tostring(OSSTATUS), "error")
+    kern_info("----------------------------------------------------", "error")
+    kern_info("System time: " .. tostring(computer.uptime()), "error")
+    kern_info("System uptime: " .. tostring(computer.uptime()), "error")
+    kern_info("----------------------------------------------------", "error")
+    kern_info("System boot address: " .. tostring(computer.getBootAddress()), "error")
+    kern_info("System address: " .. tostring(computer.address()), "error")
+
     kern_info("Panic reason: " .. reason, "error")
     -- save logs
     -- use the raw filesystem API to avoid any errors
@@ -246,7 +250,7 @@ function _G.raw_dofile(file)
     end
 end
 
-_G.bsod = function(reason, isKern)
+_G.bsod = function(reason, isKern, stack)
     if gpu then
         gpu.setBackground(0x2665ed)
         gpu.setForeground(0xffffff)
@@ -260,7 +264,8 @@ _G.bsod = function(reason, isKern)
             kaka = k
         end
         gpu.set(10, 12 + kaka + 1, "Details:")
-        local splitTrace = split(debug.traceback(), "\n\r\t")
+        if stack == nil then stack = debug.traceback("", 2) end
+        local splitTrace = split(stack, "\n\r\t")
         local ka = 1
         for k, v in ipairs(splitTrace) do
             gpu.set(10, 13 + ka + kaka, v)
@@ -437,6 +442,7 @@ local function boot(type)
            kern_info("Giving direct component proxy access to driver "..ka..k)
            --computer.pullSignal(0.5)
            local d = driver.getDriver(ka..k)
+           kern_info("Driver "..ka..k.." is "..d.getName())
            d.cp = {
                proxy = component.proxy,
                list = component.list,
@@ -536,7 +542,10 @@ end
 if not ok then
     kern_panic("Critical system failure")
 end]]
-xpcall(boot, function(e) kern_panic(e) end, bootType)
+local ok, e = xpcall(boot, function(e) kern_panic(e) end, bootType)
+if not ok then
+    while true do pcps() end
+end
 
 computer.beep(1000)
 kern_panic("System halted!")

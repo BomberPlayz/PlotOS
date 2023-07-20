@@ -95,6 +95,8 @@ ret.new = function(adr)
     end
 
     drv.get = function(x,y)
+       -- error("terserert")
+
         return com.get(x,y)
     end
 

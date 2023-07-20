@@ -1,5 +1,7 @@
 local event = {}
+kern_info("Loading prococc library")
 local proc = require("process")
+kern_info("Loading eeee library")
 -- event#pull function. Takes a timeout and an event.
 -- Use computer.pullSignal to get an event. It takes a timeout as argument.
 -- If the timeout is nil, the function will block until an event occurs.
@@ -97,7 +99,7 @@ function event.setInterval(fun, timeout)
 end
 
 
-
+kern_info("Loading timeout handler")
 proc.new("TimeoutHandler", [[
 
 local event = require("event")
@@ -118,5 +120,5 @@ end
 
 ]])
 
-
+kern_info("Loading DONE handler")
 return event

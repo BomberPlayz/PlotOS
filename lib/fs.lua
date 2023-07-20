@@ -513,6 +513,14 @@ function filesystem.open(path, mode)
     end})
 end
 
+function filesystem.size(path)
+    local node, rest = filesystem.findNode(path)
+    if node.fs and rest then
+        return node.fs.size(rest)
+    end
+    return nil, "no such file or directory"
+end
+
 local labels = {"drivea","drivec","drived","drivee","drivef","driveg","driveh","drivei","drivej"}
 local labelRif = {}
 for k,v in ipairs(labels) do

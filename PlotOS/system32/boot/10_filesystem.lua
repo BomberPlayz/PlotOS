@@ -8,6 +8,7 @@ event.listen("component_added", function(addr, type)
         local lab = fs.getFreeLabel()
         fs.reserveLabel(lab)
         reserveList[addr] = lab
+        kern_info("New disk "..addr.." has been found")
         fs.mount(require("driver").load("drive",addr),"/"..lab)
         kern_info("New disk "..addr.." has been mounted")
     end

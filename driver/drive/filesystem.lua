@@ -7,12 +7,13 @@ ret.cp = {}
 local cp = ret.cp
 
 ret.compatible = function(adr)
-    return cp.proxy(adr).type == "filesystem"
+    --print("targonca: "..ret.cp.proxy(adr).type)
+    return ret.cp.proxy(adr).type == "filesystem"
 end
 
 
 ret.getName = function()
-    return "MightyPirates OC Managed Disk Driver by InPixel Inc."
+    return "MightyPirates Filesystem"
 end
 
 ret.getVersion = function()
@@ -23,14 +24,10 @@ local component = cp
 
 
 ret.new = function(adr)
+    kern_info(adr)
     local com = ret.cp.proxy(adr)
 
-    for k,v in pairs(methods) do
-        com[k] = v
-    end
-    for k,v in pairs(methods) do
-        com[k] = v
-    end
+
     local drv = {}
 
     drv.spaceUsed = function()
@@ -38,6 +35,7 @@ ret.new = function(adr)
     end
 
     drv.open = function(p,m)
+
         return com.open(p,m)
     end
     

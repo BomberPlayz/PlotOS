@@ -2,8 +2,11 @@ local api = {}
 api.processes = {}
 api.signal = {}
 local unusedTime = 0
+kern_info("Loading process handler")
 local security = require("security")
+kern_info("Loading GPUUUU handler")
 local gpu = require("driver").load("gpu")
+kern_info("Loading process handlereedrwsfgdsagsfdgdfs")
 local as_pid = 1
 local usedTime = 0
 local function setfenv(f, env)
@@ -37,7 +40,6 @@ end
 
 api.new = function(name, code, perms,inService,...)
 
-
     local ret = {  }
     ret.listeners = {}
     ret.on = function(event, callback)
@@ -70,7 +72,6 @@ api.new = function(name, code, perms,inService,...)
 
     --env._G = env
     --print(code)
-
     local code = load(code, "=" .. name, nil,_G)
     ret.thread = coroutine.create(code)
     ret.name = name or "not defined"
@@ -140,7 +141,6 @@ api.new = function(name, code, perms,inService,...)
     function ret:getStatus()
         return self.status
     end
-
 
 
     security.attach(ret)

@@ -6,7 +6,7 @@ ret.cp = {}
 local cp = ret.cp
 
 ret.compatible = function(adr)
-    return cp.proxy(adr).type == "sample"
+    return ret.cp.proxy(adr).type == "sample"
 end
 
 
