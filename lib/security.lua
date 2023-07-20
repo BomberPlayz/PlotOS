@@ -85,6 +85,11 @@ end
 
 function sec.hasPermission(perm)
     local process = require("process")
+    local reg = require("registry")
+
+    if reg.get("system/security/disable") == 1 then
+        return true
+    end
 
     local proca = process.findByThread(coroutine.running())
     if proca then

@@ -7,6 +7,7 @@ local security = require("security")
 kern_info("Loading GPUUUU handler")
 local gpu = require("driver").load("gpu")
 kern_info("Loading process handlereedrwsfgdsagsfdgdfs")
+local reg = require("registry")
 local as_pid = 1
 local usedTime = 0
 local function setfenv(f, env)
@@ -143,7 +144,9 @@ api.new = function(name, code, perms,inService,...)
     end
 
 
-    security.attach(ret)
+    if reg.get("system/processes/attach_security") == 1 then
+        security.attach(ret)
+    end
 
     if api.isProcess() and not forceRoot then
         local p = api.findByThread(coroutine.running())

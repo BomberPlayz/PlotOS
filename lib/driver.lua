@@ -1,5 +1,6 @@
 local ret = {}
 local fs = package.require("fs")
+local reg = package.require("registry")
 local cp = component
 ret.loaded = {}
 function ret.getDriver(path)
@@ -121,16 +122,19 @@ function newdriver(d, addr)
     dd.getDriverName = d.getName
     dd.getDriverVersion = d.getVersion
     -- wrap all methods in a xpcall so when called and errors, throws a bsod
-    for k,v in pairs(dd) do
-        if type(v) == "function" then
-            dd[k] = function(...)
-                local re = { xpcall(v, segg, ...) }
-                if not re[1] then
-                    bsod("Failed to call driver method: "..re[2], false, re[3])
+    if reg.get("system/security/driver_crash_bsod") == 1 then
+        for k,v in pairs(dd) do
+            if type(v) == "function" then
+                dd[k] = function(...)
+                    local re = { xpcall(v, segg, ...) }
+                    if not re[1] then
+                        bsod("Failed to call driver method: "..re[2], false, re[3])
+                    end
+                    return table.unpack(re, 2)
                 end
-                return table.unpack(re, 2)
             end
         end
+
     end
 
 

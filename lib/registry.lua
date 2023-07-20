@@ -20,8 +20,13 @@ local types = {
     collection = 255
 }
 
-local fs = require("fs")
+local fs = package.require("fs")
 registryPath = fs.canonical(registryPath)
+local lockPath = registryPath.."/locks"
+
+if not fs.exists(lockPath) or not fs.isDirectory(lockPath) then
+    fs.makeDirectory(lockPath)
+end
 
 function split(inputstr, sep)
     sep = sep or "%s"
@@ -30,6 +35,10 @@ function split(inputstr, sep)
         table.insert(t, str)
     end
     return t
+end
+
+function startsWith(str, prefix)
+    return string.sub(str, 1, #prefix) == prefix
 end
 
 local function parsePath(path)
@@ -46,7 +55,7 @@ local regdata
 local function readByteAsNumber(h)
     local byte = h:read(1)
     if not byte then return nil end
-    
+
     return byte:byte()
 end
 
@@ -86,7 +95,7 @@ local function parseCollection(h,fileSize,length)
 
             local name = readBytes(h,nameLength)
             totalRead = totalRead + nameLength
-            
+
             if t == types.category then
                 -- i think we can ignore it here
             elseif t == types.u8 then
@@ -185,118 +194,344 @@ local function readRegistry()
     local res = {}
 
     for category in categories do
-        res[category] = {types.category,{}}
+        if not fs.isDirectory(registryPath.."/"..category) then
+            --[[ TODO: do
+            while true do
+                local locks = fs.list(lockPath)
 
-        local rawH = fs.open(registryPath.."/"..category, "rb")
-        local size = fs.size(registryPath.."/"..category)
+                local ok = true
 
-        local h = {
-            remainingData = size,
-            cacheSize = nil,
-            cache = nil,
-            readToEnd = false,
-            readBlockSize = 1024, --cache size, dont wanna rename it
-            readMaxChunkSize = 2048,
-            read = function(self, amount) --specifying amount that overflows the file will return nil
-                if not self.cache then
-                    local availableBytes = self.readBlockSize
-
-                    if availableBytes > size then
-                        availableBytes = size
-                        self.remainingData = 0
+                for lock in locks do
+                    if lock == category..".write" then
+                        os.sleep()
+                        ok = false
+                        break
                     end
-
-                    self.cacheSize = availableBytes
-                    self.remainingData = size-availableBytes
-                    self.cache = rawH:read(availableBytes,"rb")
                 end
-
-                if self.remainingData == 0 and #self.cache == 0 then return nil end
-
-                if #self.cache >= amount then
-                    local dat = string.sub(self.cache,1,amount)
-                    self.cache = string.sub(self.cache,amount+1)
-                    return dat
-                end
-
-                if #self.cache+self.remainingData >= amount then
-                    local totalRead = #self.cache
-                    local dat = self.cache
-                    self.cache = ""
-                    while amount-totalRead > 0 do
-                        local toRead = math.max(math.min(self.readMaxChunkSize,amount-totalRead),math.min(self.remainingData,self.readBlockSize))
-                        local data = rawH:read(toRead,"rb")
-                        self.remainingData = self.remainingData - toRead
-                        
-                        totalRead = totalRead + toRead
-                        local overflow = totalRead-amount
-                        if overflow > 0 then
-                            self.cache = string.sub(data, #data-overflow+1)
-                            data = string.sub(data,1,#data-#self.cache)
-                        end
-                        dat = dat .. data
-                        data = nil
-                        overflow = nil
-                        toRead = nil                        
-                    end
-                    return dat
-                end
-
-                return nil
+                if ok then break
             end
-        }
 
-        res[category] = parseCollection(h,size,size)
 
-        rawH:close()
+            local lockName = category..".read."..string.format("%09d",math.random(0,999999999))
+
+            local f = fs.open(lockPath.."/"..lockName,"w")
+            f:write("")
+            f:close()
+            --]]
+
+            res[category] = {types.category,{}}
+
+            local rawH = fs.open(registryPath.."/"..category, "rb")
+            local size = fs.size(registryPath.."/"..category)
+
+            local h = {
+                remainingData = size,
+                cacheSize = nil,
+                cache = nil,
+                readToEnd = false,
+                readBlockSize = 1024, --cache size, dont wanna rename it
+                readMaxChunkSize = 2048,
+                read = function(self, amount) --specifying amount that overflows the file will return nil
+                    if not self.cache then
+                        local availableBytes = self.readBlockSize
+
+                        if availableBytes > size then
+                            availableBytes = size
+                            self.remainingData = 0
+                        end
+
+                        self.cacheSize = availableBytes
+                        self.remainingData = size-availableBytes
+                        self.cache = rawH:read(availableBytes,"rb")
+                    end
+
+                    if self.remainingData == 0 and #self.cache == 0 then return nil end
+
+                    if #self.cache >= amount then
+                        local dat = string.sub(self.cache,1,amount)
+                        self.cache = string.sub(self.cache,amount+1)
+                        return dat
+                    end
+
+                    if #self.cache+self.remainingData >= amount then
+                        local totalRead = #self.cache
+                        local dat = self.cache
+                        self.cache = ""
+                        while amount-totalRead > 0 do
+                            local toRead = math.max(math.min(self.readMaxChunkSize,amount-totalRead),math.min(self.remainingData,self.readBlockSize))
+                            local data = rawH:read(toRead,"rb")
+                            self.remainingData = self.remainingData - toRead
+
+                            totalRead = totalRead + toRead
+                            local overflow = totalRead-amount
+                            if overflow > 0 then
+                                self.cache = string.sub(data, #data-overflow+1)
+                                data = string.sub(data,1,#data-#self.cache)
+                            end
+                            dat = dat .. data
+                            data = nil
+                            overflow = nil
+                            toRead = nil
+                        end
+                        return dat
+                    end
+
+                    return nil
+                end
+            }
+
+            res[category] = parseCollection(h,size,size)
+
+            rawH:close()
+        end
     end
 
     regdata = res
 end
 
-local function saveRegistry(categories)
-    local toSave = {}
-    if not categories then
-        -- save all
-    else
-        -- save only specific categories
+
+function saveRegistry()
+    local categories,err = fs.list(registryPath)
+    if err then error(categories) end
+
+    for category, data in pairs(regdata) do
+        if not fs.isDirectory(category) then
+            fs.remove(registryPath.."/"..category)
+            local h = fs.open(registryPath.."/"..category, "wb")
+            local s = h
+
+            local function writeBytes(bytes)
+                s:write(bytes)
+            end
+
+            local function writeByte(byte)
+                s:write(string.char(byte))
+            end
+
+            local function writeString(str)
+                writeBytes(string.pack("<I2", #str))
+                s:write(str)
+            end
+
+            local function writeLongString(str)
+                writeBytes(string.pack("<I4", #str))
+                s:write(str)
+            end
+
+            --[[local function writeRegistryEntry(entry)
+                local t = entry[1]
+                local name = entry[2]
+
+                writeByte(t)
+                print(data)
+                writeString(name)
+
+                if t == types.u8 then
+                    writeByte(data)
+                elseif t == types.u16 then
+                    writeBytes(string.pack("<I2", data))
+                elseif t == types.u32 then
+                    writeBytes(string.pack("<I4", data))
+                elseif t == types.shortString then
+                    writeByte(#data)
+                    s.write(data)
+                elseif t == types.string then
+                    writeString(data)
+                elseif t == types.longString then
+                    writeLongString(data)
+                elseif t == types.collection then
+                    local datatowrite = ""
+                    for k,v in pairs(data) do
+                        datatowrite = datatowrite .. writeRegistryEntry(v)
+                    end
+                    writeBytes(string.pack("<I4", #datatowrite))
+                    s:write(datatowrite)
+                else
+                    error("Invalid registry type: "..t)
+                end
+            end]]
+
+            local function serializeEntry(entry, name)
+                local t = entry[1]
+                local datar = entry[2]
+
+                local data = ""
+                data = data .. string.char(t)
+                data = data .. string.char(#name)
+                data = data .. name
+
+                if t == types.u8 then
+                    data = data .. string.char(datar)
+                elseif t == types.u16 then
+                    data = data .. string.pack("<I2", datar)
+                elseif t == types.u32 then
+                    data = data .. string.pack("<I4", datar)
+                elseif t == types.s8 then
+                    data = data .. string.pack("<i1", datar) --probably optimizable, doesnt matter
+                elseif t == types.s16 then
+                    data = data .. string.pack("<i2", datar)
+                elseif t == types.s32 then
+                    data = data .. string.pack("<i4", datar)
+                elseif t == types.shortString then
+                    data = data .. string.char(#datar)
+                    data = data .. datar
+                elseif t == types.string then
+                    data = data .. string.pack("<I2", #datar)
+                    data = data .. datar
+                elseif t == types.longString then
+                    data = data .. string.pack("<I4", #datar)
+                    data = data .. datar
+                elseif t == types.collection then
+                    local datatowrite = ""
+                    for k,v in pairs(datar) do
+                        datatowrite = datatowrite .. serializeEntry(v, k)
+                    end
+                    data = data .. string.pack("<I4", #datatowrite)
+                    data = data .. datatowrite
+                else
+                    error("Invalid registry type: "..t)
+                end
+
+                return data
+            end
+
+
+            for k,v in pairs(data[2]) do
+                s:write(serializeEntry(v, k))
+            end
+
+            s:close()
+        end
     end
 end
 
-readRegistry()
 
-print(require("serialization").json.encode(regdata))
+
+kern_info("Loading registry...")
+readRegistry()
+kern_info("Registry loaded!")
+
+
+
+
+--example of the api:
+-- registry.get("current_user/themes/selected")
+-- registry.set("current_user/themes/selected", "dark")
+-- registry.set("current_user/themes/selected", "dark", "shortString")
+-- registry.exists("current_user/themes/selected")
+-- registry.delete("current_user/themes/selected")
+
+-- first element is the type, second is the data. the key is the name of the entry
 
 local registry = {}
-
-registry.createCategory = function(name, permissionLevel)
-
+function split(str, sep)
+    local result = {}
+    local regex = ("([^%s]+)"):format(sep)
+    for each in str:gmatch(regex) do
+        result[#result+1] = each
+    end
+    return result
 end
 
-registry.removeCategory = function(name)
 
+
+function registry.set(path, value, type)
+    local path = split(path, "/")
+    local current = regdata
+    local last = nil
+    for i=1, #path-1 do
+
+
+
+        if i==1 then
+            if current[path[i]] then
+                last = current
+                current = current[path[i]]
+
+            else
+                current[path[i]] = {types.collection, {}}
+                last = current
+                current = current[path[i]]
+            end
+        else
+            if current[2][path[i]] then
+                last = current
+                current = current[2][path[i]]
+
+            else
+                current[2][path[i]] = {types.collection, {}}
+                last = current
+                current = current[2][path[i]]
+            end
+        end
+    end
+    if type then
+        current[2][path[#path]] = {type, value}
+    else
+        current[2][path[#path]] = {types.string, value}
+    end
+    saveRegistry()
 end
 
-registry.exists = function(path)
-    path = parsePath(path)
-
-
+function registry.get(path)
+    local path = split(path, "/")
+    local current = regdata
+    for i=1, #path-1 do
+        if i==1 then
+            if current[path[i]] then
+                current = current[path[i]]
+            else
+                return nil
+            end
+        else
+            if current[2][path[i]] then
+                current = current[2][path[i]]
+            else
+                return nil
+            end
+        end
+    end
+    return current[2][path[#path]][2]
 end
 
-registry.getType = function(path)
+-- MIGHT NOT WORK
+function registry.exists(path)
+    local parsed = parsePath(path)
+    local category = parsed.category
+    local path = parsed.path
 
+    if regdata[category] then
+        local current = regdata[category]
+        for i=1, #path-1 do
+            if i==1 then
+                if current[path[i]] then
+                    current = current[path[i]]
+                else
+                    return false
+                end
+            else
+                if current[2][path[i]] then
+                    current = current[2][path[i]]
+                else
+                    return false
+                end
+            end
+        end
+        return true
+    else
+        return false
+    end
 end
 
-registry.set = function(path, value, type)
 
+
+function registry.save(categories)
+    saveRegistry(categories)
 end
 
-registry.get = function(path, default)
 
-end
 
 registry.types = types
 
-error("end") --to make require not cache it
 
 return registry

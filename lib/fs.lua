@@ -521,6 +521,14 @@ function filesystem.size(path)
     return nil, "no such file or directory"
 end
 
+function filesystem.makeDirectory(path)
+    local node, rest = filesystem.findNode(path)
+    if node.fs and rest then
+        return node.fs.makeDirectory(rest)
+    end
+    return nil, "no such file or directory"
+end
+
 local labels = {"drivea","drivec","drived","drivee","drivef","driveg","driveh","drivei","drivej"}
 local labelRif = {}
 for k,v in ipairs(labels) do

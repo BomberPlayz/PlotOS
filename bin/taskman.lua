@@ -38,7 +38,7 @@ local startProcessTextbox = gui.textbox(1,35-2,45,1,45,0x000000,0xbcbcbc)
 while true do
     if win.closed then break end
     t = t+1
-    if t >= 15 then
+    if t >= 20 then
         t = 0
         cont.children = {}
         local bb = gui.button(0,0,25,1,"Processes")

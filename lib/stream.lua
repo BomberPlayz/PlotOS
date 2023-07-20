@@ -34,6 +34,9 @@ function stream.proxy(h)
         return h.read(n)
     end
     ret.write = function(self, str)
+        if type(str) == "number" then
+            str = string.char(str)
+        end
         h.write(str)
     end
     ret.seek = function(self, whence, offset)
@@ -45,13 +48,6 @@ function stream.proxy(h)
     return ret
 end
 
-function stream.fromfile(path)
-    local h = assert(fs.open(path, "rb"))
-    local ret = stream.proxy(h)
-    ret.close = function(self)
-        h.close()
-    end
-    return ret
-end
+
 
 return stream

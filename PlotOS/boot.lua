@@ -144,7 +144,7 @@ function _G.kern_panic(reason)
     -- use debug to get traceback
     kern_info(debug.traceback("", 2), "error")
     kern_info("----------------------------------------------------", "error")
-    kern_info("Variable dump:", "error")
+    --[[kern_info("Variable dump:", "error")
     kern_info("----------------------------------------------------", "error")
     -- use debug to get all variables
     function get_vars()
@@ -203,7 +203,7 @@ function _G.kern_panic(reason)
     kern_info("System uptime: " .. tostring(computer.uptime()), "error")
     kern_info("----------------------------------------------------", "error")
     kern_info("System boot address: " .. tostring(computer.getBootAddress()), "error")
-    kern_info("System address: " .. tostring(computer.address()), "error")
+    kern_info("System address: " .. tostring(computer.address()), "error")]]
 
     kern_info("Panic reason: " .. reason, "error")
     -- save logs
@@ -398,18 +398,19 @@ local function boot(type)
    local fs = package.require("fs")
    fs.mount(rawFs, "/")
   
-   kern_info("Reading boot config file")
-   local serialization = package.require("serialization")
-   local ini = serialization.ini
-   local data = ""
-   local bootConfHandle = fs.open("/PlotOS/$BootInfo.ini", "r")
-   if bootConfHandle then
-       data = bootConfHandle:read(math.huge)
-       bootConfHandle:close()
+   kern_info("Initializing registry")
+    local reg = package.require("registry")
 
-   end
-   local bootConf = ini.decode(data)
-  
+
+    if not reg.exists("system") then
+        kern_info("Creating system registry")
+        reg.set("system/boot/safemode", 0, reg.types.u8)
+        reg.set("system/security/disable", 0, reg.types.u8)
+        reg.set("system/processes/attach_security", 1, reg.types.u8)
+        reg.set("system/security/driver_crash_bsod", 1, reg.types.u8)
+        reg.set("system/shell", "/bin/shell.lua", reg.types.string)
+    end
+
    local safemode = false
   
    if type ~= BootTypeEnum.None then
@@ -419,10 +420,9 @@ local function boot(type)
       safemode = false
     end
   else
-    if bootConf.safemode.enable == "true" then
+       kern_info("SAMA::"..tostring(reg.get("system/boot/safemode")))
+    if reg.get("system/boot/safemode") == 1 then
       safemode = true
-    elseif bootConf.safemode.enable == "false" then
-      safemode = false
     else
       safemode = false
     end
@@ -542,9 +542,9 @@ end
 if not ok then
     kern_panic("Critical system failure")
 end]]
-local ok, e = xpcall(boot, function(e) kern_panic(e) end, bootType)
+local ok, e = xpcall(boot, function(e) return debug.traceback("", 2), e end, bootType)
 if not ok then
-    while true do pcps() end
+    kern_panic("Critical system failure: "..e)
 end
 
 computer.beep(1000)
