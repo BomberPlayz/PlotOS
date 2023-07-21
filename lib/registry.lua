@@ -20,6 +20,10 @@ local fs = package.require("fs")
 registryPath = fs.canonical(registryPath)
 local lockPath = registryPath.."/locks"
 
+if not fs.exists(registryPath) or not fs.isDirectory(registryPath) then
+    fs.makeDirectory(registryPath)
+end
+
 if not fs.exists(lockPath) or not fs.isDirectory(lockPath) then
     fs.makeDirectory(lockPath)
 end
