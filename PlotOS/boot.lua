@@ -420,13 +420,14 @@ local function boot(type)
 
     if not reg.exists("system") then
         kern_info("Creating system registry")
-        reg.set("system/boot/safemode", 0, reg.types.u8)
-        reg.set("system/security/disable", 0, reg.types.u8)
-        reg.set("system/processes/attach_security", 1, reg.types.u8)
-        reg.set("system/security/driver_crash_bsod", 1, reg.types.u8)
-        reg.set("system/shell", "/bin/shell.lua", reg.types.string)
-        reg.set("system/ui/window/drag_borders", 1, reg.types.u8)
-        reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32)
+        reg.set("system/boot/safemode", 0, reg.types.u8, true)
+        reg.set("system/security/disable", 0, reg.types.u8, true)
+        reg.set("system/processes/attach_security", 1, reg.types.u8, true)
+        reg.set("system/security/driver_crash_bsod", 1, reg.types.u8, true)
+        reg.set("system/shell", "/bin/shell.lua", reg.types.string, true)
+        reg.set("system/ui/window/drag_borders", 1, reg.types.u8, true)
+        reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32, true)
+        reg.save()
     end
 
    local safemode = false

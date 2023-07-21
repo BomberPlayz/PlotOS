@@ -463,7 +463,7 @@ end
 
 
 
-function registry.set(path, value, type)
+function registry.set(path, value, type, noSave)
     local path = split(path, "/")
     local current = regdata
     local last = nil
@@ -498,26 +498,45 @@ function registry.set(path, value, type)
     else
         current[2][path[#path]] = {types.string, value}
     end
-    saveRegistry()
+    if not noSave then
+        saveRegistry()
+    end
 end
 
--- PARTIALLY BROKEN, WILL THINK THAT SOMETHING DOESNT EXIST SOMETIMES, EXAMPLE:
--- works: `/system/shell`
--- doesnt work: `system/shell` 
--- could be related to the order in the table, only seems to not see it when its saved in a specific order
--- also: defaultvalue not entirely tested
-function registry.get(path, defaultValue, defaultType)
-    if (defaultValue and not defaultType) or (defaultType and not defaultValue) then
-        error("Missing defaultType or defaultValue")
+ 
+function registry.get(path)
+    local origPath = path
+    local parsed = parsePath(path)
+    
+    path = parsed.path
+    local category = parsed.category
+
+    if not regdata[category] then
+        return nil
     end
 
-    local origPath = path
+    local current = regdata[category][2]
+    for i,v in ipairs(path) do
+        if not current[v] then
+            return nil
+        end
+        if i ~= #path then
+            if type(current[v][2]) ~= "table" then
+                return nil
+            end
+            current = current[v][2]
+        else
+            return current[v][2], current[v][1]
+        end
+    end
+
+    --[[
     local path = split(path, "/")
     local current = regdata
     for i=1, #path-1 do
         if i==1 then
-            if current[path[i]] then
-                current = current[path[i]]
+            if current[path[i]A] then
+                current = current[path[i]A]
             else
                 if defaultValue then
                     registry.set(origPath, defaultValue, defaultType)
@@ -535,8 +554,8 @@ function registry.get(path, defaultValue, defaultType)
                     return nil
                 end
             end
-            if current[2][path[i]] then
-                current = current[2][path[i]]
+            if current[2][path[i]A] then
+                current = current[2][path[i]A]
             else
                 if defaultValue then
                     registry.set(origPath, defaultValue, defaultType)
@@ -547,8 +566,8 @@ function registry.get(path, defaultValue, defaultType)
             end
         end
     end
-    if current[2][path[#path]] then
-        return current[2][path[#path]][2]
+    if current[2][path[#path]A] then
+        return current[2][path[#path]A][2]
     else
         local compiled = ""
         for i=1, #path-1 do
@@ -564,6 +583,7 @@ function registry.get(path, defaultValue, defaultType)
             return nil
         end
     end
+    --]]
 end
 
 -- MIGHT NOT WORK
