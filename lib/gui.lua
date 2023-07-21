@@ -11,6 +11,7 @@ gui.config = {
 local buffering = require("doublebuffering")
 local gpu = require("driver").load("gpu")
 local event = require("event")
+local reg = require("registry")
 
 gui.event = event.emitter()
 
@@ -84,25 +85,35 @@ local disabledCodeMap = {
 
 
 function gui.isObstructedAt(object, x, y)
-    -- check if the object is obstructer by checking if coordinates overlap.
-
-    --print("obj = " .. object.x .. "," .. object.y .. "," .. object.width .. "," .. object.height)
+    -- Check if the object is obstructed by checking if coordinates overlap.
 
     if object.parent == nil then
         return false
     end
-    for i, loopObj in pairs(object.parent.children) do
-        if
-        (loopObj ~= object) and (i > object._parentIndex) and
-                (loopObj.gx <= x + object.width) and
-                (loopObj.gx >= x) and
-                (loopObj.gy <= y + object.height) and
-                (loopObj.gy >= y)
-        then
+
+
+
+    for i = object._parentIndex, #object.parent.children do
+        if i == object._parentIndex then
+            -- skip the object itself
+            ::continue::
+        end
+        local loopObj = object.parent.children[i]
+        if gui.isInRect(loopObj.gx, loopObj.gy, loopObj.width, loopObj.height, x, y) then
+            local buf = buffering.getMain()
+            -- give the object a red outline
+            buf.setBackground(0xFF0000)
+            buf.fill(loopObj.gx, loopObj.gy, loopObj.width, 1, " ")
+            buf.fill(loopObj.gx, loopObj.gy + loopObj.height - 1, loopObj.width, 1, " ")
+            buf.fill(loopObj.gx, loopObj.gy, 1, loopObj.height, " ")
+            buf.fill(loopObj.gx + loopObj.width - 1, loopObj.gy, 1, loopObj.height, " ")
+            buf.setBackground(0x000000)
+            buf.draw()
+
             return true
         end
-    end
 
+    end
 
     return false
 end
@@ -110,13 +121,7 @@ end
 
 
 gui.isInRect = function(x, y, w, h, px, py)
-    --print("x: "..x.." y: "..y.." mx: "..x+w.." my: "..y+h.." mousex: "..gui.cx.." mousey: "..gui.cy)
-    if px >= x and px <= x + w and py >= y and py <= y + h then
-        --  print("ITTRUE")
-        return true
-    else
-        return false
-    end
+    return (px >= x) and (px < x + w) and (py >= y) and (py < y + h)
 end
 
 gui.component = function()
@@ -134,6 +139,10 @@ gui.component = function()
     obj.visible = true
 
     function obj._draw(buf)
+
+    end
+
+    function obj.draw(buf)
         error("Unimplemented draw method")
     end
 
@@ -207,13 +216,16 @@ gui.container = function(x, y, w, h)
         end
         --gpu.setBackground(obj.x*obj.y/obj.width*obj.height)
         for k, v in ipairs(obj.children) do
-            v.x = v.x + obj.x
-            v.y = v.y + obj.y
             v.gx = v.x + obj.x
             v.gy = v.y + obj.y
+            v.x = v.x + obj.x
+            v.y = v.y + obj.y
+
             if v.dirty then
+
             end
             v._draw(buf)
+
             v.x = v.x - obj.x
             v.y = v.y - obj.y
         end
@@ -240,6 +252,8 @@ gui.container = function(x, y, w, h)
         end
         for k = #obj.children, 1, -1 do
             local v = obj.children[k]
+            v.gx = v.x + obj.x
+            v.gy = v.y + obj.y
             v.x = v.x + obj.x
             v.y = v.y + obj.y
             v._tick()
@@ -258,12 +272,14 @@ gui.container = function(x, y, w, h)
         end
 
         for _, object in pairs(obj.children) do
+            object.gx = object.x + obj.x
+            object.gy = object.y + obj.y
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(object, gui.cx, gui.cy)
                     if not obstructed then
@@ -285,12 +301,14 @@ gui.container = function(x, y, w, h)
         end
 
         for _, object in pairs(obj.children) do
+            object.gx = object.x + obj.x
+            object.gy = object.y + obj.y
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(object, gui.cx, gui.cy)
                     if not obstructed then
@@ -312,12 +330,14 @@ gui.container = function(x, y, w, h)
         end
 
         for _, object in pairs(obj.children) do
+            object.gx = object.x + obj.x
+            object.gy = object.y + obj.y
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(object, gui.cx, gui.cy)
                     if not obstructed then
@@ -455,7 +475,7 @@ gui.textbox = function(x, y, w, h, charLimit, fore, back, selectedColor, cursorB
     return obj
 end
 
-gui.panel = function(x, y, w, h, color)
+gui.panel = function(x, y, w, h, color, fillchar) -- fillchar is optional
     local obj = gui.component()
     obj.x = x
     obj.y = y
@@ -464,12 +484,13 @@ gui.panel = function(x, y, w, h, color)
     obj.color = color or 0xffffff
     obj.dirty = true
     obj.opacity = 1
+    obj.char = fillchar or " "
     obj._draw = function(buf)
         if not obj.visible then
             return
         end
         buf.setBackground(obj.color)
-        buf.fill(obj.x, obj.y, obj.width, obj.height, " ", obj.opacity, obj.opacity)
+        buf.fill(obj.x, obj.y, obj.width, obj.height, obj.char, obj.opacity, obj.opacity)
 
         obj.dirty = false
     end
@@ -545,7 +566,7 @@ gui.window = function(x, y, w, h, title)
     local obj = gui.container(x, y, w, h)
     obj.title = title or "Untitled window"
     obj.titlebar = gui.container(0, 0, w, 1)
-    obj.titlebar:addChild(gui.panel(0, 0, obj.titlebar.width, 1, 0x0000ff))
+    obj.titlebar:addChild(gui.panel(0, 0, obj.titlebar.width, 1, reg.get("system/ui/window/titlebar_color")))
     obj.titlebar.children[1].opacity = 1
     local txt = gui.text(0, 0, obj.title)
     txt.backColor = 0xCCCCCC
@@ -586,6 +607,14 @@ gui.window = function(x, y, w, h, title)
     obj.container = gui.container(0, 1, w, h - 1)
     obj.container:addChild(gui.panel(0, 0, obj.container.width, obj.container.height, 0xffffff))
     obj:addChild(obj.container)
+
+    local con = gui.container(0, 0, obj.width, obj.height)
+    con:addChild(gui.panel(0, 1, 1, obj.height - 1, 0xffffff, "░"))
+    con:addChild(gui.panel(1, obj.height - 1, obj.width - 1, 1, 0xffffff, "░"))
+    con:addChild(gui.panel(obj.width - 1, 1, 1, obj.height - 1, 0xffffff, "░"))
+    obj:addChild(con)
+    con.visible = false
+
     obj.isDrag = false
     obj.drag = {sx = 0, sy = 0}
 
@@ -619,6 +648,7 @@ gui.window = function(x, y, w, h, title)
                 for k, v in ipairs(obj.children) do
                     helper(v)
                 end
+                obj.dirty = true
             else
                 obj.dirty = true
             end
@@ -645,19 +675,26 @@ gui.window = function(x, y, w, h, title)
             return
         end
         obj.isDrag = true
+        if reg.get("system/ui/window/drag_borders") == 1 then
+            obj.container.visible = false
+            con.visible = true
+        end
+
+
         obj.drag.sx = gui.cx - obj.x
         obj.drag.sy = gui.cy - obj.y
 
         for _, object in pairs(obj.titlebar.children) do
+            object.gx = object.x + obj.titlebar.x
+            object.gy = object.y + obj.titlebar.y
             --print(tostring(object.x).."   y: "..object.y)
             if object.visible then
                 object.x = object.x + obj.titlebar.x
                 object.y = object.y + obj.titlebar.y
-                object.gx = object.x + obj.titlebar.x
-                object.gy = object.y + obj.titlebar.y
+
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(object, gui.cx, gui.cy)
                     if not obstructed then
@@ -675,16 +712,22 @@ gui.window = function(x, y, w, h, title)
             return
         end
         obj.isDrag = false
+        if reg.get("system/ui/window/drag_borders") == 1 then
+            obj.container.visible = true
+            con.visible = false
+        end
+
 
         for _, object in pairs(obj.titlebar.children) do
+            object.gx = object.x + obj.titlebar.x
+            object.gy = object.y + obj.titlebar.y
             if object.visible then
                 object.x = object.x + obj.titlebar.x
                 object.y = object.y + obj.titlebar.y
-                object.gx = object.x + obj.titlebar.x
-                object.gy = object.y + obj.titlebar.y
+
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(object, gui.cx, gui.cy)
                     if not obstructed then
@@ -702,15 +745,18 @@ gui.window = function(x, y, w, h, title)
             return
         end
 
+        obj.dirty = true
+
         for _, object in pairs(obj.titlebar.children) do
+            object.gx = object.x + obj.titlebar.x
+            object.gy = object.y + obj.titlebar.y
             if object.visible then
                 object.x = object.x + obj.titlebar.x
                 object.y = object.y + obj.titlebar.y
-                object.gx = object.x + obj.titlebar.x
-                object.gy = object.y + obj.titlebar.y
+
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(object, gui.cx, gui.cy)
                     if not obstructed then
@@ -719,6 +765,8 @@ gui.window = function(x, y, w, h, title)
                 end
                 object.x = object.x - obj.titlebar.x
                 object.y = object.y - obj.titlebar.y
+
+
             end
         end
     end
@@ -752,14 +800,15 @@ gui.window = function(x, y, w, h, title)
         end
         local obstructed = false
         for _, object in pairs(obj.children) do
+            object.gx = object.x + obj.x
+            object.gy = object.y + obj.y
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
-                object.gx = object.x + obj.x
-                object.gy = object.y + obj.y
+
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(object, gui.cx, gui.cy)
                     if not obstructed then
@@ -772,16 +821,16 @@ gui.window = function(x, y, w, h, title)
         end
 
         if
-            gui.cx >= obj.titlebar.x and gui.cx <= obj.titlebar.x + obj.titlebar.width and gui.cy >= obj.titlebar.y and
-                gui.cy <= obj.titlebar.y + obj.titlebar.height and
+            gui.cx >= obj.titlebar.x and gui.cx < obj.titlebar.x + obj.titlebar.width and gui.cy >= obj.titlebar.y and
+                gui.cy < obj.titlebar.y + obj.titlebar.height and
                 not gui.isObstructedAt(obj.titlebar, gui.cx, gui.cy)
          then
             obj.titlebar._mousedown(button)
         end
 
         if
-            gui.cx >= obj.container.x and gui.cx <= obj.container.x + obj.container.width and gui.cy >= obj.container.y and
-                gui.cy <= obj.container.y + obj.container.height and
+            gui.cx >= obj.container.x and gui.cx < obj.container.x + obj.container.width and gui.cy >= obj.container.y and
+                gui.cy < obj.container.y + obj.container.height and
                 not gui.isObstructedAt(obj.container, gui.cx, gui.cy)
          then
             obj.container._mousedown(button)
@@ -794,14 +843,15 @@ gui.window = function(x, y, w, h, title)
         end
         local obstructed = false
         for _, object in pairs(obj.children) do
+            object.gx = object.x + obj.x
+            object.gy = object.y + obj.y
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
-                object.gx = object.x + obj.x
-                object.gy = object.y + obj.y
+
                 if
-                    gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
-                        gui.cy <= object.y + object.height
+                    gui.cx >= object.x and gui.cx < object.x + object.width and gui.cy >= object.y and
+                        gui.cy < object.y + object.height
                  then
                     obstructed = gui.isObstructedAt(obj, gui.cx, gui.cy)
                     if not obstructed then
@@ -813,8 +863,8 @@ gui.window = function(x, y, w, h, title)
             end
         end
         if
-            gui.cx >= obj.titlebar.x and gui.cx <= obj.titlebar.x + obj.titlebar.width and gui.cy >= obj.titlebar.y and
-                gui.cy <= obj.titlebar.y + obj.titlebar.height and
+            gui.cx >= obj.titlebar.x and gui.cx < obj.titlebar.x + obj.titlebar.width and gui.cy >= obj.titlebar.y and
+                gui.cy < obj.titlebar.y + obj.titlebar.height and
                 not gui.isObstructedAt(obj.titlebar, gui.cx, gui.cy)
          then
             obj.titlebar._mouseup(btn)
@@ -835,11 +885,12 @@ gui.window = function(x, y, w, h, title)
         end
         local obstructed = false
         for _, object in pairs(obj.children) do
+            object.gx = object.x + obj.x
+            object.gy = object.y + obj.y
             if object.visible then
                 object.x = object.x + obj.x
                 object.y = object.y + obj.y
-                object.gx = object.x + obj.x
-                object.gy = object.y + obj.y
+
                 if
                     gui.cx >= object.x and gui.cx <= object.x + object.width and gui.cy >= object.y and
                         gui.cy <= object.y + object.height
@@ -855,16 +906,16 @@ gui.window = function(x, y, w, h, title)
         end
         -- drag titlebar if in bounds of it
         if
-            gui.cx >= obj.titlebar.x and gui.cx <= obj.titlebar.x + obj.titlebar.width and gui.cy >= obj.titlebar.y and
-                gui.cy <= obj.titlebar.y + obj.titlebar.height and
+            gui.cx >= obj.titlebar.x and gui.cx < obj.titlebar.x + obj.titlebar.width and gui.cy >= obj.titlebar.y and
+                gui.cy < obj.titlebar.y + obj.titlebar.height and
                 not gui.isObstructedAt(obj.titlebar, gui.cx, gui.cy)
          then
             obj.titlebar._drag(gui.cx, gui.cy, btn)
         end
 
         if
-            gui.cx >= obj.container.x and gui.cx <= obj.container.x + obj.container.width and gui.cy >= obj.container.y and
-                gui.cy <= obj.container.y + obj.container.height and
+            gui.cx >= obj.container.x and gui.cx < obj.container.x + obj.container.width and gui.cy >= obj.container.y and
+                gui.cy < obj.container.y + obj.container.height and
                 not gui.isObstructedAt(obj.container, gui.cx, gui.cy)
          then
             obj.container._drag(gui.cx, gui.cy, btn)
@@ -923,6 +974,7 @@ end
 gui.buffer = buffering.getMain()
 
 gui.workspace = gui.container(0, 0, gui.buffer.getResolution())
+
 gui.workspace.tick = function()
     gui.workspace.checkDirty()
     if gui.workspace.dirty then
@@ -952,7 +1004,7 @@ require("process").new(
     local obstructed = false
     for _, object in pairs(gui.rootObject.children) do
         -- check if touch x and y is in side the object
-        if object.visible and x >= object.x and x <= object.x + object.width and y >= object.y and y <= object.y + object.height then
+        if object.visible and x >= object.x and x < object.x + object.width and y >= object.y and y < object.y + object.height then
             -- check if the object is obstructed by another object in rootObject.
             if not gui.isObstructedAt(gui.rootObject, x, y) then
                 object._mousedown(x - object.x, y - object.y, btn)
@@ -985,7 +1037,7 @@ event.listen("drag",function(event,_,x,y,btn)
     gui.cy = y
     local obstructed = false
     for _, object in pairs(gui.rootObject.children) do
-        if object.visible and x >= object.x and x <= object.x + object.width and y >= object.y and y <= object.y + object.height then
+        if object.visible and x >= object.x and x < object.x + object.width and y >= object.y and y < object.y + object.height then
             -- check if the object is obstructed by another object in rootObject.
             if not gui.isObstructedAt(gui.rootObject, x, y) then
                 object._drag(x - object.x, y - object.y, btn)
@@ -1005,7 +1057,7 @@ event.listen("drop",function(event,_,x,y,btn)
     gui.cy = y
     local obstructed = false
     for _, object in pairs(gui.rootObject.children) do
-        if object.visible and x >= object.x and x <= object.x + object.width and y >= object.y and y <= object.y + object.height then
+        if object.visible and x >= object.x and x < object.x + object.width and y >= object.y and y < object.y + object.height then
             -- check if the object is obstructed by another object in rootObject.
             if not gui.isObstructedAt(gui.rootObject, x, y) then
                 object._mouseup(x - object.x, y - object.y, btn)

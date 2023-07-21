@@ -63,7 +63,31 @@ while true do
         end
 
         if not found then
-            print("Command not found")
+            -- check current directory
+            if fs.exists(os.currentDirectory..cmd..".lua") then
+                found = true
+                dat,reason = loadfile(os.currentDirectory..cmd..".lua")
+
+            else
+                if fs.exists(os.currentDirectory..cmd) then
+                    found = true
+                    dat,reason = loadfile(os.currentDirectory..cmd)
+                else
+                    print("The specified file does not exist")
+                end
+            end
+
+            if found then
+                if not dat then
+                    print("Error: "..reason)
+                else
+                    local ok,reason = pcall(dat,args)
+                    if not ok then
+                        print("Errored:")
+                        print(reason)
+                    end
+                end
+            end
         else
             if not dat then
                 print("Error: "..reason)

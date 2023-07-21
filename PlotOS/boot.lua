@@ -240,11 +240,12 @@ function _G.raw_dofile(file)
             return table.unpack(result, 2, result.n)
         else
             kern_info("Error loading file " .. file, "error")
-
+            kern_info("Error: " .. result[2], "error")
             error(result[2] .. " is the error")
         end
     else
         kern_info("Error loading file " .. file, "error")
+        kern_info("Error: " .. reason, "error")
 
         error(reason)
     end
@@ -409,6 +410,8 @@ local function boot(type)
         reg.set("system/processes/attach_security", 1, reg.types.u8)
         reg.set("system/security/driver_crash_bsod", 1, reg.types.u8)
         reg.set("system/shell", "/bin/shell.lua", reg.types.string)
+        reg.set("system/ui/window/drag_borders", 1, reg.types.u8)
+        reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32)
     end
 
    local safemode = false

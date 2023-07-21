@@ -484,6 +484,9 @@ function registry.get(path)
                 return nil
             end
         else
+            if not current[2] then
+                return nil
+            end
             if current[2][path[i]] then
                 current = current[2][path[i]]
             else
@@ -491,7 +494,16 @@ function registry.get(path)
             end
         end
     end
-    return current[2][path[#path]][2]
+    if current[2][path[#path]] then
+        return current[2][path[#path]][2]
+    else
+        local compiled = ""
+        for i=1, #path-1 do
+            compiled = compiled .. path[i] .. "/"
+        end
+        kern_info("Registry entry "..path[#path].." does not exist in path "..compiled)
+        return nil
+    end
 end
 
 -- MIGHT NOT WORK
@@ -510,6 +522,9 @@ function registry.exists(path)
                     return false
                 end
             else
+                if not current[2] then
+                    return false
+                end
                 if current[2][path[i]] then
                     current = current[2][path[i]]
                 else

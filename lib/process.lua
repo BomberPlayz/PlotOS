@@ -221,7 +221,7 @@ api.tickProcess = function(v)
                     local st = computer.uptime()*1000
                     local reta  = {coroutine.resume(v.thread, table.unpack(v.args))}
                     if not reta[1] then
-                        v.err = syscall[2] or "Died"
+                        v.err = reta[2] or "Died"
                     end
 
                     local et = computer.uptime()*1000
@@ -340,7 +340,7 @@ api.tick = function()
             end
             local a,e = api.tickProcess(v)
             if v.lastCpuTime*1000 > 65 then
-                kern_info("Detected process "..v.pid.." ("..v.name..") slowing down system: "..(v.lastCpuTime*1000).." ms CPU time", "warn")
+                --kern_info("Detected process "..v.pid.." ("..v.name..") slowing down system: "..(v.lastCpuTime*1000).." ms CPU time", "warn")
             end
 
 

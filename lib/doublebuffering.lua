@@ -87,20 +87,24 @@ function api.new(w,h,proxy)
     end
 
     ret.lastbuffer = table.pack(table.unpack(ret.buffer))
-    
-    ret.set = function(x,y,char,opacity)
 
+    ret.set = function(x, y, char, opacity)
         if x < ret.mask.x or x > ret.mask.x + ret.mask.w - 1 or y < ret.mask.y or y > ret.mask.y + ret.mask.h - 1 then return end
 
+        local localBuffer = ret.buffer
+        local localIndex = ret.index
+        local localCalcTransparency = ret.calcTransparency
+        local localForeground = ret.foreground
+        local localBackground = ret.background
         local chor = char
-        for i=1,char:len() do
-            local coco = ret.buffer[ret.index(x+i-1,y)]
-            if coco == nil then coco = {" ",0,0} end
+
+        for i = 1, char:len() do
+            local coco = localBuffer[localIndex(x + i - 1, y)] or {" ", 0, 0}
             local char = char
             if char:len() > 1 then
-                char = unicode.sub(chor,i,i)
+                char = unicode.sub(chor, i, i)
             end
-            ret.buffer[ret.index(x+i-1,y)] = {(opacity or 1) < 1 and char == " " and coco[1] or char,ret.calcTransparency(coco[2],ret.foreground,opacity or 1),ret.calcTransparency(coco[3],ret.background,opacity or 1)}
+            localBuffer[localIndex(x + i - 1, y)] = {(opacity or 1) < 1 and char == " " and coco[1] or char, localCalcTransparency(coco[2], localForeground, opacity or 1), localCalcTransparency(coco[3], localBackground, opacity or 1)}
         end
         ret.dirty = true
     end
@@ -109,23 +113,25 @@ function api.new(w,h,proxy)
         return table.unpack(ret.buffer[ret.index(x,y)])
     end
 
-    ret.fill = function(sx,sy,ex,ey,char,opacity)
-
+    ret.fill = function(sx, sy, ex, ey, char, opacity)
         -- optimization: we make only draw what is in the mask
-        if sx < ret.mask.x then sx = ret.mask.x end
-        if sy < ret.mask.y then sy = ret.mask.y end
-        if sx + ex - 1 > ret.mask.x + ret.mask.w - 1 then ex = ret.mask.x + ret.mask.w - sx end
-        if sy + ey - 1 > ret.mask.y + ret.mask.h - 1 then ey = ret.mask.y + ret.mask.h - sy end
+        sx = math.max(sx, ret.mask.x)
+        sy = math.max(sy, ret.mask.y)
+        ex = math.min(ex, ret.mask.x + ret.mask.w - sx)
+        ey = math.min(ey, ret.mask.y + ret.mask.h - sy)
 
+        local localBuffer = ret.buffer
+        local localSet = ret.set
 
-
-        for x=sx,sx+ex-1 do
-            for y = sy, sy+ey-1 do
-                ret.set(x,y,char,opacity)
+        for x = sx, sx + ex - 1 do
+            for y = sy, sy + ey - 1 do
+                localSet(x, y, char, opacity)
             end
         end
         ret.dirty = true
     end
+
+
 
     ret.setForeground = function(fore)
         ret.foreground = fore
