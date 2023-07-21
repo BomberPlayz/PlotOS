@@ -30,7 +30,7 @@ function os.requestPermission(perm)
 
 end
 
-os.setEnv("SHELL",require("registry").get("system/shell"))
+os.setEnv("SHELL",require("registry").get("/system/shell"))
 os.setEnv("BOOT","/sys/system32")
 os.setEnv("PATH","/bin")
 os.setEnv("LIB_PATH","/lib")

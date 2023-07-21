@@ -436,6 +436,7 @@ end
 
 kern_info("Loading registry...")
 readRegistry()
+kern_info(package.require("json").encode(regdata))
 kern_info("Registry loaded!")
 
 
@@ -462,7 +463,7 @@ end
 
 
 
-function registry.set(path, value, type)
+function registry.set(path, value, type, noSave)
     local path = split(path, "/")
     local current = regdata
     local last = nil
@@ -497,40 +498,92 @@ function registry.set(path, value, type)
     else
         current[2][path[#path]] = {types.string, value}
     end
-    saveRegistry()
+    if not noSave then
+        saveRegistry()
+    end
 end
 
+ 
 function registry.get(path)
+    local origPath = path
+    local parsed = parsePath(path)
+    
+    path = parsed.path
+    local category = parsed.category
+
+    if not regdata[category] then
+        return nil
+    end
+
+    local current = regdata[category][2]
+    for i,v in ipairs(path) do
+        if not current[v] then
+            return nil
+        end
+        if i ~= #path then
+            if type(current[v][2]) ~= "table" then
+                return nil
+            end
+            current = current[v][2]
+        else
+            return current[v][2], current[v][1]
+        end
+    end
+
+    --[[
     local path = split(path, "/")
     local current = regdata
     for i=1, #path-1 do
         if i==1 then
-            if current[path[i]] then
-                current = current[path[i]]
+            if current[path[i]A] then
+                current = current[path[i]A]
             else
-                return nil
+                if defaultValue then
+                    registry.set(origPath, defaultValue, defaultType)
+                    return defaultValue
+                else
+                    return nil
+                end
             end
         else
             if not current[2] then
-                return nil
+                if defaultValue then
+                    registry.set(origPath, defaultValue, defaultType)
+                    return defaultValue
+                else
+                    return nil
+                end
             end
-            if current[2][path[i]] then
-                current = current[2][path[i]]
+            if current[2][path[i]A] then
+                current = current[2][path[i]A]
             else
-                return nil
+                if defaultValue then
+                    registry.set(origPath, defaultValue, defaultType)
+                    return defaultValue
+                else
+                    return nil
+                end
             end
         end
     end
-    if current[2][path[#path]] then
-        return current[2][path[#path]][2]
+    if current[2][path[#path]A] then
+        return current[2][path[#path]A][2]
     else
         local compiled = ""
         for i=1, #path-1 do
             compiled = compiled .. path[i] .. "/"
         end
-        kern_info("Registry entry "..path[#path].." does not exist in path "..compiled)
-        return nil
+        
+        if defaultValue then
+            kern_info("Registry entry "..path[#path].." does not exist in path "..compiled..", creating")
+            registry.set(origPath, defaultValue, defaultType)
+            return defaultValue
+        else
+            kern_info("Registry entry "..path[#path].." does not exist in path "..compiled)
+            return nil
+        end
     end
+    --]]
 end
 
 -- MIGHT NOT WORK
