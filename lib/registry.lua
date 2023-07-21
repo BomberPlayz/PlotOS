@@ -436,6 +436,7 @@ end
 
 kern_info("Loading registry...")
 readRegistry()
+kern_info(package.require("json").encode(regdata))
 kern_info("Registry loaded!")
 
 
@@ -500,7 +501,17 @@ function registry.set(path, value, type)
     saveRegistry()
 end
 
-function registry.get(path)
+-- PARTIALLY BROKEN, WILL THINK THAT SOMETHING DOESNT EXIST SOMETIMES, EXAMPLE:
+-- works: `/system/shell`
+-- doesnt work: `system/shell` 
+-- could be related to the order in the table, only seems to not see it when its saved in a specific order
+-- also: defaultvalue not entirely tested
+function registry.get(path, defaultValue, defaultType)
+    if (defaultValue and not defaultType) or (defaultType and not defaultValue) then
+        error("Missing defaultType or defaultValue")
+    end
+
+    local origPath = path
     local path = split(path, "/")
     local current = regdata
     for i=1, #path-1 do
@@ -508,16 +519,31 @@ function registry.get(path)
             if current[path[i]] then
                 current = current[path[i]]
             else
-                return nil
+                if defaultValue then
+                    registry.set(origPath, defaultValue, defaultType)
+                    return defaultValue
+                else
+                    return nil
+                end
             end
         else
             if not current[2] then
-                return nil
+                if defaultValue then
+                    registry.set(origPath, defaultValue, defaultType)
+                    return defaultValue
+                else
+                    return nil
+                end
             end
             if current[2][path[i]] then
                 current = current[2][path[i]]
             else
-                return nil
+                if defaultValue then
+                    registry.set(origPath, defaultValue, defaultType)
+                    return defaultValue
+                else
+                    return nil
+                end
             end
         end
     end
@@ -528,8 +554,15 @@ function registry.get(path)
         for i=1, #path-1 do
             compiled = compiled .. path[i] .. "/"
         end
-        kern_info("Registry entry "..path[#path].." does not exist in path "..compiled)
-        return nil
+        
+        if defaultValue then
+            kern_info("Registry entry "..path[#path].." does not exist in path "..compiled..", creating")
+            registry.set(origPath, defaultValue, defaultType)
+            return defaultValue
+        else
+            kern_info("Registry entry "..path[#path].." does not exist in path "..compiled)
+            return nil
+        end
     end
 end
 
