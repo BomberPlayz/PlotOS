@@ -1,7 +1,3 @@
---MAJOR TODO: IMPLEMENT LOCKING
---MAJOR TODO: IMPLEMENT LOCKING
---MAJOR TODO: IMPLEMENT LOCKING
-
 local registryPath = "/PlotOS/system32/registry"
 
 local types = {
@@ -28,7 +24,14 @@ if not fs.exists(lockPath) or not fs.isDirectory(lockPath) then
     fs.makeDirectory(lockPath)
 end
 
-function split(inputstr, sep)
+local function sleep(timeout)
+    local deadline = computer.uptime() + (timeout or 0)
+    repeat
+      computer.pullSignal(deadline - computer.uptime())
+    until computer.uptime() >= deadline
+  end
+
+local function split(inputstr, sep)
     sep = sep or "%s"
     local t = {}
     for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
@@ -37,7 +40,7 @@ function split(inputstr, sep)
     return t
 end
 
-function startsWith(str, prefix)
+local function startsWith(str, prefix)
     return string.sub(str, 1, #prefix) == prefix
 end
 
@@ -195,29 +198,26 @@ local function readRegistry()
 
     for category in categories do
         if not fs.isDirectory(registryPath.."/"..category) then
-            --[[ TODO: do
             while true do
-                local locks = fs.list(lockPath)
+                local locks,err = fs.list(lockPath)
+                if err then error(locks) end
 
                 local ok = true
 
                 for lock in locks do
-                    if lock == category..".write" then
-                        os.sleep()
+                    if startsWith(lock,category..".write") then
                         ok = false
                         break
                     end
                 end
-                if ok then break
+                if ok then break end
+                sleep(0.25)
             end
-
-
+            
             local lockName = category..".read."..string.format("%09d",math.random(0,999999999))
 
             local f = fs.open(lockPath.."/"..lockName,"w")
-            f:write("")
             f:close()
-            --]]
 
             res[category] = {types.category,{}}
 
@@ -283,12 +283,12 @@ local function readRegistry()
             res[category] = parseCollection(h,size,size)
 
             rawH:close()
+            fs.remove(lockPath.."/"..lockName)
         end
     end
 
     regdata = res
 end
-
 
 function saveRegistry()
     local categories,err = fs.list(registryPath)
@@ -296,6 +296,28 @@ function saveRegistry()
 
     for category, data in pairs(regdata) do
         if not fs.isDirectory(category) then
+            while true do
+                local locks,err = fs.list(lockPath)
+                if err then error(locks) end
+
+                local ok = true
+
+                for lock in locks do
+                    if startsWith(lock,category) then
+                        ok = false
+                        break
+                    end
+                end
+                if ok then break end
+                sleep(math.random(0.05,0.2))
+            end
+            
+            local lockName = category..".write."..string.format("%09d",math.random(0,999999999))
+
+            local f = fs.open(lockPath.."/"..lockName,"w")
+            f:close()
+
+
             fs.remove(registryPath.."/"..category)
             local h = fs.open(registryPath.."/"..category, "wb")
             local s = h
@@ -401,10 +423,11 @@ function saveRegistry()
             end
 
             s:close()
+
+            fs.remove(lockPath.."/"..lockName)
         end
     end
 end
-
 
 
 kern_info("Loading registry...")
@@ -533,5 +556,7 @@ end
 
 registry.types = types
 
+--TEMPORARY:
+registry.readRegistry = readRegistry
 
 return registry

@@ -394,12 +394,27 @@ local function boot(type)
   package.loaded.filesystem = fs
   package.loaded.package = package
   
-   kern_info("Mounting system drive")
-   local fs = package.require("fs")
-   fs.mount(rawFs, "/")
+  kern_info("Mounting system drive")
+  local fs = package.require("fs")
+  fs.mount(rawFs, "/")
   
-   kern_info("Initializing registry")
-    local reg = package.require("registry")
+  kern_info("Initializing registry")
+  kern_info("Removing stale registry locks")
+  
+  local registryLocks = fs.list("/PlotOS/system32/registry/locks")
+  
+  local registryLockCount = 0
+  for lock in registryLocks do
+    fs.remove("/PlotOS/system32/registry/locks/"..lock)
+    registryLockCount = registryLockCount + 1
+    kern_info("Removing stale registry lock "..lock)
+  end
+  if registryLockCount == 0 then kern_info("Found no stale registry locks") end
+
+  registryLocks = nil
+  registryLockCount = nil
+
+  local reg = package.require("registry")
 
 
     if not reg.exists("system") then

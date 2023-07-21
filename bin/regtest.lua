@@ -1,1 +1,1 @@
-require("registry")
+require("registry").save()
