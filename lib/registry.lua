@@ -177,6 +177,7 @@ local function parseCollection(h,fileSize,length)
                 totalRead = totalRead + 4
                 if not length then error("Registry ended on incomplete key") end
                 length = string.unpack("<I4", length)
+                totalRead = totalRead + length
 
                 res[2][name] = parseCollection(h,fileSize,length)
             else
