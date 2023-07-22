@@ -48,6 +48,10 @@ local function startsWith(str, prefix)
     return string.sub(str, 1, #prefix) == prefix
 end
 
+local function endsWith(str, suffix)
+    return string.sub(str, -#suffix) == suffix
+end
+
 local function parsePath(path)
     local keys = split(path,"/")
     local category = keys[1]
@@ -130,19 +134,19 @@ local function parseCollection(h,fileSize,length)
                 totalRead = totalRead + 1
                 if not b then error("Registry ended on incomplete key") end
 
-                res[2][name] = {types.u16, ({string.unpack("<b", b)})[1]}
+                res[2][name] = {types.s8, ({string.unpack("<b", b)})[1]}
             elseif t == types.s16 then
                 local b = readBytes(h,2)
                 totalRead = totalRead + 2
                 if not b then error("Registry ended on incomplete key") end
 
-                res[2][name] = {types.u16, ({string.unpack("<i2", b)})[1]}
+                res[2][name] = {types.s16, ({string.unpack("<i2", b)})[1]}
             elseif t == types.s32 then
                 local b = readBytes(h,4)
                 totalRead = totalRead + 4
                 if not b then error("Registry ended on incomplete key") end
 
-                res[2][name] = {types.u32, ({string.unpack("<i4", b)})[1]}
+                res[2][name] = {types.s32, ({string.unpack("<i4", b)})[1]}
             elseif t == types.shortString then
                 local length = readByteAsNumber(h)
                 totalRead = totalRead + 1
@@ -194,6 +198,8 @@ local function parseCollection(h,fileSize,length)
     return res
 end
 
+local registry = {}
+registry.useTmpFilesToSave = true
 
 local function readRegistry()
     local categories,err = fs.list(registryPath)
@@ -202,7 +208,7 @@ local function readRegistry()
     local res = {}
 
     for category in categories do
-        if not fs.isDirectory(registryPath.."/"..category) then
+        if not fs.isDirectory(registryPath.."/"..category) and not endsWith(category, ".tmp") then
             while true do
                 local locks,err = fs.list(lockPath)
                 if err then error(locks) end
@@ -300,7 +306,7 @@ function saveRegistry()
     if err then error(categories) end
 
     for category, data in pairs(regdata) do
-        if not fs.isDirectory(category) then
+        if not fs.isDirectory(registryPath.."/"..category) and not endsWith(category, ".tmp") then
             while true do
                 local locks,err = fs.list(lockPath)
                 if err then error(locks) end
@@ -322,9 +328,14 @@ function saveRegistry()
             local f = fs.open(lockPath.."/"..lockName,"w")
             f:close()
 
-
-            fs.remove(registryPath.."/"..category)
-            local h = fs.open(registryPath.."/"..category, "wb")
+            local h
+            if registry.useTmpFilesToSave then
+                fs.remove(registryPath.."/"..category..".tmp")
+                h = fs.open(registryPath.."/"..category..".tmp", "wb")
+            else
+                fs.remove(registryPath.."/"..category)
+                h = fs.open(registryPath.."/"..category, "wb")
+            end
             local s = h
 
             local function writeBytes(bytes)
@@ -390,6 +401,9 @@ function saveRegistry()
                 if t == types.u8 then
                     data = data .. string.char(datar)
                 elseif t == types.u16 then
+                    print(datar)
+                    print(entry)
+                    print(name)
                     data = data .. string.pack("<I2", datar)
                 elseif t == types.u32 then
                     data = data .. string.pack("<I4", datar)
@@ -429,6 +443,10 @@ function saveRegistry()
 
             s:close()
 
+            if registry.useTmpFilesToSave then
+                fs.remove(registryPath.."/"..category)
+                fs.rename(registryPath.."/"..category..".tmp",registryPath.."/"..category)
+            end
             fs.remove(lockPath.."/"..lockName)
         end
     end
@@ -452,7 +470,6 @@ kern_info("Registry loaded!")
 
 -- first element is the type, second is the data. the key is the name of the entry
 
-local registry = {}
 function split(str, sep)
     local result = {}
     local regex = ("([^%s]+)"):format(sep)
