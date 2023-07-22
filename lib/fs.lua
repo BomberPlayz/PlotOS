@@ -390,6 +390,21 @@ function filesystem.umount(fsOrPath)
     return #paths > 0
 end
 
+function filesystem.isLink(path)
+    local name = filesystem.name(path)
+    local node, rest, vnode, vrest = filesystem.findNode(filesystem.path(path), false, true)
+    if not node then return nil, rest end
+    local target = vnode.links[name]
+    -- having vrest here indicates we are not at the
+    -- owning vnode due to a mount point above this point
+    -- but we can have a target when there is a link at
+    -- the mount point root, with the same name
+    if not vrest and target ~= nil then
+        return true, target
+    end
+    return false
+end
+
 function filesystem.copy(fromPath, toPath)
     local data = false
     local input, reason = filesystem.open(fromPath, "rb")

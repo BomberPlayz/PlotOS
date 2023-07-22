@@ -370,6 +370,10 @@ if doBootSelection then
     bootSelect()
 end
 
+local function endsWith(str, suffix)
+    return string.sub(str, -#suffix) == suffix
+end
+
 --[[BOOT]]--
 local function boot(type)
     if computer.totalMemory() <= 262144 then
@@ -403,7 +407,7 @@ local function boot(type)
     for lock in registryLocks do
         fs.remove("/PlotOS/system32/registry/locks/" .. lock)
         registryLockCount = registryLockCount + 1
-        kern_info("Removing stale registry lock " .. lock)
+        kern_info("Removing stale registry lock " .. lock, "warn")
     end
     if registryLockCount == 0 then
         kern_info("Found no stale registry locks")
@@ -411,6 +415,34 @@ local function boot(type)
 
     registryLocks = nil
     registryLockCount = nil
+
+    kern_info("Cleaning up stale registry temporary files")
+    local registryFiles = fs.list("/PlotOS/system32/registry")
+
+    local registryTmpCount = 0
+    for file in registryFiles do
+        if not fs.isDirectory("/PlotOS/system32/registry/"..file) then
+            if endsWith(file,".tmp") then
+                local msg = "Found registry tmp file: "..file
+                local nonTmp = string.sub(file, 1, #file-4)
+                if fs.exists("/PlotOS/system32/registry/"..nonTmp) then
+                    fs.remove("/PlotOS/system32/registry/"..file)
+                    msg = msg .. ", deleting"
+                else
+                    fs.rename("/PlotOS/system32/registry/"..file, "/PlotOS/system32/registry/"..nonTmp)
+                    msg = msg .. ", moving to "..nonTmp
+                end
+                kern_info(msg,"warn")
+                registryTmpCount = registryTmpCount + 1
+            end
+        end
+    end
+    if registryTmpCount == 0 then
+        kern_info("Found no stale registry temporary files")
+    end
+
+    registryFiles = nil
+    registryTmpCount = nil
 
     local reg = package.require("registry")
 
@@ -424,8 +456,25 @@ local function boot(type)
         reg.set("system/ui/window/drag_borders", 1, reg.types.u8, true)
         reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32, true)
         reg.set("system/low_mem", -1, reg.types.s8, true)
+        reg.set("system/registry/use_tmp_files_to_save", -1, reg.types.s8, true)
         reg.save()
     end
+
+    local useTmpFilesToSaveEnabled = reg.get("system/registry/use_tmp_files_to_save")
+    if useTmpFilesToSaveEnabled == 0 then
+        reg.useTmpFilesToSave = false
+        kern_info("Registry use tmp files to save disabled")
+    elseif useTmpFilesToSaveEnabled == 1 then
+        reg.useTmpFilesToSave = true
+        kern_info("Registry use tmp files to save enabled")
+    else
+        if reg.useTmpFilesToSave then
+            kern_info("Registry use tmp files to save enabled")
+        else
+            kern_info("Registry use tmp files to save disabled")
+        end
+    end
+    useTmpFilesToSaveEnabled = nil
 
     local lowMemEnabled = reg.get("system/low_mem")
     if lowMemEnabled == 0 and _G.LOW_MEM == true then
