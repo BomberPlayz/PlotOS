@@ -43,9 +43,7 @@ function ret.getBest(type, addr)
     end]]
     -- first check loaded drivers
     for k,v in pairs(ret.loaded) do
-        kern_info("Checking driver "..k)
         if v and v.compatible(addr) and (not type or v.type == type) then
-            kern_info("Driver "..k.." is compatible (type: "..v.type..")")
             return v
         end
     end
@@ -75,7 +73,6 @@ end
 function ret.getDefault(type)
     local defa = nil
     if type == "drive" then
-        kern_info("Getting default drive")
         return ret.getBest(type, computer.getBootAddress())
     end
     for k,v in pairs(cp.list()) do

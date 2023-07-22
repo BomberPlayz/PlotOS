@@ -234,8 +234,8 @@ local function readRegistry()
                 cacheSize = nil,
                 cache = nil,
                 readToEnd = false,
-                readBlockSize = 1024, --cache size, dont wanna rename it
-                readMaxChunkSize = 2048,
+                readBlockSize = _G.LOW_MEM and 256 or 1024, --cache size, dont wanna rename it
+                readMaxChunkSize = _G.LOW_MEM and 512 or 2048,
                 read = function(self, amount) --specifying amount that overflows the file will return nil
                     if not self.cache then
                         local availableBytes = self.readBlockSize
