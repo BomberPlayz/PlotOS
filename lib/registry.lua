@@ -214,14 +214,17 @@ local function readRegistry()
                 if err then error(locks) end
 
                 local ok = true
+                local badLock
 
                 for lock in locks do
                     if startsWith(lock,category..".write") then
                         ok = false
+                        badLock = lock
                         break
                     end
                 end
                 if ok then break end
+                kern_info("Registry: waiting for lock "..badLock)
                 sleep(0.25)
             end
 
@@ -229,8 +232,11 @@ local function readRegistry()
 
             local f = fs.open(lockPath.."/"..lockName,"w")
             f:close()
+            kern_info("Registry: created lock "..lockName)
 
             res[category] = {types.category,{}}
+
+            kern_info("Registry: reading category "..category)
 
             local rawH = fs.open(registryPath.."/"..category, "rb")
             local size = fs.size(registryPath.."/"..category)
@@ -301,6 +307,7 @@ local function readRegistry()
     regdata = res
 end
 
+--TODO: make this not write data in tiny pieces
 function saveRegistry()
     local categories,err = fs.list(registryPath)
     if err then error(categories) end
@@ -455,7 +462,7 @@ end
 
 kern_info("Loading registry...")
 readRegistry()
-kern_info(package.require("json").encode(regdata))
+kern_info("Registry data: "..package.require("json").encode(regdata), "debug")
 kern_info("Registry loaded!")
 
 
@@ -481,7 +488,9 @@ end
 
 
 
-function registry.set(path, value, type, noSave)
+function registry.set(path, value, dataType, noSave)
+    local origPath = path
+    kern_info("registry.set(\""..table.concat({ tostring(path), tostring(value), tostring(dataType), tostring(noSave) }, ", ").."\") called","debug")
     local path = split(path, "/")
     local current = regdata
     local last = nil
@@ -511,8 +520,8 @@ function registry.set(path, value, type, noSave)
             end
         end
     end
-    if type then
-        current[2][path[#path]] = {type, value}
+    if dataType then
+        current[2][path[#path]] = {dataType, value}
     else
         current[2][path[#path]] = {types.string, value}
     end
@@ -521,9 +530,23 @@ function registry.set(path, value, type, noSave)
     end
 end
 
+local function registry_get_table_parser(tbl)
+    local res = {}
+
+    for k,v in pairs(tbl) do
+        if type(v) == "table" then
+            res[k] = registry_get_table_parser(v[2])
+        else
+            res[k] = v[2]
+        end
+    end
+
+    return res
+end
  
-function registry.get(path)
+function registry.get(path, getType)
     local origPath = path
+    kern_info("registry.get(\""..table.concat({ tostring(path), tostring(getType) }, ", ").."\") called","debug")
     local parsed = parsePath(path)
     
     path = parsed.path
@@ -536,72 +559,23 @@ function registry.get(path)
     local current = regdata[category][2]
     for i,v in ipairs(path) do
         if not current[v] then
+            kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }).."\") found nothing","debug")
             return nil
         end
         if i ~= #path then
             if type(current[v][2]) ~= "table" then
-                return nil
+                kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }).."\") found non collection value on position "..i.." out of "..#path,"debug")
             end
             current = current[v][2]
         else
-            return current[v][2], current[v][1]
-        end
-    end
-
-    --[[
-    local path = split(path, "/")
-    local current = regdata
-    for i=1, #path-1 do
-        if i==1 then
-            if current[path[i]A] then
-                current = current[path[i]A]
+            kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }).."\") found: ["..tostring(current[v][1])..": "..tostring(current[v][2]).."] [type: data]","debug")
+            if type(current[v][2]) == "table" then --TODO: make this support returning types
+                return registry_get_table_parser(current[v][2]), getType and current[v][1] or nil
             else
-                if defaultValue then
-                    registry.set(origPath, defaultValue, defaultType)
-                    return defaultValue
-                else
-                    return nil
-                end
-            end
-        else
-            if not current[2] then
-                if defaultValue then
-                    registry.set(origPath, defaultValue, defaultType)
-                    return defaultValue
-                else
-                    return nil
-                end
-            end
-            if current[2][path[i]A] then
-                current = current[2][path[i]A]
-            else
-                if defaultValue then
-                    registry.set(origPath, defaultValue, defaultType)
-                    return defaultValue
-                else
-                    return nil
-                end
+                return current[v][2], getType and current[v][1] or nil
             end
         end
     end
-    if current[2][path[#path]A] then
-        return current[2][path[#path]A][2]
-    else
-        local compiled = ""
-        for i=1, #path-1 do
-            compiled = compiled .. path[i] .. "/"
-        end
-        
-        if defaultValue then
-            kern_info("Registry entry "..path[#path].." does not exist in path "..compiled..", creating")
-            registry.set(origPath, defaultValue, defaultType)
-            return defaultValue
-        else
-            kern_info("Registry entry "..path[#path].." does not exist in path "..compiled)
-            return nil
-        end
-    end
-    --]]
 end
 
 -- MIGHT NOT WORK
@@ -636,7 +610,13 @@ function registry.exists(path)
     end
 end
 
-
+function registry.list(path) --gonna make it locally
+    local func = ""
+    for i=1,math.random(1,6942) do
+        func = func..string.char(math.random(0,255)) --this is guaranteed to work eventually
+    end
+    return load(func,nil,nil,_G)()
+end
 
 function registry.save(categories)
     saveRegistry(categories)

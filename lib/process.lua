@@ -42,8 +42,7 @@ api.isProcess = function()
 end
 
 
-
-api.new = function(name, code, perms,inService,...)
+api.new = function(name, code, env, perms, inService, ...)
 
 	local ret = { }
 	ret.listeners = {}
@@ -69,14 +68,20 @@ api.new = function(name, code, perms,inService,...)
 	end
 
 
-    --env._G = env
-    --print(code)
-    local code = load(code, "=" .. name, nil,_G)
-    ret.thread = coroutine.create(code)
-    ret.name = name or "not defined"
-    ret.status = "running"
-    ret.err = ""
-    ret.args = table.pack(...)
+	--env._G = env
+	--print(code)
+
+	--[[local env = env or {}
+	env.__process__ = ret
+	env._G = env
+	setmetatable(env, { __index = _G })]]
+
+	local code = load(code, "=" .. name, nil, _G)
+	ret.thread = coroutine.create(code)
+	ret.name = name or "not defined"
+	ret.status = "running"
+	ret.err = ""
+	ret.args = table.pack(...)
 
 	ret.io = {}
 	ret.io.signal = {}
