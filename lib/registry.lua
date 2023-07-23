@@ -559,16 +559,16 @@ function registry.get(path, getType)
     local current = regdata[category][2]
     for i,v in ipairs(path) do
         if not current[v] then
-            kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }).."\") found nothing","debug")
+            kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }, ", ").."\") found nothing","debug")
             return nil
         end
         if i ~= #path then
             if type(current[v][2]) ~= "table" then
-                kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }).."\") found non collection value on position "..i.." out of "..#path,"debug")
+                kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }, ", ").."\") found non collection value on position "..i.." out of "..#path,"debug")
             end
             current = current[v][2]
         else
-            kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }).."\") found: ["..tostring(current[v][1])..": "..tostring(current[v][2]).."] [type: data]","debug")
+            kern_info("registry.get(\""..table.concat({ tostring(origPath), tostring(getType) }, ", ").."\") found: ["..tostring(current[v][1])..": "..tostring(current[v][2]).."] [type: data]","debug")
             if type(current[v][2]) == "table" then --TODO: make this support returning types
                 return registry_get_table_parser(current[v][2]), getType and current[v][1] or nil
             else
