@@ -264,12 +264,13 @@ function gui.label(x,y,w,h,text)
     lbl.text = text
 
     lbl.color = 0xffffff
+    lbl.background = nil
 
     lbl.draw = function()
         buffer.setForeground(lbl.color)
         -- if we have a parent set our bg to the parent's bg
         if lbl.parent and lbl.parent.color then
-            buffer.setBackground(lbl.parent.color)
+            buffer.setBackground(lbl.background or lbl.parent.color)
         else
             -- buffer.setBackground(0x000000)
         end
