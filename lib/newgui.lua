@@ -441,6 +441,10 @@ function gui.window(x,y,w,h)
         content.addChild(child)
     end
 
+    win.removeChild = function(child)
+        content.removeChild(child)
+    end
+
     win.doRequestMove = false
 
     titleBar.onEvent = function(event)
@@ -450,10 +454,10 @@ function gui.window(x,y,w,h)
             win.dragY = event.y
             win.dragOffsetX = win.x - event.x
             win.dragOffsetY = win.y - event.y
-            if reg.get("system/ui/window/drag_borders") == 1 then
+           -- if reg.get("system/ui/window/drag_borders") == 1 then
                 content.enabled = false
                 con.enabled = true
-            end
+           -- end
         elseif event.type == "drag" then
             if win.dragging then
                 -- use gui.root.requestDraw to request a draw at the place where the window was before. Don't include the current position
@@ -479,10 +483,10 @@ function gui.window(x,y,w,h)
             end
         elseif event.type == "drop" then
             win.dragging = false
-            if reg.get("system/ui/window/drag_borders") == 1 then
+          --  if reg.get("system/ui/window/drag_borders") == 1 then
                 content.enabled = true
                 con.enabled = false
-            end
+          --  end
         end
 
         for i = #titleBar.children, 1, -1 do
