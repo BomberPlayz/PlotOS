@@ -224,7 +224,7 @@ local function readRegistry()
                 if ok then break end
                 sleep(0.25)
             end
-            
+
             local lockName = category..".read."..string.format("%09d",math.random(0,999999999))
 
             local f = fs.open(lockPath.."/"..lockName,"w")

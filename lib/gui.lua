@@ -93,22 +93,24 @@ function gui.isObstructedAt(object, x, y)
 
 
 
-    for i = object._parentIndex, #object.parent.children do
-        if i == object._parentIndex then
-            -- skip the object itself
-            ::continue::
-        end
+    for i = #object.parent.children, object._parentIndex+1, -1 do
+
+
         local loopObj = object.parent.children[i]
         if gui.isInRect(loopObj.gx, loopObj.gy, loopObj.width, loopObj.height, x, y) then
-            local buf = buffering.getMain()
+            kern_info("Obstructed at " .. x .. ", " .. y .. " [objxy: " .. loopObj.gx .. ", " .. loopObj.gy .. "], [objwh: " .. loopObj.width .. ", " .. loopObj.height .. "]", "debug")
+            if loopObj == object then
+                kern_info("Obstructed by self", "debug")
+            end
+            -- local buf = buffering.getMain()
             -- give the object a red outline
-            buf.setBackground(0xFF0000)
+            --[[buf.setBackground(0xFF0000)
             buf.fill(loopObj.gx, loopObj.gy, loopObj.width, 1, " ")
             buf.fill(loopObj.gx, loopObj.gy + loopObj.height - 1, loopObj.width, 1, " ")
             buf.fill(loopObj.gx, loopObj.gy, 1, loopObj.height, " ")
             buf.fill(loopObj.gx + loopObj.width - 1, loopObj.gy, 1, loopObj.height, " ")
             buf.setBackground(0x000000)
-            buf.draw()
+            buf.draw()]]
 
             return true
         end
@@ -490,7 +492,7 @@ gui.panel = function(x, y, w, h, color, fillchar) -- fillchar is optional
             return
         end
         buf.setBackground(obj.color)
-        buf.fill(obj.x, obj.y, obj.width, obj.height, obj.char, obj.opacity, obj.opacity)
+        buf.fill(obj.x, obj.y, obj.width, obj.height, obj.char, obj.opacity)
 
         obj.dirty = false
     end
@@ -507,6 +509,7 @@ gui.button = function(x, y, w, h, text)
     obj.height = h
     obj.backColor = 0xCCCCCC
     obj.textColor = 0x000000
+    obj.text = text
 
     obj.pbackColor = 0xA5A5A5
     obj.ptextColor = 0x000000
@@ -518,10 +521,11 @@ gui.button = function(x, y, w, h, text)
         if not obj.visible then
             return
         end
+        --kern_info("TEXTEBUTE: "..text, "debug")
         buf.setForeground(obj.isPressed and obj.ptextColor or obj.textColor)
         buf.setBackground(obj.isPressed and obj.pbackColor or obj.backColor)
         buf.fill(obj.x, obj.y, obj.width, obj.height, " ")
-        buf.set(obj.x, obj.y, text)
+        buf.set(obj.x, obj.y, obj.text)
         obj.dirty = false
     end
 
@@ -992,6 +996,7 @@ require("process").new(
     [[
     local gui = require("gui")
     local event = require("event")
+
 
     event.listen("touch",function(event,_,x,y,btn)
     --   print(event)

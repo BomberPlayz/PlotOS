@@ -1,22 +1,37 @@
 local event = {}
-kern_info("Loading prococc library")
 local proc = require("process")
-kern_info("Loading eeee library")
 -- event#pull function. Takes a timeout and an event.
 -- Use computer.pullSignal to get an event. It takes a timeout as argument.
 -- If the timeout is nil, the function will block until an event occurs.
 -- an event may have unlimited arguments, they should be returned as-is, not in a table.
 -- if no timeout is specified, event.pull should wait until a correct event occurs. If there is a timeout, then event.pull should return nil if no event occurs before the timeout.
 function event.pull(event, timeout)
-  local evt = event
-
-
-  while true do
-    local sig, a, b, c, d, e, f = computer.pullSignal(timeout)
-    if sig == evt or evt == nil then
-      return sig, a, b, c, d, e, f
-    end
+  if type(event) == "number" then
+    timeout = event
+    event = nil
   end
+  local evt = event
+  if not timeout then
+    timeout = math.huge
+  end
+  if timeout < 0.05 then
+    timeout = 0.05
+  end
+
+
+  local f = true
+
+  local start = computer.uptime()
+  while (computer.uptime() - start < timeout) or f do
+   -- f = false
+    local evente = {computer.pullSignal(timeout - (computer.uptime() - start))}
+    --local sig, a, b, c, d, e, f = computer.pullSignal(timeout-(computer.uptime()-timeout)
+    if evente[1] == evt or evt == nil then
+      return table.unpack(evente)
+    end
+
+  end
+    return nil
 
 
 
@@ -105,7 +120,7 @@ proc.new("TimeoutHandler", [[
 local event = require("event")
 
 while true do
-  os.sleep(0.01)
+  os.sleep()
   for k,v in ipairs(event.timeouts) do
     if computer.uptime() - v.start >= v.timeout then
       v.callback()

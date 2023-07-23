@@ -21,6 +21,7 @@ computer.pullSignal = function(tout)
                 return a,b,c,d,e,f,g,h,i,j,k
             end
             coroutine.yield()
+          --  kern_info("YIELDING")
         end
         --print(table.unpack(computer._signal))
 
