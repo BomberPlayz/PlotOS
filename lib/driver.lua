@@ -3,6 +3,22 @@ local fs = package.require("fs")
 local reg = package.require("registry")
 local cp = component
 ret.loaded = {}
+local drivers = {}
+
+function generate_unique_id()
+    -- generate a unique id, 16 chars a-z0-9
+    local id = ""
+    for i=1,16 do
+        local r = math.random(1,36)
+        if r <= 26 then
+            id = id..string.char(r+96)
+        else
+            id = id..string.char(r+21)
+        end
+    end
+    return id
+end
+
 function ret.getDriver(path)
     if not ret.loaded[path] then
         kern_info("Loading driver "..path)
@@ -134,6 +150,8 @@ function newdriver(d, addr)
 
     end
 
+    
+
 
 
     return dd
@@ -167,5 +185,7 @@ function ret.load(type, addr)
     end
 
 end
+
+
 
 return ret
