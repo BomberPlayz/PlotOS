@@ -454,7 +454,8 @@ end
 
 kern_info("Loading registry...")
 readRegistry()
-kern_info("Registry data: "..package.require("json").encode(regdata), "debug")
+--kern_info("Registry data: "..package.require("json").encode(regdata), "debug")
+kern_info("Registry data: DISABLED FOR MEMORY OPTIMIZATION, REGISTRY.LUA:458", "debug")
 kern_info("Registry loaded!")
 
 
