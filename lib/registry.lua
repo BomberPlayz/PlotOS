@@ -17,6 +17,7 @@ local types = {
 }
 
 local fs = package.require("fs")
+local std = package.require("stdlib")
 registryPath = fs.canonical(registryPath)
 local lockPath = registryPath.."/locks"
 
@@ -33,15 +34,6 @@ local function sleep(timeout)
     repeat
       computer.pullSignal(deadline - computer.uptime())
     until computer.uptime() >= deadline
-  end
-
-local function split(inputstr, sep)
-    sep = sep or "%s"
-    local t = {}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        table.insert(t, str)
-    end
-    return t
 end
 
 local function startsWith(str, prefix)
@@ -53,7 +45,7 @@ local function endsWith(str, suffix)
 end
 
 local function parsePath(path)
-    local keys = split(path,"/")
+    local keys = std.str.split(path,"/")
     local category = keys[1]
     if category then
         table.remove(keys,1)
@@ -477,7 +469,7 @@ kern_info("Registry loaded!")
 
 -- first element is the type, second is the data. the key is the name of the entry
 
-function split(str, sep)
+function std.str.split(str, sep)
     local result = {}
     local regex = ("([^%s]+)"):format(sep)
     for each in str:gmatch(regex) do
@@ -491,7 +483,7 @@ end
 function registry.set(path, value, dataType, noSave)
     local origPath = path
     kern_info("registry.set(\""..table.concat({ tostring(path), tostring(value), tostring(dataType), tostring(noSave) }, ", ").."\") called","debug")
-    local path = split(path, "/")
+    local path = std.str.split(path, "/")
     local current = regdata
     local last = nil
     for i=1, #path-1 do
@@ -588,8 +580,8 @@ function registry.exists(path)
         local current = regdata[category]
         for i=1, #path-1 do
             if i==1 then
-                if current[path[i]] then
-                    current = current[path[i]]
+                if current[2][path[i]] then
+                    current = current[2][path[i]]
                 else
                     return false
                 end
@@ -610,17 +602,17 @@ function registry.exists(path)
     end
 end
 
-function registry.list(path) --gonna make it locally
+function registry.list(path)
     local parsed = parsePath(path)
     local category = parsed.category
     local path = parsed.path
 
     if regdata[category] then
         local current = regdata[category]
-        for i=1, #path-1 do
+        for i=1, #path do
             if i==1 then
-                if current[path[i]] then
-                    current = current[path[i]]
+                if current[2][path[i]] then
+                    current = current[2][path[i]]
                 else
                     return false
                 end
