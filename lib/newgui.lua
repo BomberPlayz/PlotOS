@@ -578,14 +578,14 @@ function gui.window(x,y,w,h)
             win.doRequestMove = false
         end]]
         if reg.get("system/ui/window/shadow") == 1 or true then
-            local lastbg = buffer.getBackground()
-            buffer.setBackground(0x000000)
-            local lastMask = buffer.getMask()
-            buffer.setMask(0,0,buffer.width,buffer.height)
-            buffer.fill(win.w + 1, win.y + 1, 1, win.h, " ")
-            buffer.fill(win.x + 1, win.h + 1, win.w, 1, " ")
-            buffer.setMask(lastMask)
-            buffer.setBackground(lastbg)
+            --local lastbg = buffer.getBackground()
+            --buffer.setBackground(0x000000)
+            --local lastMask = buffer.getMask()
+           -- buffer.setMask(0,0,buffer.width,buffer.height)
+            --buffer.fill(win.w + 1, win.y + 1, 1, win.h, " ")
+            --buffer.fill(win.x + 1, win.h + 1, win.w, 1, " ")
+            --buffer.setMask(lastMask)
+            --buffer.setBackground(lastbg)
             
         end
     end

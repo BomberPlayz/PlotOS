@@ -518,7 +518,14 @@ local function boot(type)
             --computer.pullSignal(0.5)
             local d = driver.getDriver(ka .. k)
            -- kern_info("Driver " .. ka .. k .. " is " .. d.getName())
-            d.cp = component
+            d.cp = {
+                proxy = component.proxy,
+                list = component.list,
+                get = component.get,
+                invoke = component.invoke,
+                methods = component.methods,
+
+            }
         end
 
     end
