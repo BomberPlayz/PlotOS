@@ -1,12 +1,16 @@
 local dbuf = require("doublebuffering")
 local reg = require("registry")
+local gpu = require("driver").load("gpu")
 
 
-local buffer = dbuf.getMain()
+local buffer = gpu
+buffer.width, buffer.height = buffer.getResolution()
+
 
 buffer.setBackground(0x000000)
 buffer.fill(1,1,buffer.width,buffer.height," ")
-buffer.draw()
+print(buffer.width, buffer.height)
+-- buffer.draw()
 
 function EventEmitter()
     local self = {}
@@ -61,6 +65,7 @@ function gui.component(x,y,w,h)
 
     comp.draw = function() end
     comp.beforeDraw = function() end
+    comp.afterDraw = function() end
     comp.onEvent = function() end
 
     comp.dirty = true
@@ -106,7 +111,7 @@ function gui.container(x,y,w,h)
 
 
 
-        buffer.setMask(cont.x, cont.y, cont.w, cont.h)
+         buffer.setMask(cont.x, cont.y, cont.w, cont.h)
 
 
 
@@ -116,14 +121,14 @@ function gui.container(x,y,w,h)
 
             if child.enabled then
 
-                child.x = cont.x + child.x
-                child.y = cont.y + child.y
-                child._gx = child.x
-                child._gy = child.y
+                
+                child._gx = child.x+cont.x
+                child._gy = child.y+cont.y
 
-                child.draw(special)
-                child.x = child.x - cont.x
-                child.y = child.y - cont.y
+                if child.dirty then
+                    child.draw(special)
+                end
+                
 
             end
 
@@ -135,7 +140,7 @@ function gui.container(x,y,w,h)
 
 
 
-        buffer.setMask(0,0,buffer.width,buffer.height)
+         buffer.setMask(0,0,buffer.width,buffer.height)
 
 
     end
@@ -177,14 +182,25 @@ function gui.container(x,y,w,h)
 
         for i, child in ipairs(cont.children) do
             if child.enabled then
-                child.x = cont.x + child.x
-                child.y = cont.y + child.y
-                child._gx = child.x
-                child._gy = child.y
+                
+                child._gx = child.x+cont.x
+                child._gy = child.y+cont.y
                 --kern_info("child x: " .. child.x .. " child y: " .. child.y..", child id: " .. i)
                 child.beforeDraw()
-                child.x = child.x - cont.x
-                child.y = child.y - cont.y
+                
+
+            end
+        end
+    end
+
+    cont.afterDraw = function()
+        for i, child in ipairs(cont.children) do
+            if child.enabled then
+                
+                child._gx = child.x+cont.x
+                child._gy = child.y+cont.y
+                child.afterDraw()
+                
 
             end
         end
@@ -326,14 +342,14 @@ function gui.panel(x,y,w,h, color, char)
             -- check from the root object.
 
             if child.enabled then
-                child.x = pnl.x + child.x
-                child.y = pnl.y + child.y
-                child._gx = child.x
-                child._gy = child.y
+                
+                child._gx = child.x+pnl.x
+                child._gy = child.y+pnl.y
 
-                child.draw(special)
-                child.x = child.x - pnl.x
-                child.y = child.y - pnl.y
+                if child.dirty then
+                    child.draw(special)
+                end
+                
 
             end
 
@@ -412,6 +428,9 @@ function gui.window(x,y,w,h)
     local titleBar = gui.panel(0, 0, w, 1, reg.get("system/ui/window/titlebar_color"))
     local title = gui.label(0,0,w,1,"Window")
     local closeButton = gui.button(w - 1,0,1,1,"x")
+
+    win.buffer = gpu.allocateBuffer(w, h)
+    local lastbuf = gpu.getActiveBuffer()
 
 
     titleBar.addChild(title)
@@ -573,6 +592,8 @@ function gui.window(x,y,w,h)
     end
 
     win.beforeDraw = function()
+        lastbuf = gpu.getActiveBuffer()
+        gpu.setActiveBuffer(win.buffer)
         --[[if win.doRequestMove then
             gui.root.requestDraw(win.lastX, win.lastY, win.w, win.h)
             win.doRequestMove = false
@@ -581,13 +602,19 @@ function gui.window(x,y,w,h)
             --local lastbg = buffer.getBackground()
             --buffer.setBackground(0x000000)
             --local lastMask = buffer.getMask()
-           -- buffer.setMask(0,0,buffer.width,buffer.height)
+           -- -- buffer.setMask(0,0,buffer.width,buffer.height)
             --buffer.fill(win.w + 1, win.y + 1, 1, win.h, " ")
             --buffer.fill(win.x + 1, win.h + 1, win.w, 1, " ")
-            --buffer.setMask(lastMask)
+            ---- buffer.setMask(lastMask)
             --buffer.setBackground(lastbg)
             
         end
+    end
+
+    win.afterDraw = function()
+        
+        buffer.bitblt(lastbuf, win._gx, win._gy, win.w, win.h, win.buffer, 1,1)
+        gpu.setActiveBuffer(lastbuf)
     end
 
     win.setTitle = function(title)
@@ -670,20 +697,34 @@ end
 
 function gui.eventLoop(object)
     gui.root = object
+
+    local buf = gpu.allocateBuffer(buffer.width, buffer.height)
+    
+
     while true do
         --_sleep(1/20, object)
         -- get the time the tick takes
         local start = computer.uptime()
+        gpu.setActiveBuffer(buf)
         --kern_info("beforedraw")
         object.beforeDraw()
        -- kern_info("draw")
         object.draw()
+
+        object.afterDraw()
+        
+        local t, e = gpu.bitblt()
+        gpu.setActiveBuffer(0)
+        if not t then
+            kern_info("Issue with render gui: "..e, "warn")
+        end
         --kern_info("afterdraw")
-        buffer.draw()
+        -- -- buffer.draw()
         local ende = computer.uptime()
         local time = ende - start
         --gpu.set(1,1,tostring(time))
         --kern_info("time: "..tostring(time))
+        
         _sleep(0, object)
 
     end

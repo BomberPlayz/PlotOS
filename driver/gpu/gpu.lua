@@ -18,7 +18,7 @@ ret.getName = function()
 end
 
 ret.getVersion = function()
-    return 3
+    return 4
 end
 
 local index = function(x,y,w)
@@ -29,6 +29,35 @@ ret.new = function(adr)
     local com = ret.cp.proxy(adr)
 
     local drv = {}
+
+    local w,h = com.getResolution()
+
+    drv.mask = {
+        x = 0,
+        y = 0,
+        w = w,
+        h = h
+    }
+
+    drv.setMask = function(x,y,w,h)
+       --[[ if not x then
+            drv.mask = {
+                x = 0,
+                y = 0,
+                w = drv.width,
+                h = drv.height
+            }
+            return
+        end
+        drv.mask.x = x
+        drv.mask.y = y
+        drv.mask.w = w
+        drv.mask.h = h]]
+    end
+
+    drv.getMask = function()
+        return drv.mask.x,drv.mask.y,drv.mask.w,drv.mask.h
+    end
 
     drv.bind = function(adr)
         return com.bind(adr)
@@ -100,8 +129,57 @@ ret.new = function(adr)
         return com.get(x,y)
     end
 
-    drv.set = function(x,y,v,vv)
-        return com.set(x,y,v,vv)
+    drv.set = function(x,y,c, vertical)
+        -- respect the buffer
+        -- if c would be out of bounds, trim it to the mask
+        if y > drv.mask.h+drv.mask.y then
+            return
+        end
+        if x < drv.mask.x then
+            c = string.sub(c,drv.mask.x-x+1)
+            x = drv.mask.x
+        end
+
+        if x+#c > drv.mask.w+drv.mask.x then
+            c = string.sub(c,1,drv.mask.w+drv.mask.x-x)
+        end
+        
+        if y < drv.mask.y then
+            local diff = drv.mask.y-y
+            y = drv.mask.y
+            if vertical then
+                c = string.sub(c,diff+1)
+            else
+                c = string.rep(" ",diff)..c
+            end
+        end
+
+        if y+#c > drv.mask.h+drv.mask.y then
+            local diff = y+#c - (drv.mask.h+drv.mask.y)
+            if vertical then
+                c = string.sub(c,1,#c-diff)
+            else
+                c = c..string.rep(" ",diff)
+            end
+        end
+
+        if vertical then
+            for i = 1,#c do
+                com.set(x,y+i-1,string.sub(c,i,i))
+            end
+            return
+        end
+
+
+
+        
+
+        
+
+
+
+        
+        return com.set(x,y,c,vertical)
     end
 
     drv.copy = function(x,y,w,h,tx,ty)
@@ -109,6 +187,12 @@ ret.new = function(adr)
     end
     
     drv.fill = function(x,y,w,h,c)
+        -- respect the buffer
+        x = math.max(x,drv.mask.x)
+        y = math.max(y,drv.mask.y)
+        w = math.min(w,drv.mask.w)
+        h = math.min(h,drv.mask.h)
+
         return com.fill(x,y,w,h,c)
     end
 
