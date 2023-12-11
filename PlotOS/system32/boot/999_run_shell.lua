@@ -17,7 +17,6 @@ if not e then
 end
 
 local fs = require("fs")
-local logger = require("log4po")
 
 if not safemode then
     dofile("/PlotOS/cursor.lua")
@@ -26,7 +25,7 @@ if not safemode then
     end)
 
     if not s1 then
-        logger.error("Error running system autorun: " .. e1)
+        kern_error("Error running system autorun: " .. e1)
     end
 else
     kern_info("Safemode is enabled, skipping system autorun.", "warn")
@@ -38,7 +37,7 @@ if not safemode then
     end)
 
     if not s2 then
-        logger.error("Error running autorun: " .. e2)
+        kern_error("Error running autorun: " .. e2)
     end
 else
     kern_info("Safemode is enabled, skipping autorun.", "warn")

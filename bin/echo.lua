@@ -1,2 +1,3 @@
 local args = ...
-print("Echo: "..args[2])
+table.remove(args, 1)
+print(table.concat(args, " "))
