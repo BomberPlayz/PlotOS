@@ -30,6 +30,18 @@ function EventEmitter()
     return self
 end
 
+local function getParentAttrib(attrib, obj)
+    if obj.parent then
+        if obj.parent[attrib] then
+            return obj.parent[attrib]
+        else
+            return getParentAttrib(attrib, obj.parent)
+        end
+    else
+        return nil
+    end
+end
+
 
 local gui = {}
 gui.buffer = buffer
@@ -269,10 +281,11 @@ function gui.label(x,y,w,h,text)
     lbl.draw = function()
         buffer.setForeground(lbl.color)
         -- if we have a parent set our bg to the parent's bg
-        if lbl.parent and lbl.parent.color then
-            buffer.setBackground(lbl.background or lbl.parent.color)
+        if getParentAttrib("color", lbl) then
+            buffer.setBackground(getParentAttrib("color", lbl) or lbl.parent.color)
+
         else
-            -- buffer.setBackground(0x000000)
+            buffer.setBackground(lbl.background or 0x000000)
         end
         buffer.fill(lbl.x, lbl.y, lbl.w, lbl.h, " ")
         -- split the text by newlines
@@ -345,6 +358,7 @@ function gui.progressBar(x,y,w,h, max)
     bar.progress = 0
 
     bar.setProgress = function(progress)
+        if not progress then error("progress cannot be nil") end
         bar.progress = progress
         bar.dirty = true
     end
@@ -455,10 +469,10 @@ function gui.window(x,y,w,h)
             win.dragY = event.y
             win.dragOffsetX = win.x - event.x
             win.dragOffsetY = win.y - event.y
-           -- if reg.get("system/ui/window/drag_borders") == 1 then
+            if reg.get("system/ui/window/drag_borders") == 1 then
                 content.enabled = false
                 con.enabled = true
-           -- end
+            end
         elseif event.type == "drag" then
             if win.dragging then
                 -- use gui.root.requestDraw to request a draw at the place where the window was before. Don't include the current position
@@ -484,10 +498,10 @@ function gui.window(x,y,w,h)
             end
         elseif event.type == "drop" then
             win.dragging = false
-          --  if reg.get("system/ui/window/drag_borders") == 1 then
+            if reg.get("system/ui/window/drag_borders") == 1 then
                 content.enabled = true
                 con.enabled = false
-          --  end
+            end
         end
 
         for i = #titleBar.children, 1, -1 do
@@ -563,6 +577,17 @@ function gui.window(x,y,w,h)
             gui.root.requestDraw(win.lastX, win.lastY, win.w, win.h)
             win.doRequestMove = false
         end]]
+        if reg.get("system/ui/window/shadow") == 1 or true then
+            local lastbg = buffer.getBackground()
+            buffer.setBackground(0x000000)
+            local lastMask = buffer.getMask()
+            buffer.setMask(0,0,buffer.width,buffer.height)
+            buffer.fill(win.w + 1, win.y + 1, 1, win.h, " ")
+            buffer.fill(win.x + 1, win.h + 1, win.w, 1, " ")
+            buffer.setMask(lastMask)
+            buffer.setBackground(lastbg)
+            
+        end
     end
 
     win.setTitle = function(title)
@@ -576,6 +601,35 @@ function gui.window(x,y,w,h)
 
 
 end
+
+function gui.treeNode(text)
+    local node = gui.container(0,0,0,0)
+    node.text = text
+
+    node.expanded = false
+
+    node.color = 0xaaaaaa
+    node.foreColor = 0x000000
+
+    node.draw = function()
+        buffer.setForeground(node.foreColor)
+        buffer.setBackground(node.color)
+        buffer.fill(node.x, node.y, node.w, node.h, " ")
+
+        buffer.set(node.x, node.y, node.text)
+    end
+
+    node.onEvent = function(event)
+        if event.type == "touch" then
+            node.expanded = not node.expanded
+            node.dirty = true
+        end
+    end
+
+    return node
+end
+
+
 local event = require("event")
 function _sleep(time, object)
     -- event.pull until the time is up. If there is event, then onevent it

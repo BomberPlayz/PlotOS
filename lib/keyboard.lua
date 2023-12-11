@@ -5,8 +5,8 @@ keyboard.event = require("event").emitter()
 local kp = require("process").new("KeyboardInterrupts", [[
   local kb = require("keyboard")
   while true do
-    local _,_,_,key = require("event").pull("key_down")
-    if key ~= nil then
+    local e,_,_,key = require("event").pull()
+    if e == "key_down" or key ~= nil then
       pcall(function()
         kb.event.emit("key_pressed",key)
       end)

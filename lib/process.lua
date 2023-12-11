@@ -19,8 +19,12 @@ local function setfenv(f, env)
 end
 local _signal = nil
 
+-- Finds a process by its associated thread.
+-- @param thread The thread to search for.
+-- @param process (optional) The process or list of processes to search within. If not provided, the global list of processes will be used.
+-- @return The process that matches the given thread, or nil if no match is found.
 api.findByThread = function(thread, process)
-	--process is optional
+	-- process is optional
 	process = process or api.processes
 
 	for _, subProcess in ipairs(process) do
@@ -35,6 +39,8 @@ api.findByThread = function(thread, process)
 	end
 end
 
+--- Checks if the current Lua function is running as a process.
+--- @return boolean True if the function is running as a process, false otherwise.
 api.isProcess = function()
 	if api.findByThread(coroutine.running()) then
 		return true
@@ -42,6 +48,18 @@ api.isProcess = function()
 end
 
 
+-- Creates a new process with the specified parameters.
+-- @param name (string) - The name of the process.
+-- @param code (string) - The code to be executed by the process.
+-- @param env (table) [optional] - The environment table for the process.
+-- @param perms (table) [optional] - The permissions table for the process.
+-- @param inService (boolean) [optional] - Indicates whether the process is in service.
+-- @param ... - Additional arguments to be passed to the process.
+-- @return (table) - The newly created process object.
+
+api.new = function(name, code, env, perms, inService, ...)
+	-- Implementation details...
+end
 api.new = function(name, code, env, perms, inService, ...)
 
 	local ret = { }
@@ -160,21 +178,24 @@ api.new = function(name, code, env, perms, inService, ...)
 	return ret
 end
 
+-- Loads a file from the specified path and returns a new API object.
+-- @param name (string) - The name of the API object.
+-- @param path (string) - The path to the file to be loaded.
+-- @param perms (table) - Optional permissions for the API object.
+-- @param forceRoot (boolean) - Whether to force the API object to be rooted.
+-- @param ... - Additional arguments to be passed to the API constructor.
+-- @return (table, string) - The loaded API object or nil if loading failed, and an error message if applicable.
 api.load = function(name, path, perms, forceRoot, ...)
 	local fs = require("fs")
-	--kern_info("loaded fs")
 	if path:sub(1, 1) ~= "/" then
 		path = (os.currentDirectory or "/") .. "/" .. path
 	end
-	-- kern_info("opening")
 	local handle, open_reason = fs.open(path)
-	-- kern_info("opened")
 	if not handle then
 		return nil, open_reason
 	end
 	local buffer = {}
 	while true do
-		-- kern_info("read")
 		local data, reason = handle:read(1024)
 		if not data then
 			handle:close()
@@ -190,29 +211,22 @@ end
 
 local toRemoveFromProc = {}
 
+local driverCache = {}
+
 -- print(coroutine.status(v.thread))
 api.tickProcess = function(v)
-
-	--if math.random(1,10000) > 9500 then print("Name: "..v.name.." status: "..v.status) end
-	if (v.status == "running" or v.status == "idle") then
-
+	if v.status == "running" or v.status == "idle" then
 		if coroutine.status(v.thread) == "suspended" then
-			--  print(tostring(#v.io.signal.pull))
-			--setfenv(v.thread, env)
 			if #v.io.signal.pull > 0 then
-				--print("It wants")
 				if not v.io.signal.queue[1] then
-
 					local a, b, c, d, e, f, g, aa, ss = computer.pullSignal(0)
 					if a then
-						--  print("BIT IT SIG")
 						table.insert(v.io.signal.queue, { a, b, c, d, e, f, g, aa, ss })
 					end
 				end
 				local puk = v.io.signal.pull[#v.io.signal.pull]
 				if type(v.io.signal.queue[1]) == "table" and v.io.signal.queue[1][1] or (computer.uptime() >= puk.timeout + puk.start_at) then
 					v.status = "running"
-					--print(tostring(v.io.signal.queue[1][1]))
 					v.io.signal.pull[#v.io.signal.pull].ret = v.io.signal.queue[1] or {}
 					if v.io.signal.queue[1] then
 						table.remove(v.io.signal.queue, 1)
@@ -221,15 +235,31 @@ api.tickProcess = function(v)
 					local reta = { coroutine.resume(v.thread, table.unpack(v.args)) }
 					if not reta[1] then
 						v.err = reta[2] or "Died"
+					else
+						table.remove(reta, 1)
+						if reta[1] ~= nil then
+							local syscall = table.remove(reta, 1)
+							local args = reta
+							if syscall == "driver" then
+								if not driverCache[args[1]] then
+									local drv = require("driver").load(args[1])
+									driverCache[args[1]] = drv
+								end
+								if driverCache[args[1]] then
+									local fn = driverCache[args[1]][args[2]]
+									table.remove(args, 1)
+									table.remove(args, 1)
+									local ret = fn(table.unpack(args))
+									v.sysret = ret
+								end
+							end
+						end
 					end
-
 					local et = computer.uptime() * 1000
 					v.lastCpuTime = et / 1000 - st / 1000
 					for kk, vv in ipairs(v.processes) do
 						v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
-
 					end
-
 					usedTime = usedTime + v.lastCpuTime
 					table.insert(v.cputime_avg, v.lastCpuTime)
 					if #v.cputime_avg > 24 then
@@ -241,7 +271,6 @@ api.tickProcess = function(v)
 					v.lastCpuTime = 0
 					for kk, vv in ipairs(v.processes) do
 						v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
-
 					end
 					usedTime = usedTime + v.lastCpuTime
 					table.insert(v.cputime_avg, v.lastCpuTime)
@@ -251,17 +280,14 @@ api.tickProcess = function(v)
 				end
 			else
 				local a, b, c, d, e, f, g, aa, ss = computer.pullSignal(0)
-				--  print(tostring(a))
 				if a then
 					table.insert(v.io.signal.queue, { a, b, c, d, e, f, g, aa, ss })
 				end
-
 				local st = computer.uptime() * 1000
 				local reta = { coroutine.resume(v.thread, table.unpack(v.sysret or v.args)) }
 				if not reta[1] then
 					v.err = reta[2] or "Died"
 				end
-
 				table.remove(reta, 1)
 				if reta[1] ~= nil then
 					local syscall = table.remove(reta, 1)
@@ -277,18 +303,14 @@ api.tickProcess = function(v)
 							table.remove(args, 1)
 							local ret = fn(table.unpack(args))
 							v.sysret = ret
-
 						end
 					end
 				end
-
 				local et = computer.uptime() * 1000
 				v.lastCpuTime = et / 1000 - st / 1000
 				for kk, vv in ipairs(v.processes) do
 					v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
-
 				end
-
 				usedTime = usedTime + v.lastCpuTime
 				table.insert(v.cputime_avg, v.lastCpuTime)
 				if #v.cputime_avg > 32 then
@@ -302,7 +324,6 @@ api.tickProcess = function(v)
 	elseif v.status == "dead" then
 		table.insert(toRemoveFromProc, v)
 	elseif v.status == "dying" then
-		-- print(v.name.." dead: "..v.err)
 		v.emit("exit")
 		kern_info("Process with name " .. v.name .. " with pid " .. v.pid .. " has died: " .. v.err)
 		v.io.signal.pull = {}

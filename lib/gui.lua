@@ -91,7 +91,7 @@ function gui.isObstructedAt(object, x, y)
         return false
     end
 
-    kern_info(tostring(#object.parent.children), "warn")
+    --kern_info(tostring(#object.parent.children), "warn")
 
     for i = #object.parent.children, object._parentIndex+1, -1 do
 

@@ -76,7 +76,7 @@ function io.read()
   cursor.x = prt_x
   cursor.setBlink(true)
   while true do
-    local a,b,_,c,d = computer.pullSignal(0.5)
+    local a,b,bb,c,d = computer.pullSignal(0.5)
     local proc = require("process")
     if proc.isProcess() then
       local p = proc.findByThread(coroutine.running())
@@ -93,8 +93,7 @@ function io.read()
     end
 
     if a == "key_down" then
-      c = keyboard.keys[c]
-      if c == "enter" then
+      if bb == 13 then
         if pusy > 0 then
           cursor.x = cursor.x+1
         end
@@ -104,7 +103,7 @@ function io.read()
         cursor.x = prt_x
         cursor.y = prt_y
         return txt
-      elseif c == "back" then
+      elseif bb == 8 then
         if pusy > 0 then
           pusy = pusy-1
           txt = string.sub(txt,1,(string.len(txt)-1))
@@ -117,35 +116,30 @@ function io.read()
 
           if txt == nil then txt = "" end
         end
-      else
+      elseif bb == 127 then --i dont think we supported del, even before
 
-        if disabledCodeMap[c] == nil then
-          if codeMap[c] ~= nil then c = codeMap[c] end
-          if c ~= nil then
-            txt = txt..c
-            pusy = pusy+1
-            cursor.x = prt_x+1
-            cursor.y = prt_y
-            cursor.setBlink(true)
+      elseif bb > 31 then
+        txt = txt..string.char(bb)
+        pusy = pusy+1
+        cursor.x = prt_x+1
+        cursor.y = prt_y
+        cursor.setBlink(true)
 
-            cursor.x = prt_x
-            cursor.y = prt_y
-            cursor.setBlink(false)
+        cursor.x = prt_x
+        cursor.y = prt_y
+        cursor.setBlink(false)
 
-            io.write(c)
-            --cursor.x = prt_x+1
-            cursor.x = prt_x
-          end
-        end
+        io.write(string.char(bb))
+        --cursor.x = prt_x+1
+        cursor.x = prt_x
       end
-    elseif a == nil then
+    elseif bb == nil then
       if cursor.blink then
         cursor.setBlink(false)
       else
         cursor.setBlink(true)
       end
     end
-
   end
 end
 
@@ -186,42 +180,54 @@ local function split(string,sep)
   return fields
 end
 
-function io.writeline(txt)
-  local dat = split(txt,"\n")
+function io.setScreenSize(w, h)
   local proc = require("process")
   if proc.isProcess() then
     local p = proc.findByThread(coroutine.running())
-    w,h = p.io.screen.width, p.io.screen.height
-  else
-    w,h = gpu.getResolution()
+    p.io.screen.width = w
+    p.io.screen.height = h
   end
-  local ox,oy = 0,0
+end
+
+function io.writeline(txt)
+  local dat = split(txt, "\n")
+  local proc = require("process")
+  local w, h, ox, oy
+
   if proc.isProcess() then
     local p = proc.findByThread(coroutine.running())
-    ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
+    w, h = p.io.screen.width, p.io.screen.height
+    ox, oy = p.io.screen.offset.x, p.io.screen.offset.y
+  else
+    w, h = gpu.getResolution()
   end
-  for i=1,#dat do
+
+  for i = 1, #dat do
     io.write(dat[i])
 
-    local w,h = gpu.getResolution()
-    if prt_y == h-1 then
-      gpu.copy(1+ox,1+oy,w,h,0,-1)
-      gpu.fill(1+ox,h+oy,w,1," ")
+    if prt_y == h - 1 then
+      gpu.copy(1 + ox, 1 + oy, w, h, 0, -1)
+      gpu.fill(1 + ox, h + oy, w, 1, " ")
     else
       prt_y = prt_y + 1
     end
+
     prt_x = 1
   end
+
   if #dat == 0 then
-    if prt_y == h-1 then
-      gpu.copy(1+ox,1+oy,w,h,0,-1)
-      gpu.fill(1+ox,h+oy,w,1," ")
+    if prt_y == h - 1 then
+      gpu.copy(1 + ox, 1 + oy, w, h, 0, -1)
+      gpu.fill(1 + ox, h + oy, w, 1, " ")
     else
       prt_y = prt_y + 1
     end
+
     prt_x = 1
   end
 end
+
+_G.io = io
 
 function io.setScreenSize(w,h)
   local proc = require("process")

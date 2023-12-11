@@ -8,6 +8,8 @@ api.getMain = function()
     return api.main
 end
 
+
+
 local function deepcopy(orig, copies)
     copies = copies or {}
     local orig_type = type(orig)
@@ -29,6 +31,10 @@ local function deepcopy(orig, copies)
     return copy
 end
 
+--- Creates a new doublebuffer
+-- @param w width
+-- @param h height
+-- @param proxy the gpu proxy to use
 function api.new(w,h,proxy)
     local ret = {}
 
@@ -83,6 +89,10 @@ function api.new(w,h,proxy)
             w = w,
             h = h
         }
+    end
+
+    function ret.getMask()
+        return ret.mask.x,ret.mask.y,ret.mask.w,ret.mask.h
     end
 
     ret.index = function(x,y)
@@ -183,29 +193,21 @@ function api.new(w,h,proxy)
                 --local lasac,lasfo,lasba = table.unpack(ret.buffer[ret.index(1,y)])
                 --sames = 0
                 for x=xx,ret.width+xx-1,1 do
-
-                    local char,foree,backe = table.unpack(ret.buffer[ret.index(x,y)])
-                  -- local beb = ret.buffer[ret.index(x+1,y)]
-                    --local nextchar,nextfore,nextback = table.unpack(beb or {" ",-1,-1})
-                    --[[if nextchar == lasac and nextfore == lasfo and nextback == lasba then
-                        --kern_info("SAMMMOE", "debug")
-                        sames = sames + 1
-                    end]]
-
-                    local lastchar,lastfore,lastback = table.unpack(ret.lastbuffer[ret.index(x,y)])
+                    local index = ret.index(x,y)
+                    local buffer = ret.buffer[index]
+                    local lastbuffer = ret.lastbuffer[index]
+                
+                    local char,foree,backe = table.unpack(buffer)
+                    local lastchar,lastfore,lastback = table.unpack(lastbuffer)
+                
                     if char ~= lastchar or (foree ~= lastfore and char ~= " ") or backe ~= lastback then
-
-                        if backe == 0x000000 and lastback == 0x000000 and char == " " then
-                            -- do nothing
-                        else
+                        if not (backe == 0x000000 and lastback == 0x000000 and char == " ") then
+                            local gpu = gpu -- make gpu local
                             if foree ~= fore then gpu.setForeground(foree); fore = foree end
                             if backe ~= back then gpu.setBackground(backe); back = backe end
                             gpu.set(x,y,char)
                         end
                         sames = 0
-                       -- lasac, foree, backe = table.unpack(ret.buffer[ret.index(x,y)])
-
-
                     end
                 end
             end
