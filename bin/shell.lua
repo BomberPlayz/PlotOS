@@ -1,104 +1,105 @@
 print("PlotOS")
 print("Testing beta")
+local std = require("stdlib")
 local fs = require("fs")
 os.setEnv("computerName","PlotOS")
 os.setEnv("user","guest")
 os.currentDirectory = "/"
 
-function split (inputstr, sep)
-        if sep == nil then
-                sep = "%s"
-        end
-        local t={}
-        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-                table.insert(t, str)
-        end
-        return t
-end
-
 local gpu = require("driver").load("gpu")
---io.setScreenSize(20,20)
-while true do
-  gpu.setForeground(0x00FF00)
-  io.write(os.getEnv("user").."@"..os.getEnv("computerName")..":")
-  gpu.setForeground(0x2fa1c6)
-  io.write(os.currentDirectory.."$ ")
-  local cmd = io.read()
-  local args = split(cmd, " ")
-  cmd = args[1]
 
- -- print('"'..cmd..'"')
-  if type(cmd) == "nil" or cmd == "" then else
-  --[[if fs.exists("/bin/"..cmd..".lua") then
-    local dat,reason = loadfile("/bin/"..cmd..".lua")
-    if not dat then
-      print("Error: "..reason)
-    else
-      local ok,reason = pcall(dat,args)
-        if not ok then
-            print("Errored:")
-            print(reason)
-        end
+local function canonicalizePath(p)
+    local path = std.str.split(p, "/")
+
+    local r = {}
+    if p:sub(1,1) ~= "/" then
+        r = std.str.split(os.currentDirectory, "/")
     end
     
-  else
-    if fs.exists(os.currentDirectory..cmd) then
-      --dofile(os.currentDirectory..cmd)
-      loadfile(os.currentDirectory..cmd)(args)
-    else
-      print("The specified file does not exist")
+    for i,v in ipairs(path) do
+        if v == "." then
+            
+        elseif v == ".." then
+            table.remove(r, #r)
+        else
+            table.insert(r, v)
+        end
     end
-  end]]
 
-      local path = os.getEnv("PATH")
-      local paths = split(path,";")
+    return "/"..table.concat(r,"/")
+end
+
+while true do
+    gpu.setForeground(0x00FF00)
+    io.write(os.getEnv("user").."@"..os.getEnv("computerName")..":")
+    gpu.setForeground(0x2fa1c6)
+    io.write(os.currentDirectory.."$ ")
+    local cmd = io.read()
+    local args = std.str.split(cmd, " ")
+    cmd = args[1]
+
+    if cmd == "cd" then
+        local path = args[2] and canonicalizePath(tostring(args[2])) or "/"
+        if not fs.exists(path) then
+            print("shell: cannot access '"..args[2].."': No such file or directory")
+        else
+            os.currentDirectory = path
+        end
+    elseif cmd and #cmd ~= 0 then
+        local binPath
+
+        if string.find(cmd, "/") then
+            local x = canonicalizePath(cmd)
+
+            if fs.exists(x) then
+                binPath = x
+            end
+        else
+            local PATH = std.str.split(os.getEnv("PATH"), ";")
+            for i,v in ipairs(PATH) do
+                if fs.exists(v.."/"..cmd) then
+                    binPath = v.."/"..cmd
+                    break
+                elseif fs.exists(v.."/"..cmd..".lua") then
+                    binPath = v.."/"..cmd..".lua"
+                    break     
+                end
+            end
+        end
+
+        if not binPath then
+            print("shell: "..cmd..": command not found")
+        else
+            local l, err = loadfile(binPath)
+
+            if not l then
+                gpu.setForeground(0xFF0000)
+                print(tostring(err))
+                gpu.setForeground(0xFFFFFF)
+            else
+                local s, err = pcall(l, args)
+                if not s then
+                    gpu.setForeground(0xFF0000)
+                    print(tostring(err))
+                    gpu.setForeground(0xFFFFFF)
+                end
+            end
+        end
+
+        local path = os.getEnv("PATH")
+        local paths = std.str.split(path,";")
         local found = false
-      local dat,reason
+        local dat, reason
         for k,v in ipairs(paths) do
-            if fs.exists(v.."/"..cmd..".lua") then
-                dat,reason = loadfile(v.."/"..cmd..".lua")
+            if fs.exists(v.."/"..cmd) then
+                dat, reason = loadfile(v.."/"..cmd)
+                found = true
+                break
+            elseif fs.exists(v.."/"..cmd..".lua") then
+                dat, reason = loadfile(v.."/"..cmd)
                 found = true
                 break
             end
         end
-
-        if not found then
-            -- check current directory
-            if fs.exists(os.currentDirectory..cmd..".lua") then
-                found = true
-                dat,reason = loadfile(os.currentDirectory..cmd..".lua")
-
-            else
-                if fs.exists(os.currentDirectory..cmd) then
-                    found = true
-                    dat,reason = loadfile(os.currentDirectory..cmd)
-                else
-                    print("The specified file does not exist")
-                end
-            end
-
-            if found then
-                if not dat then
-                    print("Error: "..reason)
-                else
-                    local ok,reason = pcall(dat,args)
-                    if not ok then
-                        print("Errored:")
-                        print(reason)
-                    end
-                end
-            end
-        else
-            if not dat then
-                print("Error: "..reason)
-            else
-                local ok,reason = pcall(dat,args)
-                if not ok then
-                    print("Errored:")
-                    print(reason)
-                end
-            end
-        end
-  end
-  
+    end
 end
