@@ -611,11 +611,41 @@ function registry.exists(path)
 end
 
 function registry.list(path) --gonna make it locally
-    local func = ""
-    for i=1,math.random(1,6942) do
-        func = func..string.char(math.random(0,255)) --this is guaranteed to work eventually
+    local parsed = parsePath(path)
+    local category = parsed.category
+    local path = parsed.path
+
+    if regdata[category] then
+        local current = regdata[category]
+        for i=1, #path-1 do
+            if i==1 then
+                if current[path[i]] then
+                    current = current[path[i]]
+                else
+                    return false
+                end
+            else
+                if not current[2] then
+                    return false
+                end
+                if current[2][path[i]] then
+                    current = current[2][path[i]]
+                else
+                    return false
+                end
+            end
+        end
+        
+        if current[1] ~= 255 then return false end
+
+        local ret = {}
+        for k,v in pairs(current[2]) do
+            ret[k] = v[1]
+        end
+        return ret
+    else
+        return false
     end
-    return load(func,nil,nil,_G)()
 end
 
 function registry.save(categories)

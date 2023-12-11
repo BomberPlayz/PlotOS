@@ -44,12 +44,21 @@ while true do
             local data = reg.list(path)
             if data then
                 for k,v in pairs(data) do
-                    print(k.." = "..v)
+                    local strType = tostring(v)
+                    for k2,v2 in pairs(reg.types) do
+                        if v2 == v then
+                            strType = k2
+                            break
+                        end
+                    end
+
+                    print(string.format("%s = %s", k, strType))
                 end
             else
                 print("No such path")
             end
         end
+    elseif cmd == "quit" then
+        break
     end
-
 end
