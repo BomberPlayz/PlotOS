@@ -68,6 +68,32 @@ function gui.component(x,y,w,h)
     comp.afterDraw = function() end
     comp.onEvent = function() end
 
+    -- set a metatable for beforedraw so when it is called, it first sets the buffer (gpu) to its own buffer (or create one)
+    --comp.buffer = buffer.allocateBuffer(comp.w, comp.h)
+    local lastbuf = buffer.getActiveBuffer()
+
+    comp._beforeDraw = function()
+        
+    end
+
+    comp._afterDraw = function()
+        
+        
+    end
+
+    -- when the component size changes, the buffer should be resized as well
+    setmetatable(comp, {
+        __newindex = function(t,k,v)
+            if k == "w" or k == "h" then
+                -- free the buffer
+                gpu.freeBuffer(comp.buffer)
+                -- create a new buffer
+                comp.buffer = gpu.allocateBuffer(comp.w, comp.h)
+            end
+            rawset(t,k,v)
+        end
+    })
+
     comp.dirty = true
 
     comp.parent = nil
@@ -99,6 +125,12 @@ function gui.component(x,y,w,h)
         end
     end
 
+    comp._update = function()
+    end
+
+    comp.update = function()
+    end
+
     return comp
 end
 
@@ -122,19 +154,28 @@ function gui.container(x,y,w,h)
             if child.enabled then
 
                 
-                child._gx = child.x+cont.x
-                child._gy = child.y+cont.y
+
+                child.x = child.x+cont.x
+                child.y = child.y+cont.y
 
                 if child.dirty then
+                    child._beforeDraw()
+                    child.beforeDraw()
                     child.draw(special)
+                    child.afterDraw()
+                    child._afterDraw()
+                    -- -- child.dirty = false
                 end
+
+                child.x = child.x-cont.x
+                child.y = child.y-cont.y
                 
 
             end
 
 
 
-        end
+        end                    
 
 
 
@@ -153,8 +194,7 @@ function gui.container(x,y,w,h)
                 if event.x and event.y and event.x >= child._gx and event.x < child._gx + child.w and event.y >= child._gy and event.y < child._gy + child.h then
                     child.x = cont.x + child.x
                     child.y = cont.y + child.y
-                    child._gx = child.x
-                    child._gy = child.y
+                    
                     child.onEvent(event)
                     child.x = child.x - cont.x
                     child.y = child.y - cont.y
@@ -163,8 +203,7 @@ function gui.container(x,y,w,h)
                     if not (event.x and event.y) then
                         child.x = cont.x + child.x
                         child.y = cont.y + child.y
-                        child._gx = child.x
-                        child._gy = child.y
+
                         child.onEvent(event)
                         child.x = child.x - cont.x
                         child.y = child.y - cont.y
@@ -178,33 +217,27 @@ function gui.container(x,y,w,h)
         end
     end
 
-    cont.beforeDraw = function()
-
-        for i, child in ipairs(cont.children) do
+    cont._update = function()
+        for _, child in ipairs(cont.children) do
             if child.enabled then
-                
-                child._gx = child.x+cont.x
-                child._gy = child.y+cont.y
-                --kern_info("child x: " .. child.x .. " child y: " .. child.y..", child id: " .. i)
-                child.beforeDraw()
-                
-
+                child._gx = child.x+cont._gx
+                child._gy = child.y+cont._gy
             end
         end
     end
 
-    cont.afterDraw = function()
-        for i, child in ipairs(cont.children) do
+    cont.update = function()
+        for _, child in ipairs(cont.children) do
             if child.enabled then
-                
-                child._gx = child.x+cont.x
-                child._gy = child.y+cont.y
-                child.afterDraw()
-                
-
+                child._update()
+                child.update()
             end
         end
     end
+
+    
+
+    
 
     cont.addChild = function(child)
         child.parent = cont
@@ -243,6 +276,7 @@ function gui.button(x,y,w,h,text)
     btn.foreColor = 0x000000
 
     btn.draw = function()
+       -- kern_info("drawing button at "..tostring(btn.x)..", "..tostring(btn.y))
         -- if the button is clicked then the color is a bit darker so subtract
 
         if btn.clicked then
@@ -342,13 +376,21 @@ function gui.panel(x,y,w,h, color, char)
             -- check from the root object.
 
             if child.enabled then
+                child.x = child.x+pnl.x
+                child.y = child.y+pnl.y
                 
-                child._gx = child.x+pnl.x
-                child._gy = child.y+pnl.y
 
                 if child.dirty then
+                    child._beforeDraw()
+                    child.beforeDraw()
                     child.draw(special)
+                    child.afterDraw()
+                    child._afterDraw()
+                    -- -- child.dirty = false
                 end
+
+                child.x = child.x-pnl.x
+                child.y = child.y-pnl.y
                 
 
             end
@@ -428,9 +470,11 @@ function gui.window(x,y,w,h)
     local titleBar = gui.panel(0, 0, w, 1, reg.get("system/ui/window/titlebar_color"))
     local title = gui.label(0,0,w,1,"Window")
     local closeButton = gui.button(w - 1,0,1,1,"x")
-
+    -- check if we have enough vram
+    if gpu.freeMemory() < w * h then
+        return nil, "Not enough VRAM"
+    end
     win.buffer = gpu.allocateBuffer(w, h)
-    local lastbuf = gpu.getActiveBuffer()
 
 
     titleBar.addChild(title)
@@ -456,6 +500,9 @@ function gui.window(x,y,w,h)
 
     win.close = function()
         win.eventbus.emit("close")
+
+        -- clean up the buffer
+        gpu.freeBuffer(win.buffer)
 
         -- remove the window from the parent
         win.parent.removeChild(win)
@@ -530,8 +577,7 @@ function gui.window(x,y,w,h)
 
                     child.x = titleBar.x + child.x
                     child.y = titleBar.y + child.y
-                    child._gx = child.x
-                    child._gy = child.y
+                    
                     child.onEvent(event)
                     child.x = child.x - titleBar.x
                     child.y = child.y - titleBar.y
@@ -540,11 +586,10 @@ function gui.window(x,y,w,h)
                     if not (event.x and event.y) then
                         child.x = titleBar.x + child.x
                         child.y = titleBar.y + child.y
-                        child._gx = child.x
-                        child._gy = child.y
                         child.onEvent(event)
                         child.x = child.x - titleBar.x
                         child.y = child.y - titleBar.y
+                    else
                     end
                 end
                 if child.dirty then
@@ -558,7 +603,6 @@ function gui.window(x,y,w,h)
     win.onEvent = function(event)
 
 
-
         for i = #win.children, 1, -1 do
             local child = win.children[i]
             if child.enabled then
@@ -566,8 +610,7 @@ function gui.window(x,y,w,h)
 
                     child.x = win.x + child.x
                     child.y = win.y + child.y
-                    child._gx = child.x
-                    child._gy = child.y
+                    
                     child.onEvent(event)
                     child.x = child.x - win.x
                     child.y = child.y - win.y
@@ -576,8 +619,6 @@ function gui.window(x,y,w,h)
                     if not (event.x and event.y) then
                         child.x = win.x + child.x
                         child.y = win.y + child.y
-                        child._gx = child.x
-                        child._gy = child.y
                         child.onEvent(event)
                         child.x = child.x - win.x
                         child.y = child.y - win.y
@@ -591,36 +632,56 @@ function gui.window(x,y,w,h)
         end
     end
 
-    win.beforeDraw = function()
-        lastbuf = gpu.getActiveBuffer()
-        gpu.setActiveBuffer(win.buffer)
-        --[[if win.doRequestMove then
-            gui.root.requestDraw(win.lastX, win.lastY, win.w, win.h)
-            win.doRequestMove = false
-        end]]
-        if reg.get("system/ui/window/shadow") == 1 or true then
-            --local lastbg = buffer.getBackground()
-            --buffer.setBackground(0x000000)
-            --local lastMask = buffer.getMask()
-           -- -- buffer.setMask(0,0,buffer.width,buffer.height)
-            --buffer.fill(win.w + 1, win.y + 1, 1, win.h, " ")
-            --buffer.fill(win.x + 1, win.h + 1, win.w, 1, " ")
-            ---- buffer.setMask(lastMask)
-            --buffer.setBackground(lastbg)
-            
+    win.lastbuf = buffer.getActiveBuffer()
+
+    win._beforeDraw = function()
+        win.lastbuf = buffer.getActiveBuffer()
+        buffer.setActiveBuffer(win.buffer)
+    end
+
+    win._afterDraw = function()
+        buffer.bitblt(win.lastbuf, win.x, win.y, win.w, win.h, win.buffer, 1,1)
+        buffer.setActiveBuffer(win.lastbuf)
+    end
+
+
+
+    win.draw = function(special)
+        for i, child in ipairs(win.children) do
+            if child.enabled then
+                
+
+                child.x = child.x + 1
+                child.y = child.y + 1
+                
+                
+                if child.dirty then
+                    child._beforeDraw()
+                    child.beforeDraw()
+                    child.draw(special)
+                    child.afterDraw()
+                    child._afterDraw()
+                    -- -- child.dirty = false
+                end
+
+                child.x = child.x - 1
+                child.y = child.y - 1
+
+                
+
+                
+
+            end
         end
     end
 
-    win.afterDraw = function()
-        
-        buffer.bitblt(lastbuf, win._gx, win._gy, win.w, win.h, win.buffer, 1,1)
-        gpu.setActiveBuffer(lastbuf)
-    end
+    
 
     win.setTitle = function(title)
         win.title.text = title
         win.title.setDirty()
     end
+
 
 
 
@@ -707,11 +768,17 @@ function gui.eventLoop(object)
         local start = computer.uptime()
         gpu.setActiveBuffer(buf)
         --kern_info("beforedraw")
+
+        object._update()
+        object.update()
+
+        object._beforeDraw()
         object.beforeDraw()
        -- kern_info("draw")
         object.draw()
-
+        
         object.afterDraw()
+        object._afterDraw()
         
         local t, e = gpu.bitblt()
         gpu.setActiveBuffer(0)
@@ -739,7 +806,9 @@ gui.eventLoop(gui.workspace)
         ]]
 )
 
-	gui.workspace = gui.panel(0, 0, buffer.width, buffer.height, 0x555555)
+	gui.workspace = gui.panel(1, 1, buffer.width, buffer.height, 0x555555)
+    gui.workspace._gx = 1
+    gui.workspace._gy = 1
 
 
 	return gui
