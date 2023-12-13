@@ -21,7 +21,7 @@ while true do
         if not path or not value or not data then
             print("Usage: set <path> <value> <type>")
         else
-            reg.set(path, value, data or reg.types.string)
+            reg.set(path, value, reg.types[data] or reg.types.string)
         end
     elseif cmd == "get" then
         local path = args[1]
@@ -29,7 +29,7 @@ while true do
         if not path or not value then
             print("Usage: get <path> <value>")
         else
-            local data = reg.get(path, value)
+            local data = reg.get(path, reg.types[value] or reg.types.string)
             if data then
                 print(data)
             else
