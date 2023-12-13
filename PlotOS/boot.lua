@@ -7,6 +7,8 @@ _G.OSSTATUS = 0
 _G.OS_LOGGING_START_TIME = math.floor(computer.uptime() * 1000) / 1000
 _G.OS_LOGGING_MAX_NUM_WIDTH = 0
 
+_G.VERY_LOW_MEM = false
+
 local component_invoke = component.invoke
 
 local function split(inputstr, sep)
@@ -68,9 +70,7 @@ function _G.kern_info(msg, state)
     end
 
     -- Make sure we have a valid message string
-    if type(msg) ~= "string" then
-        return
-    end
+    msg = tostring(msg)
 
     -- If message contains multiple lines, call this function recursively for each line
     local lines = split(string.gsub(msg, "\r?\n", "\n"), "\n")
@@ -119,8 +119,6 @@ local rwrite = fs.write
 local rclose = fs.close
 
 function _G.kern_panic(reason)
-
-
     kern_info("KERNEL PANIC", "error")
     kern_info("A kernel panic occured! Traceback:", "error")
     kern_info("----------------------------------------------------", "error")
@@ -193,6 +191,7 @@ function _G.kern_panic(reason)
     -- save logs
     -- use the raw filesystem API to avoid any errors
     function save()
+        if _G.VERY_LOW_MEM then return end
         --[[ local handle = ropen("/logs.log", "w")
          rwrite(handle, logsToWrite)
          rclose(handle)]]
@@ -209,6 +208,27 @@ function _G.kern_panic(reason)
 
     while true do
         pcps()
+    end
+end
+
+if _G.VERY_LOW_MEM then 
+    _G.kern_info = function() end
+    _G.kern_panic = function(reason)
+        local w,h = gpu.getResolution()
+        gpu.setForeground(0xff0000)
+        gpu.setBackground(0x000000)
+        gpu.fill(1,1,w,h," ")
+        gpu.set(1,1,"KERNEL PANIC: "..tostring(reason))
+        gpu.set(1,2,"A kernel panic occured! Traceback:")
+
+        local tb = debug.traceback("", 2)
+        for i,v in ipairs(split(tb,"\n")) do
+            gpu.set(1, 3+i, ({v:gsub("\009", "    ")})[1])
+        end
+
+        while true do
+            pcps()
+        end
     end
 end
 
