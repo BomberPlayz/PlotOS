@@ -1,11 +1,23 @@
 kern_info("Loading base components")
+
 _G.require = package.require
 _G.prt_x = 1
 _G.prt_y = 1
-_G.print = function(dat)
-  io.writeline(dat)
-  
+
+_G.print = function(...)
+  local t = {}
+
+  for i,v in ipairs({...}) do
+    t[i] = tostring(v)
+  end
+
+  io.writeline(table.concat(t, "    "))
 end
+
+_G.printf = function(format, ...)
+  _G.print(string.format(format, ...))
+end
+
 local fs = require("fs")
 
 function _G.loadfile(filename, ...)
