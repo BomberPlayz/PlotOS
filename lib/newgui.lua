@@ -1,6 +1,7 @@
 local dbuf = require("doublebuffering")
 local reg = require("registry")
 local gpu = require("driver").load("gpu")
+local keyboard = require("keyboard")
 
 
 local buffer = gpu
@@ -8,7 +9,7 @@ buffer.width, buffer.height = buffer.getResolution()
 
 
 buffer.setBackground(0x000000)
-buffer.fill(1,1,buffer.width,buffer.height," ")
+buffer.fill(1, 1, buffer.width, buffer.height, " ")
 print(buffer.width, buffer.height)
 -- buffer.draw()
 
@@ -50,15 +51,17 @@ end
 local gui = {}
 gui.buffer = buffer
 gui.requestedDraws = {}
+gui.focused = nil
 
 
-
-function gui.component(x,y,w,h)
+function gui.component(x, y, w, h)
     local comp = {}
     comp.x = x
     comp.y = y
     comp.w = w
     comp.h = h
+    comp.backgroundColor = 0xffffff
+    comp.foregroundColor = 0x000000
 
     comp._gx = 0
     comp._gy = 0
@@ -73,24 +76,23 @@ function gui.component(x,y,w,h)
     local lastbuf = buffer.getActiveBuffer()
 
     comp._beforeDraw = function()
-        
+
     end
 
     comp._afterDraw = function()
-        
-        
+
     end
 
     -- when the component size changes, the buffer should be resized as well
     setmetatable(comp, {
-        __newindex = function(t,k,v)
+        __newindex = function(t, k, v)
             if k == "w" or k == "h" then
                 -- free the buffer
                 gpu.freeBuffer(comp.buffer)
                 -- create a new buffer
                 comp.buffer = gpu.allocateBuffer(comp.w, comp.h)
             end
-            rawset(t,k,v)
+            rawset(t, k, v)
         end
     })
 
@@ -104,24 +106,23 @@ function gui.component(x,y,w,h)
 
     comp.setDirty = function()
         comp.dirty = true
-
     end
 
     comp.requestedDraws = {}
 
 
     -- requests a draw in a specified area.
-    comp.requestDraw = function(x,y,w,h)
+    comp.requestDraw = function(x, y, w, h)
         -- check if requestedDraws doesnt have an entry for this x y w h
         local found = false
-        for _,v in ipairs(comp.requestedDraws) do
+        for _, v in ipairs(comp.requestedDraws) do
             if v[1] == x and v[2] == y and v[3] == w and v[4] == h then
                 found = true
                 break
             end
         end
         if not found then
-            table.insert(comp.requestedDraws, {x,y,w,h})
+            table.insert(comp.requestedDraws, { x, y, w, h })
         end
     end
 
@@ -134,16 +135,12 @@ function gui.component(x,y,w,h)
     return comp
 end
 
-function gui.container(x,y,w,h)
-    local cont = gui.component(x,y,w,h)
+function gui.container(x, y, w, h)
+    local cont = gui.component(x, y, w, h)
     cont.children = {}
 
     cont.draw = function(special)
-
-
-
-
-         buffer.setMask(cont.x, cont.y, cont.w, cont.h)
+        buffer.setMask(cont.x, cont.y, cont.w, cont.h)
 
 
 
@@ -152,11 +149,8 @@ function gui.container(x,y,w,h)
             -- check from the root object. --
 
             if child.enabled then
-
-                
-
-                child.x = child.x+cont.x
-                child.y = child.y+cont.y
+                child.x = child.x + cont.x
+                child.y = child.y + cont.y
 
                 if child.dirty then
                     child._beforeDraw()
@@ -167,23 +161,16 @@ function gui.container(x,y,w,h)
                     -- -- child.dirty = false
                 end
 
-                child.x = child.x-cont.x
-                child.y = child.y-cont.y
-                
-
+                child.x = child.x - cont.x
+                child.y = child.y - cont.y
             end
-
-
-
-        end                    
+        end
 
 
 
 
 
-         buffer.setMask(0,0,buffer.width,buffer.height)
-
-
+        buffer.setMask(0, 0, buffer.width, buffer.height)
     end
 
     cont.onEvent = function(event)
@@ -194,7 +181,9 @@ function gui.container(x,y,w,h)
                 if event.x and event.y and event.x >= child._gx and event.x < child._gx + child.w and event.y >= child._gy and event.y < child._gy + child.h then
                     child.x = cont.x + child.x
                     child.y = cont.y + child.y
-                    
+
+                    gui.focused = child
+
                     child.onEvent(event)
                     child.x = child.x - cont.x
                     child.y = child.y - cont.y
@@ -212,7 +201,6 @@ function gui.container(x,y,w,h)
                 if child.dirty then
                     cont.dirty = true
                 end
-
             end
         end
     end
@@ -220,8 +208,8 @@ function gui.container(x,y,w,h)
     cont._update = function()
         for _, child in ipairs(cont.children) do
             if child.enabled then
-                child._gx = child.x+cont._gx
-                child._gy = child.y+cont._gy
+                child._gx = child.x + cont._gx
+                child._gy = child.y + cont._gy
             end
         end
     end
@@ -235,12 +223,14 @@ function gui.container(x,y,w,h)
         end
     end
 
-    
 
-    
+
+
 
     cont.addChild = function(child)
         child.parent = cont
+        child.backgroundColor = cont.backgroundColor
+        child.foregroundColor = cont.foregroundColor
         table.insert(cont.children, child)
         cont.dirty = true
     end
@@ -265,8 +255,8 @@ function gui.container(x,y,w,h)
     return cont
 end
 
-function gui.button(x,y,w,h,text)
-    local btn = gui.component(x,y,w,h)
+function gui.button(x, y, w, h, text)
+    local btn = gui.component(x, y, w, h)
     btn.text = text
 
     btn.clicked = false
@@ -276,7 +266,7 @@ function gui.button(x,y,w,h,text)
     btn.foreColor = 0x000000
 
     btn.draw = function()
-       -- kern_info("drawing button at "..tostring(btn.x)..", "..tostring(btn.y))
+        -- kern_info("drawing button at "..tostring(btn.x)..", "..tostring(btn.y))
         -- if the button is clicked then the color is a bit darker so subtract
 
         if btn.clicked then
@@ -285,7 +275,6 @@ function gui.button(x,y,w,h,text)
 
             btn.clicked = false
             btn.dirty = true
-
         else
             buffer.setForeground(btn.foreColor)
             buffer.setBackground(btn.color)
@@ -294,35 +283,23 @@ function gui.button(x,y,w,h,text)
         buffer.fill(btn.x, btn.y, btn.w, btn.h, " ")
         -- center the text
         buffer.set(btn.x + math.floor(btn.w / 2) - math.floor(#btn.text / 2), btn.y + math.floor(btn.h / 2), btn.text)
-
-
-
-
-
-
-
-
-
     end
 
     btn.onEvent = function(event)
         if event.type == "touch" then
             btn.clicked = true
 
-            btn.eventbus.emit("click", {x = event.x - btn.x, y = event.y - btn.y})
+            btn.eventbus.emit("click", { x = event.x - btn.x, y = event.y - btn.y })
 
             btn.dirty = true
-
-
         end
-
     end
 
     return btn
 end
 
-function gui.label(x,y,w,h,text)
-    local lbl = gui.component(x,y,w,h)
+function gui.label(x, y, w, h, text)
+    local lbl = gui.component(x, y, w, h)
     lbl.text = text
 
     lbl.color = 0xffffff
@@ -333,7 +310,6 @@ function gui.label(x,y,w,h,text)
         -- if we have a parent set our bg to the parent's bg
         if getParentAttrib("color", lbl) then
             buffer.setBackground(getParentAttrib("color", lbl) or lbl.parent.color)
-
         else
             buffer.setBackground(lbl.background or 0x000000)
         end
@@ -356,8 +332,8 @@ function gui.label(x,y,w,h,text)
     return lbl
 end
 
-function gui.panel(x,y,w,h, color, char)
-    local pnl = gui.container(x,y,w,h)
+function gui.panel(x, y, w, h, color, char)
+    local pnl = gui.container(x, y, w, h)
 
     pnl.color = color or 0xaaaaaa
     pnl.char = char or " "
@@ -376,9 +352,9 @@ function gui.panel(x,y,w,h, color, char)
             -- check from the root object.
 
             if child.enabled then
-                child.x = child.x+pnl.x
-                child.y = child.y+pnl.y
-                
+                child.x = child.x + pnl.x
+                child.y = child.y + pnl.y
+
 
                 if child.dirty then
                     child._beforeDraw()
@@ -389,14 +365,9 @@ function gui.panel(x,y,w,h, color, char)
                     -- -- child.dirty = false
                 end
 
-                child.x = child.x-pnl.x
-                child.y = child.y-pnl.y
-                
-
+                child.x = child.x - pnl.x
+                child.y = child.y - pnl.y
             end
-
-
-
         end
 
 
@@ -409,8 +380,8 @@ function gui.panel(x,y,w,h, color, char)
     return pnl
 end
 
-function gui.progressBar(x,y,w,h, max)
-    local bar = gui.component(x,y,w,h)
+function gui.progressBar(x, y, w, h, max)
+    local bar = gui.component(x, y, w, h)
 
     -- if the progress is -1 then it is indeterminate. In case of indeterminate progress, the bar will have an animation of a moving line bouncing back and forth.
     bar.progress = 0
@@ -450,26 +421,30 @@ function gui.progressBar(x,y,w,h, max)
                 animDir = 1
             end
             bar.dirty = true
-
         else
             buffer.setBackground(bar.color)
             buffer.fill(bar.x, bar.y, bar.w, bar.h, " ")
 
             buffer.setBackground(bar.progressColor)
             buffer.fill(bar.x, bar.y, math.floor(bar.progress / bar.max * bar.w), bar.h, " ")
-
         end
     end
 
     return bar
 end
 
-function gui.window(x,y,w,h)
-    local win = gui.container(x,y,w,h)
+--- Creates a new window
+--- @param x number
+--- @param y number
+--- @param w number
+--- @param h number
+--- @param options? { title: string }
+function gui.window(x, y, w, h, options)
+    local win = gui.container(x, y, w, h)
 
     local titleBar = gui.panel(0, 0, w, 1, reg.get("system/ui/window/titlebar_color"))
-    local title = gui.label(0,0,w,1,"Window")
-    local closeButton = gui.button(w - 1,0,1,1,"x")
+    local title = gui.label(0, 0, w, 1, options and options.title or "Window")
+    local closeButton = gui.button(w - 1, 0, 1, 1, "x")
     -- check if we have enough vram
     if gpu.freeMemory() < w * h then
         return nil, "Not enough VRAM"
@@ -511,10 +486,9 @@ function gui.window(x,y,w,h)
 
     closeButton.eventbus.on("click", function()
         win.close()
-
     end)
 
-    local content = gui.panel(0,1,w,h - 1)
+    local content = gui.panel(0, 1, w, h - 1)
     win.addChild(content)
     win.content = content
 
@@ -560,7 +534,6 @@ function gui.window(x,y,w,h)
                 titleBar.y = event._y + win.dragOffsetY
                 --print(win.x, win.y)
                 win.setDirty()
-
             end
         elseif event.type == "drop" then
             win.dragging = false
@@ -574,10 +547,9 @@ function gui.window(x,y,w,h)
             local child = titleBar.children[i]
             if child.enabled then
                 if event.x and event.y and event.x >= child._gx and event.x < child._gx + child.w and event.y >= child._gy and event.y < child._gy + child.h then
-
                     child.x = titleBar.x + child.x
                     child.y = titleBar.y + child.y
-                    
+
                     child.onEvent(event)
                     child.x = child.x - titleBar.x
                     child.y = child.y - titleBar.y
@@ -595,22 +567,18 @@ function gui.window(x,y,w,h)
                 if child.dirty then
                     win.dirty = true
                 end
-
             end
         end
     end
 
     win.onEvent = function(event)
-
-
         for i = #win.children, 1, -1 do
             local child = win.children[i]
             if child.enabled then
                 if event.x and event.y and event.x >= child._gx and event.x < child._gx + child.w and event.y >= child._gy and event.y < child._gy + child.h then
-
                     child.x = win.x + child.x
                     child.y = win.y + child.y
-                    
+
                     child.onEvent(event)
                     child.x = child.x - win.x
                     child.y = child.y - win.y
@@ -628,7 +596,6 @@ function gui.window(x,y,w,h)
                     win.dirty = true
                 end
             end
-
         end
     end
 
@@ -640,7 +607,7 @@ function gui.window(x,y,w,h)
     end
 
     win._afterDraw = function()
-        buffer.bitblt(win.lastbuf, win.x, win.y, win.w, win.h, win.buffer, 1,1)
+        buffer.bitblt(win.lastbuf, win.x, win.y, win.w, win.h, win.buffer, 1, 1)
         buffer.setActiveBuffer(win.lastbuf)
     end
 
@@ -649,12 +616,10 @@ function gui.window(x,y,w,h)
     win.draw = function(special)
         for i, child in ipairs(win.children) do
             if child.enabled then
-                
-
                 child.x = child.x + 1
                 child.y = child.y + 1
-                
-                
+
+
                 if child.dirty then
                     child._beforeDraw()
                     child.beforeDraw()
@@ -666,16 +631,9 @@ function gui.window(x,y,w,h)
 
                 child.x = child.x - 1
                 child.y = child.y - 1
-
-                
-
-                
-
             end
         end
     end
-
-    
 
     win.setTitle = function(title)
         win.title.text = title
@@ -686,12 +644,10 @@ function gui.window(x,y,w,h)
 
 
     return win
-
-
 end
 
 function gui.treeNode(text)
-    local node = gui.container(0,0,0,0)
+    local node = gui.container(0, 0, 0, 0)
     node.text = text
 
     node.expanded = false
@@ -717,6 +673,85 @@ function gui.treeNode(text)
     return node
 end
 
+function gui.textinput(x, y, w, h)
+    local textinput = gui.container(x, y, w, h)
+    textinput.text = ""
+    textinput.cursor = true
+    textinput.cursorX = 0
+    textinput.cursorY = 0
+
+    textinput.cameraX = 0
+
+    textinput.draw = function()
+        -- set the camera x so that if the cursor is off the screen, the textinput will scroll
+        local cursorCamDelta = textinput.cursorX - textinput.cameraX
+        if cursorCamDelta < 0 then
+            textinput.cameraX = textinput.cursorX
+        elseif cursorCamDelta > textinput.w - 1 then
+            textinput.cameraX = textinput.cursorX - textinput.w + 1
+        end
+
+        local cutText = textinput.text:sub(textinput.cameraX + 1, textinput.cameraX + textinput.w)
+
+        buffer.setForeground(textinput.foregroundColor)
+        buffer.setBackground(textinput.backgroundColor)
+        buffer.fill(textinput.x, textinput.y, textinput.w, textinput.h, " ")
+        buffer.set(textinput.x, textinput.y, cutText)
+        if textinput.cursor and gui.focused == textinput then
+            -- inver the foreground and background colors at the cursor position
+            local oldfg = buffer.getForeground()
+            local oldbg = buffer.getBackground()
+            buffer.setForeground(oldbg)
+            buffer.setBackground(oldfg)
+            local cutCursor = textinput.cursorX - textinput.cameraX
+            --buffer.set(textinput.x + textinput.cursorX, textinput.y + textinput.cursorY,
+            --    buffer.get(textinput.x + textinput.cursorX, textinput.y + textinput.cursorY))
+            buffer.set(textinput.x + cutCursor, textinput.y, buffer.get(textinput.x + cutCursor, textinput.y))
+
+            buffer.setForeground(oldfg)
+            buffer.setBackground(oldbg)
+        end
+    end
+
+
+    textinput.onEvent = function(event)
+        if event.type == "key_down" and gui.focused == textinput then
+            -- if the key is enter
+            if event.key == 13 then
+                -- deselect the textinput
+                textinput.focused = false
+                gui.focused = nil
+                return
+                -- if the key is backspace
+            elseif event.key == 8 and textinput.cursorX > 0 then
+                -- remove the last character from the text at the cursor
+                textinput.text = textinput.text:sub(1, textinput.cursorX - 1) ..
+                    textinput.text:sub(textinput.cursorX + 1)
+                textinput.dirty = true
+                textinput.cursorX = textinput.cursorX - 1
+                -- if the key is a printable character
+                -- arrow right
+            elseif event.keycode == 205 and textinput.cursorX < #textinput.text then
+                textinput.cursorX = textinput.cursorX + 1
+                textinput.dirty = true
+                -- arrow left
+            elseif event.keycode == 203 and textinput.cursorX > 0 then
+                textinput.cursorX = textinput.cursorX - 1
+                textinput.dirty = true
+            elseif event.key > 31 and event.key < 127 then
+                -- add the character to the cursor
+                local char = string.char(event.key)
+                textinput.text = textinput.text:sub(1, textinput.cursorX) ..
+                    char .. textinput.text:sub(textinput.cursorX + 1)
+                textinput.cursorX = textinput.cursorX + 1
+                textinput.dirty = true
+            end
+            textinput.dirty = true
+        end
+    end
+
+    return textinput
+end
 
 local event = require("event")
 function _sleep(time, object)
@@ -725,31 +760,31 @@ function _sleep(time, object)
     local f = true
     while computer.uptime() - start < time or f do
         f = false
-        local event = {event.pull(time - (computer.uptime() - start))}
+        local event = { event.pull(time - (computer.uptime() - start)) }
         if event[1] then
             if event[1] == "touch" then
                 if object then
-                    object.onEvent({type = "touch", x = event[3], y = event[4]})
+                    object.onEvent({ type = "touch", x = event[3], y = event[4] })
                 end
             end
             if event[1] == "key_down" then
                 if object then
-                    object.onEvent({type = "key_down", key = event[4]})
+                    object.onEvent({ type = "key_down", key = event[3], keycode = event[4] })
                 end
             end
             if event[1] == "key_up" then
                 if object then
-                    object.onEvent({type = "key_up", key = event[4]})
+                    object.onEvent({ type = "key_up", key = event[3], keycode = event[4] })
                 end
             end
             if event[1] == "drop" then
                 if object then
-                    object.onEvent({type = "drop", path = event[6]})
+                    object.onEvent({ type = "drop", path = event[6] })
                 end
             end
             if event[1] == "drag" then
                 if object then
-                    object.onEvent({type = "drag", path = event[6], _x = event[3], _y = event[4]})
+                    object.onEvent({ type = "drag", path = event[6], _x = event[3], _y = event[4] })
                 end
             end
         end
@@ -760,7 +795,7 @@ function gui.eventLoop(object)
     gui.root = object
 
     local buf = gpu.allocateBuffer(buffer.width, buffer.height)
-    
+
 
     while true do
         --_sleep(1/20, object)
@@ -774,16 +809,16 @@ function gui.eventLoop(object)
 
         object._beforeDraw()
         object.beforeDraw()
-       -- kern_info("draw")
+        -- kern_info("draw")
         object.draw()
-        
+
         object.afterDraw()
         object._afterDraw()
-        
+
         local t, e = gpu.bitblt()
         gpu.setActiveBuffer(0)
         if not t then
-            kern_info("Issue with render gui: "..e, "warn")
+            kern_info("Issue with render gui: " .. e, "warn")
         end
         --kern_info("afterdraw")
         -- -- buffer.draw()
@@ -791,24 +826,23 @@ function gui.eventLoop(object)
         local time = ende - start
         --gpu.set(1,1,tostring(time))
         --kern_info("time: "..tostring(time))
-        
-        _sleep(0, object)
 
+        _sleep(0, object)
     end
 end
 
 require("process").new(
-        "GuiTicker",
-        [[
+    "GuiTicker",
+    [[
 local event = require("event")
 local gui = require("newgui")
 gui.eventLoop(gui.workspace)
         ]]
 )
 
-	gui.workspace = gui.panel(1, 1, buffer.width, buffer.height, 0x555555)
-    gui.workspace._gx = 1
-    gui.workspace._gy = 1
+gui.workspace = gui.panel(1, 1, buffer.width, buffer.height, 0x555555)
+gui.workspace._gx = 1
+gui.workspace._gy = 1
 
 
-	return gui
+return gui
