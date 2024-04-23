@@ -46,7 +46,7 @@ local loggingHandle = nil
 
 function _G.kern_info(msg, state)
     -- Define settings for different log states
-    local log = {"debug", "info", "warn", "error"}
+    local log = { "debug", "info", "warn", "error" }
     local state_settings = {
         debug = { label = "[ DEBUG]", color = 0xaaaaff },
         info = { label = "[  OK  ]", color = 0x10ff10 },
@@ -60,13 +60,13 @@ function _G.kern_info(msg, state)
     end
 
     local logincludes = false
-    for i=1,#log do
-      if log[i] == state then
-        logincludes = true
-      end
+    for i = 1, #log do
+        if log[i] == state then
+            logincludes = true
+        end
     end
     if not logincludes then
-      return
+        return
     end
 
     -- Make sure we have a valid message string
@@ -100,7 +100,7 @@ function _G.kern_info(msg, state)
         else
             y = y + 1
         end
-        gpu.setForeground(0xffffff)  -- reset color
+        gpu.setForeground(0xffffff) -- reset color
     else
         local fs = require("fs")
         if not loggingHandle then
@@ -119,6 +119,9 @@ local rwrite = fs.write
 local rclose = fs.close
 
 function _G.kern_panic(reason)
+    if coroutine.running() then
+        error("Tried to call kernel panic from process")
+    end
     kern_info("KERNEL PANIC", "error")
     kern_info("A kernel panic occured! Traceback:", "error")
     kern_info("----------------------------------------------------", "error")
@@ -201,6 +204,7 @@ function _G.kern_panic(reason)
 
         kern_info("Logs saved to /logs.log", "error")
     end
+
     local ok, err = pcall(save)
     if not ok then
         kern_info("Failed to save logs: " .. err, "error")
@@ -211,19 +215,19 @@ function _G.kern_panic(reason)
     end
 end
 
-if _G.VERY_LOW_MEM then 
+if _G.VERY_LOW_MEM then
     _G.kern_info = function() end
     _G.kern_panic = function(reason)
-        local w,h = gpu.getResolution()
+        local w, h = gpu.getResolution()
         gpu.setForeground(0xff0000)
         gpu.setBackground(0x000000)
-        gpu.fill(1,1,w,h," ")
-        gpu.set(1,1,"KERNEL PANIC: "..tostring(reason))
-        gpu.set(1,2,"A kernel panic occured! Traceback:")
+        gpu.fill(1, 1, w, h, " ")
+        gpu.set(1, 1, "KERNEL PANIC: " .. tostring(reason))
+        gpu.set(1, 2, "A kernel panic occured! Traceback:")
 
         local tb = debug.traceback("", 2)
-        for i,v in ipairs(split(tb,"\n")) do
-            gpu.set(1, 3+i, ({v:gsub("\009", "    ")})[1])
+        for i, v in ipairs(split(tb, "\n")) do
+            gpu.set(1, 3 + i, ({ v:gsub("\009", "    ") })[1])
         end
 
         while true do
@@ -235,11 +239,11 @@ end
 function _G.raw_dofile(file)
     local program, reason = raw_loadfile(file)
     --kernel_info(file.." and is the: "..program)
-   -- kern_info("Loading file " .. file)
+    -- kern_info("Loading file " .. file)
     if program then
         local result = table.pack(xpcall(program, debug.traceback))
         if result[1] then
-          --  kern_info("Successfully loaded file " .. file)
+            --  kern_info("Successfully loaded file " .. file)
 
             return table.unpack(result, 2, result.n)
         else
@@ -256,6 +260,9 @@ function _G.raw_dofile(file)
 end
 
 _G.bsod = function(reason, isKern, stack)
+    if coroutine.running() then
+        error("Tried to call BSOD from process")
+    end
     if gpu then
         gpu.setBackground(0x2665ed)
         gpu.setForeground(0xffffff)
@@ -391,10 +398,11 @@ if doBootSelection then
 end
 
 local function endsWith(str, suffix)
-    return string.sub(str, -#suffix) == suffix
+    return string.sub(str, - #suffix) == suffix
 end
 
---[[BOOT]]--
+--[[BOOT]]
+           --
 local function boot(type)
     if computer.totalMemory() <= 262144 then
         _G.LOW_MEM = true
@@ -441,18 +449,18 @@ local function boot(type)
 
     local registryTmpCount = 0
     for file in registryFiles do
-        if not fs.isDirectory("/PlotOS/system32/registry/"..file) then
-            if endsWith(file,".tmp") then
-                local msg = "Found registry tmp file: "..file
-                local nonTmp = string.sub(file, 1, #file-4)
-                if fs.exists("/PlotOS/system32/registry/"..nonTmp) then
-                    fs.remove("/PlotOS/system32/registry/"..file)
+        if not fs.isDirectory("/PlotOS/system32/registry/" .. file) then
+            if endsWith(file, ".tmp") then
+                local msg = "Found registry tmp file: " .. file
+                local nonTmp = string.sub(file, 1, #file - 4)
+                if fs.exists("/PlotOS/system32/registry/" .. nonTmp) then
+                    fs.remove("/PlotOS/system32/registry/" .. file)
                     msg = msg .. ", deleting"
                 else
-                    fs.rename("/PlotOS/system32/registry/"..file, "/PlotOS/system32/registry/"..nonTmp)
-                    msg = msg .. ", moving to "..nonTmp
+                    fs.rename("/PlotOS/system32/registry/" .. file, "/PlotOS/system32/registry/" .. nonTmp)
+                    msg = msg .. ", moving to " .. nonTmp
                 end
-                kern_info(msg,"warn")
+                kern_info(msg, "warn")
                 registryTmpCount = registryTmpCount + 1
             end
         end
@@ -477,6 +485,19 @@ local function boot(type)
         reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32, true)
         reg.set("system/low_mem", -1, reg.types.s8, true)
         reg.set("system/registry/use_tmp_files_to_save", -1, reg.types.s8, true)
+        reg.save()
+    end
+
+    if not reg.exists("user_root") then
+        kern_info("Creating user_root registry")
+        reg.set("user_root/home", "/users/root", reg.types.string, true)
+        reg.set("user_root/username", "root", reg.types.string, true)
+        reg.set("user_root/password", "test", reg.types.string, true)
+        reg.set("user_root/uid", 1, reg.types.u32, true)
+        reg.set("user_root/groups/1", "root", reg.types.string, true)
+        reg.set("user_root/permissions/1", "*", reg.types.string, true)
+        reg.set("system/users/1/reg_path", "user_root", reg.types.string, true)
+        reg.set("system/users/1/name", "root", reg.types.string, true)
         reg.save()
     end
 
@@ -516,6 +537,7 @@ local function boot(type)
         end
     else
         kern_info("SAMA::" .. tostring(reg.get("system/boot/safemode")))
+
         if reg.get("system/boot/safemode") == 1 then
             safemode = true
         else
@@ -534,10 +556,10 @@ local function boot(type)
 
     for ka, va in fs.list("/driver/") do
         for k, v in fs.list("/driver/" .. ka) do
-           -- kern_info("Giving direct component proxy access to driver " .. ka .. k)
+            -- kern_info("Giving direct component proxy access to driver " .. ka .. k)
             --computer.pullSignal(0.5)
             local d = driver.getDriver(ka .. k)
-           -- kern_info("Driver " .. ka .. k .. " is " .. d.getName())
+            -- kern_info("Driver " .. ka .. k .. " is " .. d.getName())
             d.cp = {
                 proxy = component.proxy,
                 list = component.list,
@@ -547,7 +569,6 @@ local function boot(type)
 
             }
         end
-
     end
 
     kern_info("Loading other files...")
@@ -568,7 +589,10 @@ local function boot(type)
         kern_info("Loaded " .. #scripts .. " boot scripts.")
     else
         kern_info("Safemode is enabled, loading only critical bootscripts.")
-        scripts = { "/PlotOS/system32/boot/00_base.lua", "/PlotOS/system32/boot/05_OS.lua", "/PlotOS/system32/boot/80_io.lua", "/PlotOS/system32/safemode_component.lua", "/PlotOS/system32/boot/01_overrides.lua", "/PlotOS/system32/safemode_warn.lua", "/PlotOS/system32/zzzz_safemode_shell.lua" }
+        scripts = { "/PlotOS/system32/boot/00_base.lua", "/PlotOS/system32/boot/05_OS.lua",
+            "/PlotOS/system32/boot/80_io.lua", "/PlotOS/system32/safemode_component.lua",
+            "/PlotOS/system32/boot/01_overrides.lua", "/PlotOS/system32/safemode_warn.lua",
+            "/PlotOS/system32/zzzz_safemode_shell.lua" }
     end
     table.sort(scripts)
     loggingHandle = fs.open("/logs.log", "w")
@@ -582,10 +606,6 @@ local function boot(type)
     end
 
     --local fse = package.require("fs")
-
-
-
-
 end
 
 --[[local ok, err = pcall(boot, bootType)

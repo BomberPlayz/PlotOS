@@ -48,18 +48,14 @@ api.isProcess = function()
 end
 
 
--- Creates a new process with the specified parameters.
--- @param name (string) - The name of the process.
--- @param code (string) - The code to be executed by the process.
--- @param env (table) [optional] - The environment table for the process.
--- @param perms (table) [optional] - The permissions table for the process.
--- @param inService (boolean) [optional] - Indicates whether the process is in service.
--- @param ... - Additional arguments to be passed to the process.
--- @return (table) - The newly created process object.
-
-api.new = function(name, code, env, perms, inService, ...)
-	-- Implementation details...
-end
+--- Creates a new process with the specified parameters.
+--- @param name (string) - The name of the process.
+--- @param code (string) - The code to be executed by the process.
+--- @param env (table) [optional] - The environment table for the process.
+--- @param perms (table) [optional] - The permissions table for the process.
+--- @param inService (boolean) [optional] - Indicates whether the process is in service.
+--- @param ... - Additional arguments to be passed to the process.
+--- @return (table) - The newly created process object.
 api.new = function(name, code, env, perms, inService, ...)
 
 	local ret = { }
@@ -95,11 +91,14 @@ api.new = function(name, code, env, perms, inService, ...)
 	setmetatable(env, { __index = _G })]]
 
 	local code = load(code, "=" .. name, nil, _G)
+	-- debug fuckery for forcing pre-emptive multitasking
 	ret.thread = coroutine.create(code)
 	ret.name = name or "not defined"
 	ret.status = "running"
 	ret.err = ""
 	ret.args = table.pack(...)
+
+
 
 	ret.io = {}
 	ret.io.signal = {}
@@ -178,13 +177,13 @@ api.new = function(name, code, env, perms, inService, ...)
 	return ret
 end
 
--- Loads a file from the specified path and returns a new API object.
--- @param name (string) - The name of the API object.
--- @param path (string) - The path to the file to be loaded.
--- @param perms (table) - Optional permissions for the API object.
--- @param forceRoot (boolean) - Whether to force the API object to be rooted.
--- @param ... - Additional arguments to be passed to the API constructor.
--- @return (table, string) - The loaded API object or nil if loading failed, and an error message if applicable.
+--- Loads a file from the specified path and returns a new API object.
+--- @param name (string) - The name of the API object.
+--- @param path (string) - The path to the file to be loaded.
+--- @param perms (table) - Optional permissions for the API object.
+--- @param forceRoot (boolean) - Whether to force the API object to be rooted.
+--- @param ... - Additional arguments to be passed to the API constructor.
+--- @return (table, string) - The loaded API object or nil if loading failed, and an error message if applicable.
 api.load = function(name, path, perms, forceRoot, ...)
 	local fs = require("fs")
 	if path:sub(1, 1) ~= "/" then
