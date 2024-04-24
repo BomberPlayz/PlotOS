@@ -17,8 +17,9 @@ function stream.create(buf, greedy)
     ret.buffer = buf
     ret.pos = 1
     ret.read = function(self, n)
-        local ret = self.buffer:sub(self.pos, self.pos + n - 1)
-        self.pos = self.pos + n
+        local actual_read = math.min(n, #self.buffer - self.pos + 1)
+        local ret = self.buffer:sub(self.pos, self.pos + actual_read - 1)
+        self.pos = self.pos + actual_read
         if not greedy and coroutine.running() then
             coroutine.yield()
         end
@@ -65,7 +66,5 @@ function stream.proxy(h)
     end
     return ret
 end
-
-
 
 return stream
