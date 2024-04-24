@@ -1,5 +1,3 @@
-
-
 local ret = {}
 
 ret.cp = {}
@@ -24,7 +22,7 @@ local component = cp
 
 
 ret.new = function(adr)
-    kern_info("Disk!")
+    kern_log("Disk!")
     local com = ret.cp.proxy(adr)
 
     local drv = {}

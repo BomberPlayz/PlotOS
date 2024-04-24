@@ -1,4 +1,4 @@
-kern_info("Starting shell...")
+kern_log("Starting shell...")
 package.on_booted()
 
 _G.OSSTATUS = 1
@@ -28,7 +28,7 @@ if not safemode then
         kern_error("Error running system autorun: " .. e1)
     end
 else
-    kern_info("Safemode is enabled, skipping system autorun.", "warn")
+    kern_log("Safemode is enabled, skipping system autorun.", "warn")
 end
 
 if not safemode then
@@ -40,7 +40,7 @@ if not safemode then
         kern_error("Error running autorun: " .. e2)
     end
 else
-    kern_info("Safemode is enabled, skipping autorun.", "warn")
+    kern_log("Safemode is enabled, skipping autorun.", "warn")
 end
 
 xpcall(process.autoTick, function(e)

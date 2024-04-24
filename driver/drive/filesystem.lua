@@ -1,5 +1,3 @@
-
-
 local ret = {}
 
 ret.cp = {}
@@ -24,7 +22,7 @@ local component = cp
 
 
 ret.new = function(adr)
-    kern_info(adr)
+    kern_log(adr)
     local com = ret.cp.proxy(adr)
 
 
@@ -34,13 +32,12 @@ ret.new = function(adr)
         return com.spaceUsed()
     end
 
-    drv.open = function(p,m)
-
-        return com.open(p,m)
+    drv.open = function(p, m)
+        return com.open(p, m)
     end
-    
-    drv.seek = function(h,w,o)
-        return com.seek(h,w,o)
+
+    drv.seek = function(h, w, o)
+        return com.seek(h, w, o)
     end
 
     drv.makeDirectory = function(p)
@@ -55,8 +52,8 @@ ret.new = function(adr)
         return com.isReadOnly()
     end
 
-    drv.write = function(ha,va)
-        return com.write(ha,va)
+    drv.write = function(ha, va)
+        return com.write(ha, va)
     end
 
     drv.spaceTotal = function()

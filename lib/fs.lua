@@ -1,7 +1,7 @@
 --local driver = require("driver")
 
 local filesystem = {}
-local mtab = {name="", children={}, links={}}
+local mtab = { name = "", children = {}, links = {} }
 local fstab = {}
 
 local function segments(path)
@@ -59,7 +59,7 @@ local function findNode(path, create, resolve_links)
                 parts = segments(path)
                 part = nil -- skip node movement
             elseif create then
-                node.children[part] = {name=part, parent=node, children={}, links={}}
+                node.children[part] = { name = part, parent = node, children = {}, links = {} }
             else
                 break
             end
@@ -120,7 +120,7 @@ function filesystem.realPath(path)
     checkArg(1, path, "string")
     local node, rest = findNode(path, false, true)
     if not node then return nil, rest end
-    local parts = {rest or nil}
+    local parts = { rest or nil }
     repeat
         table.insert(parts, 1, node.name)
         node = node.parent
@@ -129,7 +129,7 @@ function filesystem.realPath(path)
 end
 
 function filesystem.mount(fs, path)
-    kern_info("Mounting "..tostring(fs).." to "..path)
+    kern_log("Mounting " .. tostring(fs) .. " to " .. path)
     checkArg(1, fs, "string", "table")
     if type(fs) == "string" then
         fs = filesystem.proxy(fs)
@@ -160,7 +160,7 @@ function filesystem.mount(fs, path)
     if fstab[real] then
         return nil, "another filesystem is already mounted here"
     end
-    for _,node in pairs(fstab) do
+    for _, node in pairs(fstab) do
         if node.fs.address == fs.address then
             fsnode = node
             break
@@ -175,7 +175,7 @@ function filesystem.mount(fs, path)
         local pwd = filesystem.path(real)
         local parent = select(3, findNode(pwd, true))
         local name = filesystem.name(real)
-        fsnode = setmetatable({name=name,parent=parent},{__index=fsnode})
+        fsnode = setmetatable({ name = name, parent = parent }, { __index = fsnode })
         parent.children[name] = fsnode
     end
 
@@ -241,7 +241,7 @@ function filesystem.list(path)
         -- `if not vrest` indicates that vnode reached the end of path
         -- in other words, vnode[children, links] represent path
         if not vrest then
-            for k,n in pairs(vnode.children) do
+            for k, n in pairs(vnode.children) do
                 if not n.fs or fstab[filesystem.concat(path, k)] then
                     table.insert(result, k .. "/")
                 end
@@ -252,7 +252,7 @@ function filesystem.list(path)
         end
     end
     local set = {}
-    for _,name in ipairs(result) do
+    for _, name in ipairs(result) do
         set[filesystem.canonical(name)] = name
     end
     return function()
@@ -286,7 +286,7 @@ local function readonly_wrap(proxy)
         setLabel = roerr,
         makeDirectory = roerr,
         remove = roerr,
-    }, {__index=proxy})
+    }, { __index = proxy })
 end
 
 local function bind_proxy(path)
@@ -363,7 +363,7 @@ function filesystem.internal.proxy(filter, options)
 end
 
 function filesystem.umount(fsOrPath)
-    kern_info("Unmounting " .. tostring(fsOrPath))
+    kern_log("Unmounting " .. tostring(fsOrPath))
     checkArg(1, fsOrPath, "string", "table")
     local real
     local fs
@@ -376,12 +376,12 @@ function filesystem.umount(fsOrPath)
     end
 
     local paths = {}
-    for path,node in pairs(filesystem.fstab) do
+    for path, node in pairs(filesystem.fstab) do
         if real == path or addr == node.fs.address or fs == node.fs then
             table.insert(paths, path)
         end
     end
-    for _,path in ipairs(paths) do
+    for _, path in ipairs(paths) do
         local node = filesystem.fstab[path]
         filesystem.fstab[path] = nil
         node.fs = nil
@@ -455,8 +455,10 @@ function filesystem.remove(path)
     end
     local success = removeVirtual()
     success = removePhysical() or success -- Always run.
-    if success then return true
-    else return nil, "no such file or directory"
+    if success then
+        return true
+    else
+        return nil, "no such file or directory"
     end
 end
 
@@ -489,19 +491,19 @@ function filesystem.rename(oldPath, newPath)
 end
 
 function filesystem.open(path, mode)
-    kern_info("Opening file at "..path.." with mode "..(mode or "r"))
+    kern_log("Opening file at " .. path .. " with mode " .. (mode or "r"))
     checkArg(1, path, "string")
     mode = tostring(mode or "r")
     checkArg(2, mode, "string")
 
-    assert(({r=true, rb=true, w=true, wb=true, a=true, ab=true})[mode],
-            "bad argument #2 (r[b], w[b] or a[b] expected, got " .. mode .. ")")
+    assert(({ r = true, rb = true, w = true, wb = true, a = true, ab = true })[mode],
+        "bad argument #2 (r[b], w[b] or a[b] expected, got " .. mode .. ")")
 
     local node, rest = findNode(path, false, true)
     if not node then
         return nil, rest
     end
-    if not node.fs or not rest or (({r=true,rb=true})[mode] and not node.fs.exists(rest)) then
+    if not node.fs or not rest or (({ r = true, rb = true })[mode] and not node.fs.exists(rest)) then
         return nil, "file not found"
     end
 
@@ -513,19 +515,21 @@ function filesystem.open(path, mode)
     return setmetatable({
         fs = node.fs,
         handle = handle,
-    }, {__index = function(tbl, key)
-        if not tbl.fs[key] then return end
-        if not tbl.handle then
-            return nil, "file is closed"
-        end
-        return function(self, ...)
-            local h = self.handle
-            if key == "close" then
-                self.handle = nil
+    }, {
+        __index = function(tbl, key)
+            if not tbl.fs[key] then return end
+            if not tbl.handle then
+                return nil, "file is closed"
             end
-            return self.fs[key](h, ...)
+            return function(self, ...)
+                local h = self.handle
+                if key == "close" then
+                    self.handle = nil
+                end
+                return self.fs[key](h, ...)
+            end
         end
-    end})
+    })
 end
 
 function filesystem.size(path)
@@ -544,9 +548,9 @@ function filesystem.makeDirectory(path)
     return nil, "no such file or directory"
 end
 
-local labels = {"drivea","drivec","drived","drivee","drivef","driveg","driveh","drivei","drivej"}
+local labels = { "drivea", "drivec", "drived", "drivee", "drivef", "driveg", "driveh", "drivei", "drivej" }
 local labelRif = {}
-for k,v in ipairs(labels) do
+for k, v in ipairs(labels) do
     labelRif[v] = false
 end
 
@@ -554,9 +558,8 @@ table.sort(labelRif)
 
 function filesystem.getFreeLabel()
     local lab = ""
-    for k,v in pairs(labelRif) do
+    for k, v in pairs(labelRif) do
         if labelRif[k] == false then
-
             return k
         end
     end
@@ -570,8 +573,6 @@ end
 function filesystem.freeLabel(label)
     labelRif[label] = false
 end
-
-
 
 filesystem.findNode = findNode
 filesystem.segments = segments

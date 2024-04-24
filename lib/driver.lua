@@ -8,12 +8,12 @@ local drivers = {}
 function generate_unique_id()
     -- generate a unique id, 16 chars a-z0-9
     local id = ""
-    for i=1,16 do
-        local r = math.random(1,36)
+    for i = 1, 16 do
+        local r = math.random(1, 36)
         if r <= 26 then
-            id = id..string.char(r+96)
+            id = id .. string.char(r + 96)
         else
-            id = id..string.char(r+21)
+            id = id .. string.char(r + 21)
         end
     end
     return id
@@ -21,15 +21,15 @@ end
 
 function ret.getDriver(path)
     if not ret.loaded[path] then
-        kern_info("Loading driver "..path)
-        local driverPath = "/driver/"..path
+        kern_log("Loading driver " .. path)
+        local driverPath = "/driver/" .. path
         if fs.exists(driverPath) then
             ret.loaded[path] = raw_dofile(driverPath)
             local type = path:match("(.*)/(.*)")
-            kern_info("Driver type: "..type)
+            kern_log("Driver type: " .. type)
             ret.loaded[path].type = type
         else
-            error('Driver doesn\'t exist') 
+            error('Driver doesn\'t exist')
         end
     end
     local d = ret.loaded[path]
@@ -58,7 +58,7 @@ function ret.getBest(type, addr)
         end
     end]]
     -- first check loaded drivers
-    for k,v in pairs(ret.loaded) do
+    for k, v in pairs(ret.loaded) do
         if v and v.compatible(addr) and (not type or v.type == type) then
             return v
         end
@@ -66,10 +66,10 @@ function ret.getBest(type, addr)
     -- then check all drivers
     if not type then
         -- check all types
-        for k,v in fs.list("/driver") do
-            for kk,vv in fs.list("/driver/"..k) do
-                print(k..", "..kk)
-                local d = ret.getDriver(k..""..kk)
+        for k, v in fs.list("/driver") do
+            for kk, vv in fs.list("/driver/" .. k) do
+                print(k .. ", " .. kk)
+                local d = ret.getDriver(k .. "" .. kk)
                 if d.compatible(addr) then
                     return d
                 end
@@ -77,8 +77,8 @@ function ret.getBest(type, addr)
         end
         return nil
     end
-    for k,v in fs.list("/driver/"..type) do
-        local d = ret.getDriver(type.."/"..k)
+    for k, v in fs.list("/driver/" .. type) do
+        local d = ret.getDriver(type .. "/" .. k)
         if d.compatible(addr) then
             return d
         end
@@ -91,10 +91,10 @@ function ret.getDefault(type)
     if type == "drive" then
         return ret.getBest(type, computer.getBootAddress())
     end
-    for k,v in pairs(cp.list()) do
+    for k, v in pairs(cp.list()) do
         local d = ret.getBest(type, k)
         if d then
-            return d,k
+            return d, k
         end
     end
 
@@ -106,7 +106,7 @@ function ret.getinfo(type, addr)
     if not addr then addr = "default" end
 
     if addr == "default" then
-        local d,addra = ret.getDefault(type)
+        local d, addra = ret.getDefault(type)
         if d then
             return d.getName(), d.getVersion(), addra
         else
@@ -122,7 +122,6 @@ function ret.getinfo(type, addr)
     end
 end
 
-
 local segg = function(e)
     return e, debug.traceback("", 1)
 end
@@ -130,27 +129,26 @@ end
 function newdriver(d, addr)
     local ok, dd, tb = xpcall(d.new, function(e) return e, debug.traceback("", 1) end, addr)
     if not ok then
-        bsod("Failed to load driver: "..dd, false, tb)
+        bsod("Failed to load driver: " .. dd, false, tb)
     end
     dd.getDriverName = d.getName
     dd.getDriverVersion = d.getVersion
     -- wrap all methods in a xpcall so when called and errors, throws a bsod
     if reg.get("system/security/driver_crash_bsod") == 1 then
-        for k,v in pairs(dd) do
+        for k, v in pairs(dd) do
             if type(v) == "function" then
                 dd[k] = function(...)
                     local re = { xpcall(v, segg, ...) }
                     if not re[1] then
-                        bsod("Failed to call driver method: "..re[2], false, re[3])
+                        bsod("Failed to call driver method: " .. re[2], false, re[3])
                     end
                     return table.unpack(re, 2)
                 end
             end
         end
-
     end
 
-    
+
 
 
 
@@ -161,7 +159,7 @@ function ret.load(type, addr)
     if not addr then addr = "default" end
 
     if addr == "default" then
-        local d,addra = ret.getDefault(type)
+        local d, addra = ret.getDefault(type)
         if d then
             local dd = newdriver(d, addra)
             dd.getDriverName = d.getName
@@ -183,9 +181,6 @@ function ret.load(type, addr)
             return nil, "No drivers found"
         end
     end
-
 end
-
-
 
 return ret

@@ -1,7 +1,7 @@
 local raw_loadfile = ...
 
 _G.OSNAME = "PlotOS"
-_G.OSVERSION = "0.0.3"
+_G.OSVERSION = "0.0.4"
 _G.OSRELEASE = "alpha"
 _G.OSSTATUS = 0
 _G.OS_LOGGING_START_TIME = math.floor(computer.uptime() * 1000) / 1000
@@ -44,7 +44,7 @@ local logfile = 0
 local logsToWrite = ""
 local loggingHandle = nil
 
-function _G.kern_info(msg, state)
+function _G.kern_log(msg, state)
     -- Define settings for different log states
     local log = { "debug", "info", "warn", "error" }
     local state_settings = {
@@ -76,7 +76,7 @@ function _G.kern_info(msg, state)
     local lines = split(string.gsub(msg, "\r?\n", "\n"), "\n")
     if #lines > 1 then
         for _, line in ipairs(lines) do
-            kern_info(line, state)
+            kern_log(line, state)
         end
         return
     end
@@ -119,16 +119,13 @@ local rwrite = fs.write
 local rclose = fs.close
 
 function _G.kern_panic(reason)
-    if coroutine.running() then
-        error("Tried to call kernel panic from process")
-    end
-    kern_info("KERNEL PANIC", "error")
-    kern_info("A kernel panic occured! Traceback:", "error")
-    kern_info("----------------------------------------------------", "error")
+    kern_log("KERNEL PANIC", "error")
+    kern_log("A kernel panic occured! Traceback:", "error")
+    kern_log("----------------------------------------------------", "error")
 
     -- use debug to get traceback
-    kern_info(debug.traceback("", 2), "error")
-    kern_info("----------------------------------------------------", "error")
+    kern_log(debug.traceback("", 2), "error")
+    kern_log("----------------------------------------------------", "error")
     --[[kern_info("Variable dump:", "error")
     kern_info("----------------------------------------------------", "error")
     -- use debug to get all variables
@@ -190,7 +187,7 @@ function _G.kern_panic(reason)
     kern_info("System boot address: " .. tostring(computer.getBootAddress()), "error")
     kern_info("System address: " .. tostring(computer.address()), "error")]]
 
-    kern_info("Panic reason: " .. reason, "error")
+    kern_log("Panic reason: " .. reason, "error")
     -- save logs
     -- use the raw filesystem API to avoid any errors
     function save()
@@ -202,12 +199,12 @@ function _G.kern_panic(reason)
         component_invoke(computer.getBootAddress(), "write", handle, logsToWrite)
         component_invoke(computer.getBootAddress(), "close", handle)
 
-        kern_info("Logs saved to /logs.log", "error")
+        kern_log("Logs saved to /logs.log", "error")
     end
 
     local ok, err = pcall(save)
     if not ok then
-        kern_info("Failed to save logs: " .. err, "error")
+        kern_log("Failed to save logs: " .. err, "error")
     end
 
     while true do
@@ -216,7 +213,7 @@ function _G.kern_panic(reason)
 end
 
 if _G.VERY_LOW_MEM then
-    _G.kern_info = function() end
+    _G.kern_log = function() end
     _G.kern_panic = function(reason)
         local w, h = gpu.getResolution()
         gpu.setForeground(0xff0000)
@@ -247,13 +244,13 @@ function _G.raw_dofile(file)
 
             return table.unpack(result, 2, result.n)
         else
-            kern_info("Error loading file " .. file, "error")
-            kern_info("Error: " .. result[2], "error")
+            kern_log("Error loading file " .. file, "error")
+            kern_log("Error: " .. result[2], "error")
             error(result[2] .. " is the error")
         end
     else
-        kern_info("Error loading file " .. file, "error")
-        kern_info("Error: " .. reason, "error")
+        kern_log("Error loading file " .. file, "error")
+        kern_log("Error: " .. reason, "error")
 
         error(reason)
     end
@@ -402,17 +399,17 @@ local function endsWith(str, suffix)
 end
 
 --[[BOOT]]
-           --
+--
 local function boot(type)
     if computer.totalMemory() <= 262144 then
         _G.LOW_MEM = true
-        kern_info("LOW_MEM mode enabled")
+        kern_log("LOW_MEM mode enabled")
     else
         _G.LOW_MEM = false
-        kern_info("LOW_MEM mode disabled")
+        kern_log("LOW_MEM mode disabled")
     end
-    kern_info("Hell debug", "debug")
-    kern_info("Loading package managment...")
+    kern_log("Hell debug", "debug")
+    kern_log("Loading package managment...")
     local package = raw_dofile("/lib/package.lua")
 
     _G.package = package
@@ -422,12 +419,12 @@ local function boot(type)
     package.loaded.filesystem = fs
     package.loaded.package = package
 
-    kern_info("Mounting system drive")
+    kern_log("Mounting system drive")
     local fs = package.require("fs")
     fs.mount(rawFs, "/")
 
-    kern_info("Initializing registry")
-    kern_info("Removing stale registry locks")
+    kern_log("Initializing registry")
+    kern_log("Removing stale registry locks")
 
     local registryLocks = fs.list("/PlotOS/system32/registry/locks")
 
@@ -435,16 +432,16 @@ local function boot(type)
     for lock in registryLocks do
         fs.remove("/PlotOS/system32/registry/locks/" .. lock)
         registryLockCount = registryLockCount + 1
-        kern_info("Removing stale registry lock " .. lock, "warn")
+        kern_log("Removing stale registry lock " .. lock, "warn")
     end
     if registryLockCount == 0 then
-        kern_info("Found no stale registry locks")
+        kern_log("Found no stale registry locks")
     end
 
     registryLocks = nil
     registryLockCount = nil
 
-    kern_info("Cleaning up stale registry temporary files")
+    kern_log("Cleaning up stale registry temporary files")
     local registryFiles = fs.list("/PlotOS/system32/registry")
 
     local registryTmpCount = 0
@@ -460,13 +457,13 @@ local function boot(type)
                     fs.rename("/PlotOS/system32/registry/" .. file, "/PlotOS/system32/registry/" .. nonTmp)
                     msg = msg .. ", moving to " .. nonTmp
                 end
-                kern_info(msg, "warn")
+                kern_log(msg, "warn")
                 registryTmpCount = registryTmpCount + 1
             end
         end
     end
     if registryTmpCount == 0 then
-        kern_info("Found no stale registry temporary files")
+        kern_log("Found no stale registry temporary files")
     end
 
     registryFiles = nil
@@ -475,7 +472,7 @@ local function boot(type)
     local reg = package.require("registry")
 
     if not reg.exists("system") then
-        kern_info("Creating system registry")
+        kern_log("Creating system registry")
         reg.set("system/boot/safemode", 0, reg.types.u8, true)
         reg.set("system/security/disable", 0, reg.types.u8, true)
         reg.set("system/processes/attach_security", 1, reg.types.u8, true)
@@ -489,7 +486,7 @@ local function boot(type)
     end
 
     if not reg.exists("user_root") then
-        kern_info("Creating user_root registry")
+        kern_log("Creating user_root registry")
         reg.set("user_root/home", "/users/root", reg.types.string, true)
         reg.set("user_root/username", "root", reg.types.string, true)
         reg.set("user_root/password", "test", reg.types.string, true)
@@ -504,15 +501,15 @@ local function boot(type)
     local useTmpFilesToSaveEnabled = reg.get("system/registry/use_tmp_files_to_save")
     if useTmpFilesToSaveEnabled == 0 then
         reg.useTmpFilesToSave = false
-        kern_info("Registry use tmp files to save disabled")
+        kern_log("Registry use tmp files to save disabled")
     elseif useTmpFilesToSaveEnabled == 1 then
         reg.useTmpFilesToSave = true
-        kern_info("Registry use tmp files to save enabled")
+        kern_log("Registry use tmp files to save enabled")
     else
         if reg.useTmpFilesToSave then
-            kern_info("Registry use tmp files to save enabled")
+            kern_log("Registry use tmp files to save enabled")
         else
-            kern_info("Registry use tmp files to save disabled")
+            kern_log("Registry use tmp files to save disabled")
         end
     end
     useTmpFilesToSaveEnabled = nil
@@ -520,10 +517,10 @@ local function boot(type)
     local lowMemEnabled = reg.get("system/low_mem")
     if lowMemEnabled == 0 and _G.LOW_MEM == true then
         _G.LOW_MEM = false
-        kern_info("LOW_MEM mode disabled")
+        kern_log("LOW_MEM mode disabled")
     elseif lowMemEnabled == 1 and _G.LOW_MEM == false then
         _G.LOW_MEM = true
-        kern_info("LOW_MEM mode enabled")
+        kern_log("LOW_MEM mode enabled")
     end
     lowMemEnabled = nil
 
@@ -536,7 +533,7 @@ local function boot(type)
             safemode = false
         end
     else
-        kern_info("SAMA::" .. tostring(reg.get("system/boot/safemode")))
+        kern_log("SAMA::" .. tostring(reg.get("system/boot/safemode")))
 
         if reg.get("system/boot/safemode") == 1 then
             safemode = true
@@ -546,11 +543,11 @@ local function boot(type)
     end
 
     if safemode == "true" then
-        kern_info("Safemode is enabled!", "warn")
+        kern_log("Safemode is enabled!", "warn")
         safemode = true
     end
 
-    kern_info("Loading drivers...")
+    kern_log("Loading drivers...")
 
     local driver = package.require("driver")
 
@@ -571,7 +568,7 @@ local function boot(type)
         end
     end
 
-    kern_info("Loading other files...")
+    kern_log("Loading other files...")
 
     local function rom_invoke(method, ...)
         return component_invoke(computer.getBootAddress(), method, ...)
@@ -586,9 +583,9 @@ local function boot(type)
                 table.insert(scripts, path)
             end
         end
-        kern_info("Loaded " .. #scripts .. " boot scripts.")
+        kern_log("Loaded " .. #scripts .. " boot scripts.")
     else
-        kern_info("Safemode is enabled, loading only critical bootscripts.")
+        kern_log("Safemode is enabled, loading only critical bootscripts.")
         scripts = { "/PlotOS/system32/boot/00_base.lua", "/PlotOS/system32/boot/05_OS.lua",
             "/PlotOS/system32/boot/80_io.lua", "/PlotOS/system32/safemode_component.lua",
             "/PlotOS/system32/boot/01_overrides.lua", "/PlotOS/system32/safemode_warn.lua",
@@ -601,7 +598,7 @@ local function boot(type)
         loggingHandle:write(v)
     end
     for i = 1, #scripts do
-        kern_info("Running boot script " .. scripts[i])
+        kern_log("Running boot script " .. scripts[i])
         raw_dofile(scripts[i])
     end
 

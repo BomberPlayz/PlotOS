@@ -1,4 +1,3 @@
-
 local ret = {}
 
 ret.cp = {}
@@ -6,7 +5,7 @@ ret.cp = {}
 local cp = ret.cp
 
 ret.compatible = function(adr)
-    kern_info("targonca: "..tostring(cp))
+    kern_log("targonca: " .. tostring(cp))
     return cp.proxy(adr).type == "ElnProbe"
 end
 
@@ -24,13 +23,13 @@ end
 ret.new = function(adr)
     local com = {}
     local methods = ret.cp.methods(adr)
-    for k,v in pairs(methods) do
+    for k, v in pairs(methods) do
         com[k] = v
     end
     local drv = {}
 
-    drv.signalSetDir = function(s,sin)
-        return com.signalSetDir(s,sin)
+    drv.signalSetDir = function(s, sin)
+        return com.signalSetDir(s, sin)
     end
 
     drv.signalGetDir = function(s)
@@ -50,7 +49,7 @@ ret.new = function(adr)
     end
 
     drv.wirelessSet = function(ch, n)
-        return com.wirelessSet(ch,n)
+        return com.wirelessSet(ch, n)
     end
 
     drv.wirelessRemove = function(ch)

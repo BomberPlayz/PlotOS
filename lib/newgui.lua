@@ -818,7 +818,7 @@ function gui.eventLoop(object)
         local t, e = gpu.bitblt()
         gpu.setActiveBuffer(0)
         if not t then
-            kern_info("Issue with render gui: " .. e, "warn")
+            kern_log("Issue with render gui: " .. e, "warn")
         end
         --kern_info("afterdraw")
         -- -- buffer.draw()
