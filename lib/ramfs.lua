@@ -49,6 +49,12 @@ function ramfs.getfakefs()
         end
         return #ramfs.openfiles
     end
+
+    function fakefs.seek(handle, whence, offset)
+        if not ramfs.openfiles[handle] then return nil, "no file" end
+        local file = ramfs.openfiles[handle]
+        return file.buffer:seek(whence, offset)
+    end
 end
 
 return ramfs

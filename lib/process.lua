@@ -51,11 +51,11 @@ end
 --- Creates a new process with the specified parameters.
 --- @param name (string) - The name of the process.
 --- @param code (string) - The code to be executed by the process.
---- @param env (table) [optional] - The environment table for the process.
---- @param perms (table) [optional] - The permissions table for the process.
---- @param inService (boolean) [optional] - Indicates whether the process is in service.
---- @param ... - Additional arguments to be passed to the process.
---- @return (table) - The newly created process object.
+--- @param env? (table) [optional] - The environment table for the process.
+--- @param perms? (table) [optional] - The permissions table for the process.
+--- @param inService? (boolean) [optional] - Indicates whether the process is in service.
+--- @param ...? - Additional arguments to be passed to the process.
+--- @return (table) # The newly created process object.
 api.new = function(name, code, env, perms, inService, ...)
     local ret = {}
     ret.listeners = {}

@@ -1,6 +1,8 @@
 local gui = require("newgui")
 local process = require("process")
 local gpu = require("driver").load("gpu")
+local std = require("stdlib")
+local fs = require("fs")
 
 function roundToNearestOneDecimal(num)
     return math.floor(num * 10 + 0.5) / 10
@@ -13,14 +15,14 @@ local t = 1
 local window = gui.window(10, 10, 75, 35, { title = "Task Manager" })
 window.content.color = 0xcccccc
 
-local procButton = gui.button(0, 0, 25, 1, "Processes")
+local procButton = gui.button(0, 1, 25, 1, "Processes")
 procButton.color = 0xbbbbbb
 procButton.eventbus.on("click", function()
     tab = 1
     t = 20
 end)
 
-local perfButton = gui.button(27, 0, 25, 1, "Performance")
+local perfButton = gui.button(27, 1, 25, 1, "Performance")
 perfButton.color = 0xbbbbbb
 perfButton.eventbus.on("click", function()
     tab = 2
@@ -30,8 +32,64 @@ end)
 window.addChild(procButton)
 window.addChild(perfButton)
 
-local tinput = gui.textinput(54, 0, 20, 1)
+local tinput = gui.textinput(54, 1, 20, 1)
 window.addChild(tinput)
+
+local cm = gui.contextmenu({
+    {
+        text = "Start new process",
+        visible = true,
+        action = function()
+            local win = gui.window(10, 10, 40, 10, { title = "Start new process" })
+            win.content.color = 0xcccccc
+            local tinp = gui.textinput(1, 1, 18, 1)
+            win.addChild(tinp)
+            local tbtn = gui.button(40 - 8, 10 - 3, 7, 1, "Start")
+
+            tbtn.eventbus.on("click", function()
+                local name = std.str.split(tinp.text, "/")[#std.str.split(tinp.text, "/")]
+                -- does it exist tho
+                if not fs.exists(tinp.text) then
+                    local msgbox = gui.window(10, 10, 40, 10, { title = "Error" })
+                    msgbox.addChild(gui.label(1, 1, 40, 10, "File does not exist"))
+                    local bat = gui.button(40 - 8, 10 - 3, 7, 1, "OK")
+                    bat.eventbus.on("click", function()
+                        msgbox.close()
+                    end)
+                    msgbox.addChild(bat)
+                    gui.workspace.addChild(msgbox)
+                    win.close()
+                    return
+                end
+                process.load(name, tinp.text)
+                win.close()
+            end)
+
+            win.addChild(tbtn)
+
+            gui.workspace.addChild(win)
+        end
+    }
+})
+
+
+local menubar = gui.container(0, 0, 75, 1)
+local menubutton = gui.button(0, 0, 10, 1, "Stuff")
+menubar.addChild(menubutton)
+menubutton.eventbus.on("click", function()
+    kern_log("Clicked")
+    cm.updateItems()
+    cm.showAt(0, 1)
+end)
+
+cm.eventbus.on("item_click", function(item)
+    item.action()
+end)
+
+window.addChild(menubar)
+window.addChild(cm)
+
+
 
 gui.workspace.addChild(window)
 
@@ -74,7 +132,7 @@ while not window.isClosed do
     if t >= 20 and not window.dragging then
         if tab ~= lastTab then
             if currContainer then window.removeChild(currContainer) end
-            currContainer = gui.container(0, 1, window.w, window.h - 1)
+            currContainer = gui.container(0, 2, window.w, window.h - 2)
             currContainer.color = 0xdddddd
             cce = {}
             window.addChild(currContainer)

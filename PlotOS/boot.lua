@@ -257,9 +257,6 @@ function _G.raw_dofile(file)
 end
 
 _G.bsod = function(reason, isKern, stack)
-    if coroutine.running() then
-        error("Tried to call BSOD from process")
-    end
     if gpu then
         gpu.setBackground(0x2665ed)
         gpu.setForeground(0xffffff)
@@ -282,6 +279,9 @@ _G.bsod = function(reason, isKern, stack)
             gpu.set(10, 13 + ka + kaka, v)
             ka = k
         end
+        kern_panic(reason)
+    else
+        kern_panic(reason)
     end
     if not isKern then
         while true do
@@ -480,7 +480,7 @@ local function boot(type)
             local ok, err, new = reg.mount("/PlotOS/system32/registry/user_root.reg", "user_root", true)
             newUserRoot = new
         end
-        
+
 
         if newSystem then
             kern_log("Creating system registry")

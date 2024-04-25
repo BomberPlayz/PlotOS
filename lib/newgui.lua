@@ -62,6 +62,7 @@ function gui.component(x, y, w, h)
     comp.h = h
     comp.backgroundColor = 0xffffff
     comp.foregroundColor = 0x000000
+    comp.draw_shadow = false
 
     comp._gx = 0
     comp._gy = 0
@@ -91,6 +92,11 @@ function gui.component(x, y, w, h)
                 gpu.freeBuffer(comp.buffer)
                 -- create a new buffer
                 comp.buffer = gpu.allocateBuffer(comp.w, comp.h)
+            end
+            if k == "dirty" then
+                if comp.parent then
+                    comp.parent.dirty = v
+                end
             end
             rawset(t, k, v)
         end
@@ -138,6 +144,7 @@ end
 function gui.container(x, y, w, h)
     local cont = gui.component(x, y, w, h)
     cont.children = {}
+    cont.alwaysDraw = true -- TODO: fix not drawing stuff until needed
 
     cont.draw = function(special)
         buffer.setMask(cont.x, cont.y, cont.w, cont.h)
@@ -152,13 +159,29 @@ function gui.container(x, y, w, h)
                 child.x = child.x + cont.x
                 child.y = child.y + cont.y
 
-                if child.dirty then
+                if child.dirty or cont.alwaysDraw then
                     child._beforeDraw()
                     child.beforeDraw()
                     child.draw(special)
                     child.afterDraw()
                     child._afterDraw()
-                    -- -- child.dirty = false
+                    if child.draw_shadow and child.enabled then
+                        -- draw two black lines around the component
+                        local mask = { buffer.getMask() }
+                        buffer.setMask(0, 0, buffer.width, buffer.height)
+                        buffer.setForeground(0x000000)
+                        --[[for i = 1, child.w do
+                            buffer.set(child.x + i, child.y + child.h, "█")
+                        end
+                        for i = 0, child.h do
+                            buffer.set(child.x + child.w, child.y + i, "█")
+                        end]]
+                        buffer.fill(child.x + 1, child.y + child.h, child.w - 1, 1, "█")
+                        buffer.fill(child.x + child.w, child.y + 1, 1, child.h, "█")
+                        buffer.setMask(table.unpack(mask))
+                    end
+
+                    child.dirty = false
                 end
 
                 child.x = child.x - cont.x
@@ -170,8 +193,12 @@ function gui.container(x, y, w, h)
 
 
 
+
+
         buffer.setMask(0, 0, buffer.width, buffer.height)
     end
+
+
 
     cont.onEvent = function(event)
         -- loop in an inverse order and check if the event has an x and y. If so then when a child gets the event, it won't propogate further.
@@ -262,22 +289,22 @@ function gui.button(x, y, w, h, text)
     btn.clicked = false
     btn.clickTick = false
 
-    btn.color = 0xaaaaaa
-    btn.foreColor = 0x000000
+    btn.backgroundColor = 0xaaaaaa
+
 
     btn.draw = function()
         -- kern_info("drawing button at "..tostring(btn.x)..", "..tostring(btn.y))
         -- if the button is clicked then the color is a bit darker so subtract
 
         if btn.clicked then
-            buffer.setForeground(btn.foreColor)
-            buffer.setBackground(btn.color - 0x111111)
+            buffer.setForeground(btn.foregroundColor)
+            buffer.setBackground(btn.backgroundColor - 0x111111)
 
             btn.clicked = false
             btn.dirty = true
         else
-            buffer.setForeground(btn.foreColor)
-            buffer.setBackground(btn.color)
+            buffer.setForeground(btn.foregroundColor)
+            buffer.setBackground(btn.backgroundColor)
         end
 
         buffer.fill(btn.x, btn.y, btn.w, btn.h, " ")
@@ -356,13 +383,22 @@ function gui.panel(x, y, w, h, color, char)
                 child.y = child.y + pnl.y
 
 
-                if child.dirty then
+                if child.dirty or pnl.alwaysDraw then
                     child._beforeDraw()
                     child.beforeDraw()
                     child.draw(special)
                     child.afterDraw()
                     child._afterDraw()
-                    -- -- child.dirty = false
+                    if child.draw_shadow and child.enabled then
+                        -- draw two black lines around the component
+                        local mask = { buffer.getMask() }
+                        buffer.setMask(0, 0, buffer.width, buffer.height)
+                        buffer.setForeground(0x000000)
+                        buffer.fill(child.x + 1, child.y + child.h, child.w - 1, 1, "█")
+                        buffer.fill(child.x + child.w, child.y + 1, 1, child.h, "█")
+                        buffer.setMask(table.unpack(mask))
+                    end
+                    child.dirty = false
                 end
 
                 child.x = child.x - pnl.x
@@ -450,6 +486,10 @@ function gui.window(x, y, w, h, options)
         return nil, "Not enough VRAM"
     end
     win.buffer = gpu.allocateBuffer(w, h)
+    win.draw_shadow = reg.get("system/ui/window/shadow_always") == 1
+    win.always_shadow = reg.get("system/ui/window/shadow_always") == 1
+    win.shadow_on_drag = reg.get("system/ui/window/shadow_on_drag") == 1
+    win.drag_borders = reg.get("system/ui/window/drag_borders") == 1
 
 
     titleBar.addChild(title)
@@ -509,24 +549,18 @@ function gui.window(x, y, w, h, options)
             win.dragY = event.y
             win.dragOffsetX = win.x - event.x
             win.dragOffsetY = win.y - event.y
-            if reg.get("system/ui/window/drag_borders") == 1 then
+            if win.shadow_on_drag then
+                win.draw_shadow = true
+            end
+            if win.drag_bordersq then
                 content.enabled = false
                 con.enabled = true
             end
         elseif event.type == "drag" then
             if win.dragging then
-                -- use gui.root.requestDraw to request a draw at the place where the window was before. Don't include the current position
-
-
-                -- this is so the window won't leave artifacts behind
-                -- gui.root.requestDraw args: x, y, w, h
                 win.lastX = win.x
                 win.lastY = win.y
                 win.doRequestMove = true
-
-
-
-
 
                 win.x = event._x + win.dragOffsetX
                 win.y = event._y + win.dragOffsetY
@@ -537,7 +571,10 @@ function gui.window(x, y, w, h, options)
             end
         elseif event.type == "drop" then
             win.dragging = false
-            if reg.get("system/ui/window/drag_borders") == 1 then
+            if win.shadow_on_drag and not win.always_shadow then
+                win.draw_shadow = false
+            end
+            if win.drag_borders then
                 content.enabled = true
                 con.enabled = false
             end
@@ -572,6 +609,20 @@ function gui.window(x, y, w, h, options)
     end
 
     win.onEvent = function(event)
+        if event.type == "touch" then
+            -- we are more important; get ourselves to the front
+            local ourindex = -1
+            for i = 1, #win.parent.children do
+                if win.parent.children[i] == win then
+                    ourindex = i
+                    break
+                end
+            end
+            if ourindex ~= #win.parent.children then
+                table.remove(win.parent.children, ourindex)
+                table.insert(win.parent.children, win)
+            end
+        end
         for i = #win.children, 1, -1 do
             local child = win.children[i]
             if child.enabled then
@@ -620,13 +671,23 @@ function gui.window(x, y, w, h, options)
                 child.y = child.y + 1
 
 
-                if child.dirty then
+                if child.dirty or win.alwaysDraw then
                     child._beforeDraw()
                     child.beforeDraw()
                     child.draw(special)
                     child.afterDraw()
                     child._afterDraw()
-                    -- -- child.dirty = false
+                    if child.draw_shadow and child.enabled then
+                        -- draw two black lines around the component
+                        local mask = { buffer.getMask() }
+                        buffer.setMask(0, 0, buffer.width, buffer.height)
+                        buffer.setForeground(0x000000)
+                        buffer.fill(child.x + 1, child.y + child.h, child.w - 1, 1, "█")
+                        buffer.fill(child.x + child.w, child.y + 1, 1, child.h, "█")
+                        buffer.setMask(table.unpack(mask))
+                    end
+
+                    child.dirty = false
                 end
 
                 child.x = child.x - 1
@@ -674,7 +735,7 @@ function gui.treeNode(text)
 end
 
 function gui.textinput(x, y, w, h)
-    local textinput = gui.container(x, y, w, h)
+    local textinput = gui.component(x, y, w, h)
     textinput.text = ""
     textinput.cursor = true
     textinput.cursorX = 0
@@ -751,6 +812,84 @@ function gui.textinput(x, y, w, h)
     end
 
     return textinput
+end
+
+function gui.contextmenu(items)
+    local contextmenu = gui.container(0, 0, 0, 0)
+    contextmenu.eventbus = EventEmitter()
+    contextmenu.enabled = false
+    contextmenu.items = items
+    contextmenu.draw_shadow = true
+    function contextmenu.updateItems()
+        local itemc = 0
+        local longestitem = 0
+        for i, item in ipairs(contextmenu.items) do
+            itemc = itemc + 1
+            if #item.text > longestitem then
+                longestitem = #item.text
+            end
+        end
+        while #contextmenu.children > 0 do
+            contextmenu.removeChild(contextmenu.children[1])
+        end
+        for i, item in ipairs(contextmenu.items) do
+            local itemobj = gui.button(0, itemc - 1, longestitem, 1, item.text)
+            itemobj.backgroundColor = 0xffffff
+            itemobj.eventbus.on("click", function()
+                contextmenu.eventbus.emit("item_click", item)
+                contextmenu.enabled = false
+                contextmenu.dirty = true
+            end
+            )
+
+            contextmenu.addChild(itemobj)
+        end
+        contextmenu.h = itemc
+        contextmenu.w = longestitem
+    end
+
+    function contextmenu.showAt(x, y)
+        contextmenu.updateItems()
+        contextmenu.x = x
+        contextmenu.y = y
+        contextmenu.enabled = true
+        contextmenu.parent.dirty = true
+    end
+
+    local alreadyfucked = false
+    function contextmenu.update()
+        alreadyfucked = true
+        -- the context menu feels that it is important so it places itself on top
+        -- find ourselves in parent
+        local cont = contextmenu.parent
+        for ae, child in ipairs(cont.children) do
+            if child == contextmenu then
+                table.remove(cont.children, ae)
+                table.insert(cont.children, contextmenu)
+                contextmenu.dirty = true
+                break
+            end
+        end
+
+        for _, child in ipairs(contextmenu.children) do
+            if child.enabled then
+                child._update()
+                child.update()
+            end
+        end
+    end
+
+    function contextmenu._update()
+        alreadyfucked = false
+        for _, child in ipairs(contextmenu.children) do
+            if child.enabled then
+                child._gx = child.x + contextmenu._gx
+                child._gy = child.y + contextmenu._gy
+            end
+        end
+    end
+
+    return contextmenu
 end
 
 local event = require("event")
@@ -843,6 +982,8 @@ gui.eventLoop(gui.workspace)
 gui.workspace = gui.panel(1, 1, buffer.width, buffer.height, 0x555555)
 gui.workspace._gx = 1
 gui.workspace._gy = 1
+gui.workspace.alwaysDraw = true
+
 
 
 return gui

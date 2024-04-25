@@ -7,27 +7,31 @@ local process = require("process")
 component.proxy = function(addr)
     if process.isProcess() then
         local proc = process.findByThread(coroutine.running())
-        if proc.security.hasPermission("component.access.*") or proc.security.hasPermission("component.access." .. oldcom.proxy(addr).type) then
+        if proc.security and proc.security.hasPermission("component.access.*") or proc.security and proc.security.hasPermission("component.access." .. oldcom.proxy(addr).type) then
             return oldcom.proxy(addr)
-        else
+        elseif proc.security then
             kern_log("Permission denied to access component by proxy for " .. proc.pid .. " (" .. proc.name .. ")",
                 "warn")
             return nil, "EPERM", "Permission denied for accessing component"
+        else
+            return oldcom.proxy(addr)
         end
     else
-        return oldcom.invoke(addr)
+        return oldcom.proxy(addr)
     end
 end
 
 component.invoke = function(addr, ...)
     if process.isProcess() then
         local proc = process.findByThread(coroutine.running())
-        if proc.security.hasPermission("component.access.*") or proc.security.hasPermission("component.access." .. oldcom.proxy(addr).type) then
+        if proc.security and proc.security.hasPermission("component.access.*") or proc.security and proc.security.hasPermission("component.access." .. oldcom.proxy(addr).type) then
             return oldcom.invoke(addr, ...)
-        else
+        elseif proc.security then
             kern_log("Permission denied to access component by invoke for " .. proc.pid .. " (" .. proc.name .. ")",
                 "warn")
             return nil, "EPERM", "Permission denied for accessing component"
+        else
+            return oldcom.invoke(addr, ...)
         end
     else
         return oldcom.invoke(addr, ...)
