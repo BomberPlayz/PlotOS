@@ -36,14 +36,6 @@ local function sleep(timeout)
     until computer.uptime() >= deadline
 end
 
-local function startsWith(str, prefix)
-    return string.sub(str, 1, #prefix) == prefix
-end
-
-local function endsWith(str, suffix)
-    return string.sub(str, - #suffix) == suffix
-end
-
 local function parsePath(path)
     local keys = std.str.split(path, "/")
     local category = keys[1]
@@ -53,7 +45,28 @@ local function parsePath(path)
     return { category = category, path = keys }
 end
 
-local regdata
+local regdata = {}
+local regmounts = {}
+
+setmetatable(regdata, {
+    __newindex = function() end,
+    __index = function(t, k)
+        return regmounts[k] and regmounts[k][2] or nil
+    end,
+    __pairs = function(t)
+        return next, regmounts, nil
+    end,
+    __ipairs = function(t)
+        local function iter(t, i)
+            i = i + 1
+            local v = regmounts[i]
+            if v then
+                return i, v[2]
+            end
+        end
+        return iter, regmounts, 0
+    end
+})
 
 local function readByteAsNumber(h)
     local byte = h:read(1)
@@ -69,21 +82,17 @@ local function readBytes(h, count)
     return data
 end
 
---[[
-local function readShort(h)
-    local bytes = {}
-    table.insert(bytes,h:read(1))
-    table.insert(bytes,h:read(1))
-    if h:read()
-end
---]]
-
 local function parseCollection(h, fileSize, length)
     if length == 0 then
-        return {}
+        return { types.collection, {} }
     end
 
+    kern_log("DO YOU RUN!!!!!!!!!!!!")
     local res = { types.collection, {} }
+    for k,v in pairs(res) do
+        kern_log(k)
+        kern_log(v)
+    end
     local totalRead = 0
     while totalRead < length do
         local t = readByteAsNumber(h)
@@ -99,7 +108,7 @@ local function parseCollection(h, fileSize, length)
             local name = readBytes(h, nameLength)
             totalRead = totalRead + nameLength
 
-            if t == types.category then
+            if t == types.category then -- FIXME: we dont save the categories with a type!!
                 -- i think we can ignore it here
             elseif t == types.u8 then
                 local b = readByteAsNumber(h)
@@ -187,336 +196,306 @@ local function parseCollection(h, fileSize, length)
         nameLength = nil
     end
 
+    for k,v in pairs(res) do
+        kern_log(k)
+        kern_log(v)
+    end
     return res
 end
 
 local registry = {}
 registry.useTmpFilesToSave = true
 
-local function readRegistry()
-    local categories, err = fs.list(registryPath)
-    if err then error(categories) end
+local function readRegistryFile(file)
+    if not fs.exists(file) then return false, "File doesn't exist" end
 
-    local res = {}
+    kern_log("Registry: reading "..file)
 
-    for category in categories do
-        if not fs.isDirectory(registryPath .. "/" .. category) and not endsWith(category, ".tmp") then
-            while true do
-                local locks, err = fs.list(lockPath)
-                if err then error(locks) end
+    local rawH = fs.open(file, "rb")
+    local size = fs.size(file)
 
-                local ok = true
-                local badLock
+    local h = {
+        remainingData = size,
+        cacheSize = nil,
+        cache = nil,
+        readToEnd = false,
+        readBlockSize = _G.LOW_MEM and 256 or 1024, --cache size, dont wanna rename it
+        readMaxChunkSize = _G.LOW_MEM and 512 or 2048,
+        read = function(self, amount) --specifying amount that overflows the file will return nil
+            if not self.cache then
+                local availableBytes = self.readBlockSize
 
-                for lock in locks do
-                    if startsWith(lock, category .. ".write") then
-                        ok = false
-                        badLock = lock
-                        break
-                    end
+                if availableBytes > size then
+                    availableBytes = size
+                    self.remainingData = 0
                 end
-                if ok then break end
-                kern_log("Registry: waiting for lock " .. badLock)
-                sleep(0.25)
+
+                self.cacheSize = availableBytes
+                self.remainingData = size-availableBytes
+                self.cache = rawH:read(availableBytes,"rb")
             end
 
-            local lockName = category .. ".read." .. string.format("%09d", math.random(0, 999999999))
+            if self.remainingData == 0 and #self.cache == 0 then return nil end
 
-            local f = fs.open(lockPath .. "/" .. lockName, "w")
-            f:close()
-            kern_log("Registry: created lock " .. lockName)
+            if #self.cache >= amount then
+                local dat = string.sub(self.cache,1,amount)
+                self.cache = string.sub(self.cache,amount+1)
+                return dat
+            end
 
-            res[category] = { types.category, {} }
+            if #self.cache+self.remainingData >= amount then
+                local totalRead = #self.cache
+                local dat = self.cache
+                self.cache = ""
+                while amount-totalRead > 0 do
+                    local toRead = math.max(math.min(self.readMaxChunkSize,amount-totalRead),math.min(self.remainingData,self.readBlockSize))
+                    local data = rawH:read(toRead,"rb")
+                    self.remainingData = self.remainingData - toRead
 
-            kern_log("Registry: reading category " .. category)
-
-            local rawH = fs.open(registryPath .. "/" .. category, "rb")
-            local size = fs.size(registryPath .. "/" .. category)
-
-            local h = {
-                remainingData = size,
-                cacheSize = nil,
-                cache = nil,
-                readToEnd = false,
-                readBlockSize = _G.LOW_MEM and 256 or 1024, --cache size, dont wanna rename it
-                readMaxChunkSize = _G.LOW_MEM and 512 or 2048,
-                read = function(self, amount)               --specifying amount that overflows the file will return nil
-                    if not self.cache then
-                        local availableBytes = self.readBlockSize
-
-                        if availableBytes > size then
-                            availableBytes = size
-                            self.remainingData = 0
-                        end
-
-                        self.cacheSize = availableBytes
-                        self.remainingData = size - availableBytes
-                        self.cache = rawH:read(availableBytes, "rb")
+                    totalRead = totalRead + toRead
+                    local overflow = totalRead-amount
+                    if overflow > 0 then
+                        self.cache = string.sub(data, #data-overflow+1)
+                        data = string.sub(data,1,#data-#self.cache)
                     end
-
-                    if self.remainingData == 0 and #self.cache == 0 then return nil end
-
-                    if #self.cache >= amount then
-                        local dat = string.sub(self.cache, 1, amount)
-                        self.cache = string.sub(self.cache, amount + 1)
-                        return dat
-                    end
-
-                    if #self.cache + self.remainingData >= amount then
-                        local totalRead = #self.cache
-                        local dat = self.cache
-                        self.cache = ""
-                        while amount - totalRead > 0 do
-                            local toRead = math.max(math.min(self.readMaxChunkSize, amount - totalRead),
-                                math.min(self.remainingData, self.readBlockSize))
-                            local data = rawH:read(toRead, "rb")
-                            self.remainingData = self.remainingData - toRead
-
-                            totalRead = totalRead + toRead
-                            local overflow = totalRead - amount
-                            if overflow > 0 then
-                                self.cache = string.sub(data, #data - overflow + 1)
-                                data = string.sub(data, 1, #data - #self.cache)
-                            end
-                            dat = dat .. data
-                            data = nil
-                            overflow = nil
-                            toRead = nil
-                        end
-                        return dat
-                    end
-
-                    return nil
+                    dat = dat .. data
+                    data = nil
+                    overflow = nil
+                    toRead = nil
                 end
-            }
+                return dat
+            end
 
-            res[category] = parseCollection(h, size, size)
+            return nil
+        end
+    }
 
-            rawH:close()
-            fs.remove(lockPath .. "/" .. lockName)
+    local d = parseCollection(h,size,size)
+
+    rawH:close()
+
+    return d
+end
+
+local function mountRaw(file, name)
+    if regmounts[name] then return false, "Something is already mounted at the specified name" end
+    if not fs.exists(file) then return false, "File doesn't exist" end
+    
+    kern_log("Registry: Mounted "..file.." to "..name)
+    regmounts[name] = {file, readRegistryFile(file)}
+end
+
+function registry.mount(file, name, createIfNotExists)
+    local created = false
+    if regmounts[name] then return false, "Something is already mounted at the specified name" end
+    if not fs.exists(file) then
+        if createIfNotExists then
+            local h = fs.open(file, "w")
+            h:close()
+            created = true
+        else
+            return false, "File doesn't exist"
+        end
+    end
+    local path = fs.path(file)
+    
+    local bakFile = nil
+    for fname in fs.list(path) do
+        if not fs.isDirectory(fname) and std.str.startswith(fname, fs.name(file)..".old") then
+            if bakFile then
+                return false, "Multiple backup files present"
+            else
+                bakFile = fs.concat(path, fname)
+            end
         end
     end
 
-    regdata = res
+    if bakFile then
+        fs.remove(file)
+
+        fs.rename(bakFile, file)
+    end
+
+    return true, mountRaw(file, name), created
 end
 
---TODO: make this not write data in tiny pieces
-function saveRegistry()
-    local categories, err = fs.list(registryPath)
+function registry.unmount(name)
+    if regmounts[name] then
+        registry.save(name)
+        regmounts[name] = nil
+        return true
+    else
+        return false
+    end
+end
+
+function registry.save(name)
+    local mount = regmounts[name]
+    if not mount then return false, "Attempt to save nonexistent mount" end
+    local path = mount[1]
+    local data = mount[2][2]
+    kern_log("Registry: saving "..name.." to "..path)
+    if not fs.exists(path) then kern_log("Registry: "..path.." no longer exists, saving anyways", "warn") end
+    if fs.isDirectory(path) then kern_log("Registry: "..path.." got turned into a directory, what the fuck", "error"); return false, "Save path is a directory" end
+
+    local h
+    if registry.useTmpFilesToSave then
+        fs.remove(path .. ".tmp")
+        h = fs.open(path .. ".tmp", "wb")
+    else
+        fs.remove(path)
+        h = fs.open(path, "wb")
+    end
+    local s = h
+
+    local function serializeEntry(entry, name)
+        kern_log("serializing "..name)
+        kern_log("type: "..entry[1])
+        kern_log("data: "..tostring(entry[2]))
+        local t = entry[1]
+        local datar = entry[2]
+
+        local data = ""
+        data = data .. string.char(t)
+        data = data .. string.char(#name)
+        data = data .. name
+
+        if t == types.u8 then
+            data = data .. string.char(datar)
+        elseif t == types.u16 then
+            data = data .. string.pack("<I2", datar)
+        elseif t == types.u32 then
+            data = data .. string.pack("<I4", datar)
+        elseif t == types.s8 then
+            data = data .. string.pack("<i1", datar) --probably optimizable, doesnt matter
+        elseif t == types.s16 then
+            data = data .. string.pack("<i2", datar)
+        elseif t == types.s32 then
+            data = data .. string.pack("<i4", datar)
+        elseif t == types.shortString then
+            data = data .. string.char(#datar)
+            data = data .. datar
+        elseif t == types.string then
+            data = data .. string.pack("<I2", #datar)
+            data = data .. datar
+        elseif t == types.longString then
+            data = data .. string.pack("<I4", #datar)
+            data = data .. datar
+        elseif t == types.collection then
+            local datatowrite = ""
+            for k, v in pairs(datar) do
+                datatowrite = datatowrite .. serializeEntry(v, k)
+            end
+            data = data .. string.pack("<I4", #datatowrite)
+            data = data .. datatowrite
+        else
+            error("Invalid registry type: " .. t)
+        end
+
+        kern_log("data length: "..#data)
+        return data
+    end
+
+
+    for k, v in pairs(data) do
+        s:write(serializeEntry(v, k))
+    end
+
+    s:close()
+
+    if registry.useTmpFilesToSave then
+        fs.remove(path)
+        fs.rename(path .. ".tmp", path)
+    end
+end
+
+--[[
+local function readRegistry()
+    local categories,err = fs.list(registryPath)
     if err then error(categories) end
 
-    for category, data in pairs(regdata) do
-        if not fs.isDirectory(registryPath .. "/" .. category) and not endsWith(category, ".tmp") then
-            while true do
-                local locks, err = fs.list(lockPath)
-                if err then error(locks) end
-
-                local ok = true
-
-                for lock in locks do
-                    if startsWith(lock, category) then
-                        ok = false
-                        break
-                    end
-                end
-                if ok then break end
-                sleep(math.random(0.05, 0.2))
-            end
-
-            local lockName = category .. ".write." .. string.format("%09d", math.random(0, 999999999))
-
-            local f = fs.open(lockPath .. "/" .. lockName, "w")
-            f:close()
-
-            local h
-            if registry.useTmpFilesToSave then
-                fs.remove(registryPath .. "/" .. category .. ".tmp")
-                h = fs.open(registryPath .. "/" .. category .. ".tmp", "wb")
-            else
-                fs.remove(registryPath .. "/" .. category)
-                h = fs.open(registryPath .. "/" .. category, "wb")
-            end
-            local s = h
-
-            local function writeBytes(bytes)
-                s:write(bytes)
-            end
-
-            local function writeByte(byte)
-                s:write(string.char(byte))
-            end
-
-            local function writeString(str)
-                writeBytes(string.pack("<I2", #str))
-                s:write(str)
-            end
-
-            local function writeLongString(str)
-                writeBytes(string.pack("<I4", #str))
-                s:write(str)
-            end
-
-            --[[local function writeRegistryEntry(entry)
-                local t = entry[1]
-                local name = entry[2]
-
-                writeByte(t)
-                print(data)
-                writeString(name)
-
-                if t == types.u8 then
-                    writeByte(data)
-                elseif t == types.u16 then
-                    writeBytes(string.pack("<I2", data))
-                elseif t == types.u32 then
-                    writeBytes(string.pack("<I4", data))
-                elseif t == types.shortString then
-                    writeByte(#data)
-                    s.write(data)
-                elseif t == types.string then
-                    writeString(data)
-                elseif t == types.longString then
-                    writeLongString(data)
-                elseif t == types.collection then
-                    local datatowrite = ""
-                    for k,v in pairs(data) do
-                        datatowrite = datatowrite .. writeRegistryEntry(v)
-                    end
-                    writeBytes(string.pack("<I4", #datatowrite))
-                    s:write(datatowrite)
-                else
-                    error("Invalid registry type: "..t)
-                end
-            end]]
-
-            local function serializeEntry(entry, name)
-                local t = entry[1]
-                local datar = entry[2]
-
-                local data = ""
-                data = data .. string.char(t)
-                data = data .. string.char(#name)
-                data = data .. name
-
-                if t == types.u8 then
-                    data = data .. string.char(datar)
-                elseif t == types.u16 then
-                    print(datar)
-                    print(entry)
-                    print(name)
-                    data = data .. string.pack("<I2", datar)
-                elseif t == types.u32 then
-                    data = data .. string.pack("<I4", datar)
-                elseif t == types.s8 then
-                    data = data .. string.pack("<i1", datar) --probably optimizable, doesnt matter
-                elseif t == types.s16 then
-                    data = data .. string.pack("<i2", datar)
-                elseif t == types.s32 then
-                    data = data .. string.pack("<i4", datar)
-                elseif t == types.shortString then
-                    data = data .. string.char(#datar)
-                    data = data .. datar
-                elseif t == types.string then
-                    data = data .. string.pack("<I2", #datar)
-                    data = data .. datar
-                elseif t == types.longString then
-                    data = data .. string.pack("<I4", #datar)
-                    data = data .. datar
-                elseif t == types.collection then
-                    local datatowrite = ""
-                    for k, v in pairs(datar) do
-                        datatowrite = datatowrite .. serializeEntry(v, k)
-                    end
-                    data = data .. string.pack("<I4", #datatowrite)
-                    data = data .. datatowrite
-                else
-                    error("Invalid registry type: " .. t)
-                end
-
-                return data
-            end
-
-
-            for k, v in pairs(data[2]) do
-                s:write(serializeEntry(v, k))
-            end
-
-            s:close()
-
-            if registry.useTmpFilesToSave then
-                fs.remove(registryPath .. "/" .. category)
-                fs.rename(registryPath .. "/" .. category .. ".tmp", registryPath .. "/" .. category)
-            end
-            fs.remove(lockPath .. "/" .. lockName)
+    for category in categories do
+        if not fs.isDirectory(registryPath.."/"..category) and std.str.endswith(category, ".reg") then
+            local name = category:sub(1, #category-4)
+            local ok, err = registry.mount(registryPath.."/"..category, name)
+            if not ok then kern_log("Failed to load system registry at "..category..": "..(err or "unknown error"), "error") end
         end
+    end
+end
+--]]
+
+function saveFullRegistry()
+    for k,v in pairs(regmounts) do
+        registry.save(k)
     end
 end
 
 kern_log("Loading registry...")
-readRegistry()
---kern_info("Registry data: "..package.require("json").encode(regdata), "debug")
-kern_log("Registry data: DISABLED FOR MEMORY OPTIMIZATION, REGISTRY.LUA:458", "debug")
+--readRegistry()
+kern_log("Registry data: "..package.require("json").encode(regdata), "debug")
+--kern_log("Registry data: DISABLED FOR MEMORY OPTIMIZATION", "debug")
 kern_log("Registry loaded!")
 
 
 
 
---example of the api:
--- registry.get("current_user/themes/selected")
--- registry.set("current_user/themes/selected", "dark")
--- registry.set("current_user/themes/selected", "dark", "shortString")
--- registry.exists("current_user/themes/selected")
--- registry.delete("current_user/themes/selected")
-
--- first element is the type, second is the data. the key is the name of the entry
-
-function std.str.split(str, sep)
-    local result = {}
-    local regex = ("([^%s]+)"):format(sep)
-    for each in str:gmatch(regex) do
-        result[#result + 1] = each
-    end
-    return result
-end
-
 function registry.set(path, value, dataType, noSave)
-    local origPath = path
     kern_log(
         "registry.set(\"" ..
         table.concat({ tostring(path), tostring(value), tostring(dataType), tostring(noSave) }, ", ") .. "\") called",
         "debug")
-    local path = std.str.split(path, "/")
-    local current = regdata
-    local last = nil
-    for i = 1, #path - 1 do
-        if i == 1 then
-            if current[path[i]] then
-                last = current
-                current = current[path[i]]
+    local parsed = parsePath(path)
+    local path = parsed.path
+    local category = parsed.category
+    local current = regdata[category]
+
+    if not current then
+        kern_log("Registry: nothing is mounted at /" .. tostring(category), "error")
+        error("Nothing is mounted at /"..tostring(category))
+    end
+
+    current = regdata[category][2]
+    kern_log(regdata[category])
+    kern_log(regdata[category][1])
+    kern_log(regdata[category][2])
+    kern_log(regdata[category]["registry"])
+    kern_log(regmounts[category])
+    kern_log(regmounts[category][1])
+    kern_log(regmounts[category][2])
+    kern_log(regmounts[category][2][1])
+    kern_log(regmounts[category][2][2])
+    for k,v in pairs(regmounts[category][2]) do
+        kern_log(k)
+        kern_log(v)
+    end
+
+    for i=1,#path-1 do
+        kern_log("traversed to "..path[i])
+        local pathv = path[i]
+        kern_log(pathv)
+        if current[pathv] then
+            if current[pathv][1] == types.collection then
+                current = current[pathv][2]
             else
-                current[path[i]] = { types.collection, {} }
-                last = current
-                current = current[path[i]]
+                error("Invalid path, encountered non collection on position "..i)
             end
         else
-            if current[2][path[i]] then
-                last = current
-                current = current[2][path[i]]
-            else
-                current[2][path[i]] = { types.collection, {} }
-                last = current
-                current = current[2][path[i]]
-            end
+            current[pathv] = { types.collection, {} }
+            current = current[pathv][2]
         end
     end
+
     if dataType then
-        current[2][path[#path]] = { dataType, value }
+        current[path[#path]] = { dataType, value }
     else
-        current[2][path[#path]] = { types.string, value }
+        current[path[#path]] = { types.string, tostring(value) }
     end
     if not noSave then
-        saveRegistry()
+        kern_log("saving "..category)
+        registry.save(category)
     end
+
+    return true
 end
 
 local function registry_get_table_parser(tbl)
@@ -533,46 +512,42 @@ local function registry_get_table_parser(tbl)
     return res
 end
 
-function registry.get(path, getType)
-    local origPath = path
+function registry.get(path) -- TODO: add type filter
     kern_log("registry.get(\"" .. table.concat({ tostring(path), tostring(getType) }, ", ") .. "\") called", "debug")
     local parsed = parsePath(path)
-
-    path = parsed.path
+    local path = parsed.path
     local category = parsed.category
+    local current = regdata[category]
 
-    if not regdata[category] then
-        return nil
+    if not current then
+        kern_log("Registry: nothing is mounted at /" .. tostring(category), "error")
+        error("Nothing is mounted at /"..tostring(category))
     end
 
-    local current = regdata[category][2]
-    for i, v in ipairs(path) do
-        if not current[v] then
-            kern_log(
-                "registry.get(\"" .. table.concat({ tostring(origPath), tostring(getType) }, ", ") .. "\") found nothing",
-                "debug")
-            return nil
-        end
-        if i ~= #path then
-            if type(current[v][2]) ~= "table" then
-                kern_log(
-                    "registry.get(\"" ..
-                    table.concat({ tostring(origPath), tostring(getType) }, ", ") ..
-                    "\") found non collection value on position " .. i .. " out of " .. #path, "debug")
-            end
-            current = current[v][2]
-        else
-            kern_log(
-                "registry.get(\"" ..
-                table.concat({ tostring(origPath), tostring(getType) }, ", ") ..
-                "\") found: [" .. tostring(current[v][1]) .. ": " .. tostring(current[v][2]) .. "] [type: data]", "debug")
-            if type(current[v][2]) == "table" then --TODO: make this support returning types
-                return registry_get_table_parser(current[v][2]), getType and current[v][1] or nil
+    current = regdata[category][2]
+    kern_log(regdata[category])
+    kern_log(regdata[category][1])
+    kern_log(regdata[category][2])
+    kern_log(regdata[category]["registry"])
+
+    for i=1,#path-1 do
+        local pathv = path[i]
+        if current[pathv] then
+            if current[pathv][1] == types.collection then
+                current = current[pathv][2]
             else
-                return current[v][2], getType and current[v][1] or nil
+                error("Invalid path, encountered non collection on position "..i.." ("..pathv..")")
             end
+        else
+            error("Invalid path, found nothing on position "..i.." ("..pathv..")")
         end
     end
+
+    local target = current[path[#path]]
+    if target then
+        return target[2], target[1]
+    end
+    error("Invalid path, found nothing on position "..#path)
 end
 
 -- MIGHT NOT WORK
@@ -643,10 +618,6 @@ function registry.list(path)
     else
         return false
     end
-end
-
-function registry.save(categories)
-    saveRegistry(categories)
 end
 
 registry.types = types

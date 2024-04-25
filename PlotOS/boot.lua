@@ -49,8 +49,8 @@ function _G.kern_log(msg, state)
     local log = { "debug", "info", "warn", "error" }
     local state_settings = {
         debug = { label = "[ DEBUG]", color = 0xaaaaff },
-        info = { label = "[  OK  ]", color = 0x10ff10 },
-        warn = { label = "[ WARN ]", color = 0xff10ff },
+        info = { label =  "[  OK  ]", color = 0x10ff10 },
+        warn = { label =  "[ WARN ]", color = 0xff10ff },
         error = { label = "[FAILED]", color = 0xff1010 },
     }
 
@@ -124,7 +124,7 @@ function _G.kern_panic(reason)
     kern_log("----------------------------------------------------", "error")
 
     -- use debug to get traceback
-    kern_log(debug.traceback("", 2), "error")
+    kern_log(debug.traceback("", 1), "error")
     kern_log("----------------------------------------------------", "error")
     --[[kern_info("Variable dump:", "error")
     kern_info("----------------------------------------------------", "error")
@@ -470,59 +470,70 @@ local function boot(type)
     registryTmpCount = nil
 
     local reg = package.require("registry")
+    do
+        local newSystem, newUserRoot
+        do
+            local ok, err, new = reg.mount("/PlotOS/system32/registry/system.reg", "system", true)
+            newSystem = new
+        end
+        do
+            local ok, err, new = reg.mount("/PlotOS/system32/registry/user_root.reg", "user_root", true)
+            newUserRoot = new
+        end
+        
 
-    if not reg.exists("system") then
-        kern_log("Creating system registry")
-        reg.set("system/boot/safemode", 0, reg.types.u8, true)
-        reg.set("system/security/disable", 0, reg.types.u8, true)
-        reg.set("system/processes/attach_security", 1, reg.types.u8, true)
-        reg.set("system/security/driver_crash_bsod", 1, reg.types.u8, true)
-        reg.set("system/shell", "/bin/shell.lua", reg.types.string, true)
-        reg.set("system/ui/window/drag_borders", 1, reg.types.u8, true)
-        reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32, true)
-        reg.set("system/low_mem", -1, reg.types.s8, true)
-        reg.set("system/registry/use_tmp_files_to_save", -1, reg.types.s8, true)
-        reg.save()
-    end
+        if newSystem then
+            kern_log("Creating system registry")
+            reg.set("system/boot/safemode", 0, reg.types.u8, true)
+            reg.set("system/security/disable", 0, reg.types.u8, true)
+            reg.set("system/processes/attach_security", 1, reg.types.u8, true)
+            reg.set("system/security/driver_crash_bsod", 1, reg.types.u8, true)
+            reg.set("system/shell", "/bin/shell.lua", reg.types.string, true)
+            reg.set("system/ui/window/drag_borders", 1, reg.types.u8, true)
+            reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32, true)
+            reg.set("system/low_mem", -1, reg.types.s8, true)
+            reg.set("system/registry/use_tmp_files_to_save", -1, reg.types.s8, true)
+            reg.save("system")
+        end
 
-    if not reg.exists("user_root") then
-        kern_log("Creating user_root registry")
-        reg.set("user_root/home", "/users/root", reg.types.string, true)
-        reg.set("user_root/username", "root", reg.types.string, true)
-        reg.set("user_root/password", "test", reg.types.string, true)
-        reg.set("user_root/uid", 1, reg.types.u32, true)
-        reg.set("user_root/groups/1", "root", reg.types.string, true)
-        reg.set("user_root/permissions/1", "*", reg.types.string, true)
-        reg.set("system/users/1/reg_path", "user_root", reg.types.string, true)
-        reg.set("system/users/1/name", "root", reg.types.string, true)
-        reg.save()
-    end
+        if newUserRoot then
+            kern_log("Creating user_root registry")
+            reg.set("user_root/home", "/users/root", reg.types.string, true)
+            reg.set("user_root/username", "root", reg.types.string, true)
+            reg.set("user_root/password", "test", reg.types.string, true)
+            reg.set("user_root/uid", 1, reg.types.u32, true)
+            reg.set("user_root/groups/1", "root", reg.types.string, true)
+            reg.set("user_root/permissions/1", "*", reg.types.string, true)
+            reg.set("system/users/1/reg_path", "user_root", reg.types.string, true)
+            reg.set("system/users/1/name", "root", reg.types.string, true)
+            reg.save("user_root")
+            reg.save("system")
+        end
 
-    local useTmpFilesToSaveEnabled = reg.get("system/registry/use_tmp_files_to_save")
-    if useTmpFilesToSaveEnabled == 0 then
-        reg.useTmpFilesToSave = false
-        kern_log("Registry use tmp files to save disabled")
-    elseif useTmpFilesToSaveEnabled == 1 then
-        reg.useTmpFilesToSave = true
-        kern_log("Registry use tmp files to save enabled")
-    else
-        if reg.useTmpFilesToSave then
+        local useTmpFilesToSaveEnabled = reg.get("system/registry/use_tmp_files_to_save")
+        if useTmpFilesToSaveEnabled == 0 then
+            reg.useTmpFilesToSave = false
+            kern_log("Registry use tmp files to save disabled")
+        elseif useTmpFilesToSaveEnabled == 1 then
+            reg.useTmpFilesToSave = true
             kern_log("Registry use tmp files to save enabled")
         else
-            kern_log("Registry use tmp files to save disabled")
+            if reg.useTmpFilesToSave then
+                kern_log("Registry use tmp files to save enabled")
+            else
+                kern_log("Registry use tmp files to save disabled")
+            end
+        end
+
+        local lowMemEnabled = reg.get("system/low_mem")
+        if lowMemEnabled == 0 and _G.LOW_MEM == true then
+            _G.LOW_MEM = false
+            kern_log("LOW_MEM mode disabled")
+        elseif lowMemEnabled == 1 and _G.LOW_MEM == false then
+            _G.LOW_MEM = true
+            kern_log("LOW_MEM mode enabled")
         end
     end
-    useTmpFilesToSaveEnabled = nil
-
-    local lowMemEnabled = reg.get("system/low_mem")
-    if lowMemEnabled == 0 and _G.LOW_MEM == true then
-        _G.LOW_MEM = false
-        kern_log("LOW_MEM mode disabled")
-    elseif lowMemEnabled == 1 and _G.LOW_MEM == false then
-        _G.LOW_MEM = true
-        kern_log("LOW_MEM mode enabled")
-    end
-    lowMemEnabled = nil
 
     local safemode = false
 
@@ -610,10 +621,11 @@ if not ok then
     kern_panic("Critical system failure")
 end]]
 local ok, e = xpcall(boot, function(e)
-    return debug.traceback("", 2), e
+    return tostring(e) .. "\n" .. tostring(debug.traceback("", 2))
 end, bootType)
+
 if not ok then
-    kern_panic("Critical system failure: " .. e)
+    kern_panic("Critical system failure: " .. tostring(e))
 end
 
 computer.beep(1000)

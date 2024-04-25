@@ -27,7 +27,7 @@ while true do
         local path = args[1]
         local value = args[2]
         if not path or not value then
-            print("Usage: get <path> <value>")
+            print("Usage: get <path> <type>")
         else
             local data = reg.get(path, reg.types[value] or reg.types.string)
             if data then
