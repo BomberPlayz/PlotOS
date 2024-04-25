@@ -478,7 +478,8 @@ end
 function gui.window(x, y, w, h, options)
     local win = gui.container(x, y, w, h)
 
-    local titleBar = gui.panel(0, 0, w, 1, reg.get("system/ui/window/titlebar_color"))
+    local titlebar_color = reg.get("system/ui/window/titlebar_color")
+    local titleBar = gui.panel(0, 0, w, 1, titlebar_color)
     local title = gui.label(0, 0, w, 1, options and options.title or "Window")
     local closeButton = gui.button(w - 1, 0, 1, 1, "x")
     -- check if we have enough vram
