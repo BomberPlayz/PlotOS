@@ -87,12 +87,8 @@ local function parseCollection(h, fileSize, length)
         return { types.collection, {} }
     end
 
-    kern_log("DO YOU RUN!!!!!!!!!!!!")
     local res = { types.collection, {} }
-    for k,v in pairs(res) do
-        kern_log(k)
-        kern_log(v)
-    end
+    
     local totalRead = 0
     while totalRead < length do
         local t = readByteAsNumber(h)
@@ -196,10 +192,6 @@ local function parseCollection(h, fileSize, length)
         nameLength = nil
     end
 
-    for k,v in pairs(res) do
-        kern_log(k)
-        kern_log(v)
-    end
     return res
 end
 
@@ -349,9 +341,6 @@ function registry.save(name)
     local s = h
 
     local function serializeEntry(entry, name)
-        kern_log("serializing "..name)
-        kern_log("type: "..entry[1])
-        kern_log("data: "..tostring(entry[2]))
         local t = entry[1]
         local datar = entry[2]
 
@@ -392,7 +381,6 @@ function registry.save(name)
             error("Invalid registry type: " .. t)
         end
 
-        kern_log("data length: "..#data)
         return data
     end
 
@@ -430,11 +418,11 @@ function saveFullRegistry()
     end
 end
 
-kern_log("Loading registry...")
+--kern_log("Loading registry...")
 --readRegistry()
-kern_log("Registry data: "..package.require("json").encode(regdata), "debug")
+--kern_log("Registry data: "..package.require("json").encode(regdata), "debug")
 --kern_log("Registry data: DISABLED FOR MEMORY OPTIMIZATION", "debug")
-kern_log("Registry loaded!")
+--kern_log("Registry loaded!")
 
 
 
@@ -450,34 +438,20 @@ function registry.set(path, value, dataType, noSave)
     local current = regdata[category]
 
     if not current then
-        kern_log("Registry: nothing is mounted at /" .. tostring(category), "error")
-        error("Nothing is mounted at /"..tostring(category))
+        kern_log("Registry: nothing is mounted at /" .. tostring(category), "warn")
+        return false, "path_not_mounted"
     end
 
     current = regdata[category][2]
-    kern_log(regdata[category])
-    kern_log(regdata[category][1])
-    kern_log(regdata[category][2])
-    kern_log(regdata[category]["registry"])
-    kern_log(regmounts[category])
-    kern_log(regmounts[category][1])
-    kern_log(regmounts[category][2])
-    kern_log(regmounts[category][2][1])
-    kern_log(regmounts[category][2][2])
-    for k,v in pairs(regmounts[category][2]) do
-        kern_log(k)
-        kern_log(v)
-    end
 
     for i=1,#path-1 do
-        kern_log("traversed to "..path[i])
         local pathv = path[i]
-        kern_log(pathv)
         if current[pathv] then
             if current[pathv][1] == types.collection then
                 current = current[pathv][2]
             else
-                error("Invalid path, encountered non collection on position "..i)
+                kern_log("Invalid path, encountered non collection on position "..i, "warn")
+                return false, "non_collection_in_path"
             end
         else
             current[pathv] = { types.collection, {} }
@@ -491,7 +465,6 @@ function registry.set(path, value, dataType, noSave)
         current[path[#path]] = { types.string, tostring(value) }
     end
     if not noSave then
-        kern_log("saving "..category)
         registry.save(category)
     end
 
@@ -525,10 +498,6 @@ function registry.get(path) -- TODO: add type filter
     end
 
     current = regdata[category][2]
-    kern_log(regdata[category])
-    kern_log(regdata[category][1])
-    kern_log(regdata[category][2])
-    kern_log(regdata[category]["registry"])
 
     for i=1,#path-1 do
         local pathv = path[i]
@@ -536,10 +505,11 @@ function registry.get(path) -- TODO: add type filter
             if current[pathv][1] == types.collection then
                 current = current[pathv][2]
             else
-                error("Invalid path, encountered non collection on position "..i.." ("..pathv..")")
+                kern_log("Invalid path, encountered non collection on position "..i, "warn")
+                return nil, "non_collection_in_path"
             end
         else
-            error("Invalid path, found nothing on position "..i.." ("..pathv..")")
+            return nil, "parent_collection_not_found"
         end
     end
 
@@ -547,7 +517,7 @@ function registry.get(path) -- TODO: add type filter
     if target then
         return target[2], target[1]
     end
-    error("Invalid path, found nothing on position "..#path)
+    return nil, "not_found"
 end
 
 -- MIGHT NOT WORK
