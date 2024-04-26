@@ -336,7 +336,7 @@ end
 
 function registry.mount(file, name, createIfNotExists)
     local created = false
-    if regmounts[name] then return false, "Something is already mounted at the specified n+ame" end
+    if regmounts[name] then return false, "Something is already mounted at the specified name" end
     if not fs.exists(file) then
         if createIfNotExists then
             local h = fs.open(file, "w")
