@@ -7,7 +7,7 @@ _G.OSSTATUS = 0
 _G.OS_LOGGING_START_TIME = math.floor(computer.uptime() * 1000) / 1000
 _G.OS_LOGGING_MAX_NUM_WIDTH = 0
 
-_G.VERY_LOW_MEM = false
+_G.VERY_LOW_MEM = _G.KERN_PARAMS.VERY_LOW_MEM or false
 
 local component_invoke = component.invoke
 
@@ -279,101 +279,7 @@ local BootTypeEnum = {
     }
 }
 
-local bootType = BootTypeEnum.None
-
-do
-    local function bootSelect()
-        local function gpuSetCentered(y, text)
-            local x = gpu.getResolution()
-            local textWidth = string.len(text)
-            local xPos = math.floor((x / 2) - (textWidth / 2))
-            gpu.set(xPos, y, text)
-        end
-
-        local opts = {}
-        local function addOption(name, func)
-            table.insert(opts, { name, func })
-        end
-
-        local function selection()
-            local sel = 1
-
-            while true do
-                gpu.setForeground(0xffffff)
-                gpu.setBackground(0x000000)
-                gpu.fill(1, 1, w, h, " ")
-                gpuSetCentered(2, "Select an option:")
-                for i, v in ipairs(opts) do
-                    if i == sel then
-                        gpu.setBackground(0xeeeeee)
-                        gpu.setForeground(0x000000)
-                    else
-                        gpu.setBackground(0x000000)
-                        gpu.setForeground(0xffffff)
-                    end
-
-                    gpuSetCentered(i + 2, v[1])
-                end
-
-                local ev, _, _, key = computer.pullSignal(0.5)
-                if ev == "key_down" then
-                    if key == 200 then
-                        sel = sel - 1
-                        if sel < 1 then
-                            sel = #opts
-                        end
-                    elseif key == 208 then
-                        sel = sel + 1
-                        if sel > #opts then
-                            sel = 1
-                        end
-                    elseif key == 28 then
-                        gpu.setForeground(0xffffff)
-                        gpu.setBackground(0x000000)
-                        gpu.fill(1, 1, w, h, " ")
-                        return opts[sel][2]()
-                    end
-                end
-            end
-            gpu.setForeground(0xffffff)
-            gpu.setBackground(0x000000)
-            gpu.fill(1, 1, w, h, " ")
-        end
-
-        addOption("PlotOS", function()
-            bootType = BootTypeEnum.PlotOS.normal
-        end)
-
-        addOption("PlotOS with safemode", function()
-            bootType = BootTypeEnum.PlotOS.safe
-        end)
-
-        selection()
-    end
-
-    local doBootSelection = false
-    local try = 0
-    gpu.set(1, h, "Press delete to enter boot selection")
-    while true do
-        if try > 2 then
-            break
-        end
-        local ev, _, _, key = computer.pullSignal(0.5)
-        if ev == "key_down" then
-            if key == 211 then
-                doBootSelection = true
-                break
-            end
-        elseif ev == nil then
-            try = try + 1
-        end
-    end
-    gpu.fill(1, 1, w, h, " ")
-
-    if doBootSelection then
-        bootSelect()
-    end
-end
+local bootType = KERN_PARAMS.SAFE_MODE and BootTypeEnum.PlotOS.safe or BootTypeEnum.PlotOS.normal
 
 if _G.VERY_LOW_MEM then
     _G.kern_log = function() end
