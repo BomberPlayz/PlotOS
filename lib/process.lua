@@ -8,6 +8,7 @@ local unusedTime = 0
 local security = require("security")
 local gpu = require("driver").load("gpu")
 local reg = require("registry")
+local stream = require("stream")
 local as_pid = 1
 local usedTime = 0
 local function setfenv(f, env)
@@ -112,6 +113,8 @@ api.new = function(name, code, env, perms, inService, ...)
     }
     ret.io.screen.width, ret.io.screen.height = gpu.getResolution()
     ret.io.screen.offset = { x = 0, y = 0 }
+    ret.io.stdin = stream.create()
+    ret.io.stdout = stream.create()
     as_pid = as_pid + 1
 
     function ret:getCpuTime()

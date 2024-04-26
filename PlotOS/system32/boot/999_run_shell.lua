@@ -7,6 +7,7 @@ _G.OSSTATUS = 1
 --os.sleep(2)
 require("screen").clear()
 
+
 local e, process = xpcall(require, function(e)
     bsod(e, true)
 end, "process")

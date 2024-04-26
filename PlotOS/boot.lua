@@ -587,6 +587,9 @@ local function boot(type)
         end
     end
 
+    kern_log("Doing some user magic...")
+    local user = package.require("libuser")
+
     kern_log("Loading other files...")
 
     local function rom_invoke(method, ...)
