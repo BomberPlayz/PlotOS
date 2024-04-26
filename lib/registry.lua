@@ -47,6 +47,61 @@ end
 
 local regdata = {}
 local regmounts = {}
+local reglocks = {}
+
+local function lock(file, mode)
+    if not file then error("missing file") end
+    if not (mode == "r" or mode == "w") then error("mode invalid, expected r or w") end
+
+    file = fs.canonical(file)
+
+    kern_log("Registry: trying to lock "..file.." "..mode, "debug")
+    if reglocks[file] then
+        if mode == "r" then
+            while true do
+                local hasWriteLock = false
+                for _,v in pairs(reglocks[file][2]) do
+                    if v == 119 then hasWriteLock = true; break end
+                end
+
+                if not hasWriteLock then break end
+                sleep(0.25)
+            end
+        elseif mode == "w" then
+            while true do
+                if #reglocks[file][2] == 0 then break end
+                sleep(0.25) -- i know this sucks and can be done better
+            end
+        end
+    else
+        reglocks[file] = { 0, {} }
+    end
+
+    kern_log("Registry: locking "..file.." "..mode, "debug")
+    local id = reglocks[file][1]
+    reglocks[file][2][id] = mode:byte()
+    reglocks[file][1] = id + 1
+
+    return id
+end
+
+local function unlock(file, id)
+    if not file then error("missing file") end
+    if not id then error("missing id") end
+    
+    file = fs.canonical(file)
+
+    if not reglocks[file] then
+        return false
+    end
+    if not reglocks[file][2][id] then
+        return false
+    end
+
+    reglocks[file][2][id] = nil
+
+    return true
+end
 
 setmetatable(regdata, {
     __newindex = function() end,
@@ -201,6 +256,7 @@ registry.useTmpFilesToSave = true
 local function readRegistryFile(file)
     if not fs.exists(file) then return false, "File doesn't exist" end
 
+    local id = lock(file, "r")
     kern_log("Registry: reading "..file)
 
     local rawH = fs.open(file, "rb")
@@ -265,6 +321,7 @@ local function readRegistryFile(file)
     local d = parseCollection(h,size,size)
 
     rawH:close()
+    unlock(file, id)
 
     return d
 end
@@ -329,6 +386,8 @@ function registry.save(name)
     kern_log("Registry: saving "..name.." to "..path)
     if not fs.exists(path) then kern_log("Registry: "..path.." no longer exists, saving anyways", "warn") end
     if fs.isDirectory(path) then kern_log("Registry: "..path.." got turned into a directory, what the fuck", "error"); return false, "Save path is a directory" end
+
+    local lockId = lock(path, "w")
 
     local h
     if registry.useTmpFilesToSave then
@@ -395,6 +454,8 @@ function registry.save(name)
         fs.remove(path)
         fs.rename(path .. ".tmp", path)
     end
+
+    unlock(path, lockId)
 end
 
 --[[

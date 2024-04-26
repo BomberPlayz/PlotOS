@@ -212,27 +212,6 @@ function _G.kern_panic(reason)
     end
 end
 
-if _G.VERY_LOW_MEM then
-    _G.kern_log = function() end
-    _G.kern_panic = function(reason)
-        local w, h = gpu.getResolution()
-        gpu.setForeground(0xff0000)
-        gpu.setBackground(0x000000)
-        gpu.fill(1, 1, w, h, " ")
-        gpu.set(1, 1, "KERNEL PANIC: " .. tostring(reason))
-        gpu.set(1, 2, "A kernel panic occured! Traceback:")
-
-        local tb = debug.traceback("", 2)
-        for i, v in ipairs(split(tb, "\n")) do
-            gpu.set(1, 3 + i, ({ v:gsub("\009", "    ") })[1])
-        end
-
-        while true do
-            pcps()
-        end
-    end
-end
-
 function _G.raw_dofile(file)
     local program, reason = raw_loadfile(file)
     --kernel_info(file.." and is the: "..program)
@@ -302,96 +281,120 @@ local BootTypeEnum = {
 
 local bootType = BootTypeEnum.None
 
-local function bootSelect()
-    local function gpuSetCentered(y, text)
-        local x = gpu.getResolution()
-        local textWidth = string.len(text)
-        local xPos = math.floor((x / 2) - (textWidth / 2))
-        gpu.set(xPos, y, text)
-    end
+do
+    local function bootSelect()
+        local function gpuSetCentered(y, text)
+            local x = gpu.getResolution()
+            local textWidth = string.len(text)
+            local xPos = math.floor((x / 2) - (textWidth / 2))
+            gpu.set(xPos, y, text)
+        end
 
-    local opts = {}
-    local function addOption(name, func)
-        table.insert(opts, { name, func })
-    end
+        local opts = {}
+        local function addOption(name, func)
+            table.insert(opts, { name, func })
+        end
 
-    local function selection()
-        local sel = 1
+        local function selection()
+            local sel = 1
 
-        while true do
+            while true do
+                gpu.setForeground(0xffffff)
+                gpu.setBackground(0x000000)
+                gpu.fill(1, 1, w, h, " ")
+                gpuSetCentered(2, "Select an option:")
+                for i, v in ipairs(opts) do
+                    if i == sel then
+                        gpu.setBackground(0xeeeeee)
+                        gpu.setForeground(0x000000)
+                    else
+                        gpu.setBackground(0x000000)
+                        gpu.setForeground(0xffffff)
+                    end
+
+                    gpuSetCentered(i + 2, v[1])
+                end
+
+                local ev, _, _, key = computer.pullSignal(0.5)
+                if ev == "key_down" then
+                    if key == 200 then
+                        sel = sel - 1
+                        if sel < 1 then
+                            sel = #opts
+                        end
+                    elseif key == 208 then
+                        sel = sel + 1
+                        if sel > #opts then
+                            sel = 1
+                        end
+                    elseif key == 28 then
+                        gpu.setForeground(0xffffff)
+                        gpu.setBackground(0x000000)
+                        gpu.fill(1, 1, w, h, " ")
+                        return opts[sel][2]()
+                    end
+                end
+            end
             gpu.setForeground(0xffffff)
             gpu.setBackground(0x000000)
             gpu.fill(1, 1, w, h, " ")
-            gpuSetCentered(2, "Select an option:")
-            for i, v in ipairs(opts) do
-                if i == sel then
-                    gpu.setBackground(0xeeeeee)
-                    gpu.setForeground(0x000000)
-                else
-                    gpu.setBackground(0x000000)
-                    gpu.setForeground(0xffffff)
-                end
-
-                gpuSetCentered(i + 2, v[1])
-            end
-
-            local ev, _, _, key = computer.pullSignal(0.5)
-            if ev == "key_down" then
-                if key == 200 then
-                    sel = sel - 1
-                    if sel < 1 then
-                        sel = #opts
-                    end
-                elseif key == 208 then
-                    sel = sel + 1
-                    if sel > #opts then
-                        sel = 1
-                    end
-                elseif key == 28 then
-                    gpu.setForeground(0xffffff)
-                    gpu.setBackground(0x000000)
-                    gpu.fill(1, 1, w, h, " ")
-                    return opts[sel][2]()
-                end
-            end
         end
-        gpu.setForeground(0xffffff)
-        gpu.setBackground(0x000000)
-        gpu.fill(1, 1, w, h, " ")
+
+        addOption("PlotOS", function()
+            bootType = BootTypeEnum.PlotOS.normal
+        end)
+
+        addOption("PlotOS with safemode", function()
+            bootType = BootTypeEnum.PlotOS.safe
+        end)
+
+        selection()
     end
 
-    addOption("PlotOS", function()
-        bootType = BootTypeEnum.PlotOS.normal
-    end)
-
-    addOption("PlotOS with safemode", function()
-        bootType = BootTypeEnum.PlotOS.safe
-    end)
-
-    selection()
-end
-
-local doBootSelection = false
-local try = 0
-gpu.set(1, h, "Press delete to enter boot selection")
-while true do
-    if try > 2 then
-        break
-    end
-    local ev, _, _, key = computer.pullSignal(0.5)
-    if ev == "key_down" then
-        if key == 211 then
-            doBootSelection = true
+    local doBootSelection = false
+    local try = 0
+    gpu.set(1, h, "Press delete to enter boot selection")
+    while true do
+        if try > 2 then
             break
         end
-    elseif ev == nil then
-        try = try + 1
+        local ev, _, _, key = computer.pullSignal(0.5)
+        if ev == "key_down" then
+            if key == 211 then
+                doBootSelection = true
+                break
+            end
+        elseif ev == nil then
+            try = try + 1
+        end
+    end
+    gpu.fill(1, 1, w, h, " ")
+
+    if doBootSelection then
+        bootSelect()
     end
 end
-gpu.fill(1, 1, w, h, " ")
 
-if doBootSelection then
-    bootSelect()
+if _G.VERY_LOW_MEM then
+    _G.kern_log = function() end
+    _G.kern_panic = function(reason)
+        local w, h = gpu.getResolution()
+        gpu.setForeground(0xff0000)
+        gpu.setBackground(0x000000)
+        gpu.fill(1, 1, w, h, " ")
+        gpu.set(1, 1, "KERNEL PANIC: " .. tostring(reason))
+        gpu.set(1, 2, "A kernel panic occured! Traceback:")
+
+        local tb = debug.traceback("", 2)
+        for i, v in ipairs(split(tb, "\n")) do
+            gpu.set(1, 3 + i, ({ v:gsub("\009", "    ") })[1])
+        end
+
+        while true do
+            pcps()
+        end
+    end
+    _G.bsod = _G.kern_panic
 end
 
 local function endsWith(str, suffix)
@@ -400,6 +403,73 @@ end
 
 --[[BOOT]]
 --
+local function initRegistry(reg)
+    local newSystem, newUserRoot
+    do
+        local ok, err, new = reg.mount("/PlotOS/system32/registry/system.reg", "system", true)
+        newSystem = new
+    end
+    do
+        local ok, err, new = reg.mount("/PlotOS/system32/registry/user_root.reg", "user_root", true)
+        newUserRoot = new
+    end
+
+
+    if newSystem then
+        kern_log("Creating system registry")
+        reg.set("system/boot/safemode", 0, reg.types.u8, true)
+        reg.set("system/security/disable", 0, reg.types.u8, true)
+        reg.set("system/processes/attach_security", 1, reg.types.u8, true)
+        reg.set("system/security/driver_crash_bsod", 1, reg.types.u8, true)
+        reg.set("system/shell", "/bin/shell.lua", reg.types.string, true)
+        reg.set("system/ui/window/drag_borders", 1, reg.types.u8, true)
+        reg.set("system/ui/window/shadow_on_drag", 1, reg.types.u8, true)
+        reg.set("system/ui/window/shadow_always", 1, reg.types.u8, true)
+        reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32, true)
+        reg.set("system/low_mem", -1, reg.types.s8, true)
+        reg.set("system/registry/use_tmp_files_to_save", -1, reg.types.s8, true)
+        reg.save("system")
+    end
+
+    if newUserRoot then
+        kern_log("Creating user_root registry")
+        reg.set("user_root/home", "/users/root", reg.types.string, true)
+        reg.set("user_root/username", "root", reg.types.string, true)
+        reg.set("user_root/password", "test", reg.types.string, true)
+        reg.set("user_root/uid", 1, reg.types.u32, true)
+        reg.set("user_root/groups/1", "root", reg.types.string, true)
+        reg.set("user_root/permissions/1", "*", reg.types.string, true)
+        reg.set("system/users/1/reg_path", "user_root", reg.types.string, true)
+        reg.set("system/users/1/name", "root", reg.types.string, true)
+        reg.save("user_root")
+        reg.save("system")
+    end
+
+    local useTmpFilesToSaveEnabled = reg.get("system/registry/use_tmp_files_to_save")
+    if useTmpFilesToSaveEnabled == 0 then
+        reg.useTmpFilesToSave = false
+        kern_log("Registry use tmp files to save disabled")
+    elseif useTmpFilesToSaveEnabled == 1 then
+        reg.useTmpFilesToSave = true
+        kern_log("Registry use tmp files to save enabled")
+    else
+        if reg.useTmpFilesToSave then
+            kern_log("Registry use tmp files to save enabled")
+        else
+            kern_log("Registry use tmp files to save disabled")
+        end
+    end
+
+    local lowMemEnabled = reg.get("system/low_mem")
+    if lowMemEnabled == 0 and _G.LOW_MEM == true then
+        _G.LOW_MEM = false
+        kern_log("LOW_MEM mode disabled")
+    elseif lowMemEnabled == 1 and _G.LOW_MEM == false then
+        _G.LOW_MEM = true
+        kern_log("LOW_MEM mode enabled")
+    end
+end
+
 local function boot(type)
     if computer.totalMemory() <= 262144 then
         _G.LOW_MEM = true
@@ -470,72 +540,8 @@ local function boot(type)
     registryTmpCount = nil
 
     local reg = package.require("registry")
-    do
-        local newSystem, newUserRoot
-        do
-            local ok, err, new = reg.mount("/PlotOS/system32/registry/system.reg", "system", true)
-            newSystem = new
-        end
-        do
-            local ok, err, new = reg.mount("/PlotOS/system32/registry/user_root.reg", "user_root", true)
-            newUserRoot = new
-        end
-
-
-        if newSystem then
-            kern_log("Creating system registry")
-            reg.set("system/boot/safemode", 0, reg.types.u8, true)
-            reg.set("system/security/disable", 0, reg.types.u8, true)
-            reg.set("system/processes/attach_security", 1, reg.types.u8, true)
-            reg.set("system/security/driver_crash_bsod", 1, reg.types.u8, true)
-            reg.set("system/shell", "/bin/shell.lua", reg.types.string, true)
-            reg.set("system/ui/window/drag_borders", 1, reg.types.u8, true)
-            reg.set("system/ui/window/shadow_on_drag", 1, reg.types.u8, true)
-            reg.set("system/ui/window/shadow_always", 1, reg.types.u8, true)
-            reg.set("system/ui/window/titlebar_color", 0x0000ff, reg.types.u32, true)
-            reg.set("system/low_mem", -1, reg.types.s8, true)
-            reg.set("system/registry/use_tmp_files_to_save", -1, reg.types.s8, true)
-            reg.save("system")
-        end
-
-        if newUserRoot then
-            kern_log("Creating user_root registry")
-            reg.set("user_root/home", "/users/root", reg.types.string, true)
-            reg.set("user_root/username", "root", reg.types.string, true)
-            reg.set("user_root/password", "test", reg.types.string, true)
-            reg.set("user_root/uid", 1, reg.types.u32, true)
-            reg.set("user_root/groups/1", "root", reg.types.string, true)
-            reg.set("user_root/permissions/1", "*", reg.types.string, true)
-            reg.set("system/users/1/reg_path", "user_root", reg.types.string, true)
-            reg.set("system/users/1/name", "root", reg.types.string, true)
-            reg.save("user_root")
-            reg.save("system")
-        end
-
-        local useTmpFilesToSaveEnabled = reg.get("system/registry/use_tmp_files_to_save")
-        if useTmpFilesToSaveEnabled == 0 then
-            reg.useTmpFilesToSave = false
-            kern_log("Registry use tmp files to save disabled")
-        elseif useTmpFilesToSaveEnabled == 1 then
-            reg.useTmpFilesToSave = true
-            kern_log("Registry use tmp files to save enabled")
-        else
-            if reg.useTmpFilesToSave then
-                kern_log("Registry use tmp files to save enabled")
-            else
-                kern_log("Registry use tmp files to save disabled")
-            end
-        end
-
-        local lowMemEnabled = reg.get("system/low_mem")
-        if lowMemEnabled == 0 and _G.LOW_MEM == true then
-            _G.LOW_MEM = false
-            kern_log("LOW_MEM mode disabled")
-        elseif lowMemEnabled == 1 and _G.LOW_MEM == false then
-            _G.LOW_MEM = true
-            kern_log("LOW_MEM mode enabled")
-        end
-    end
+    initRegistry(reg)
+    initRegistry = nil
 
     local safemode = false
 
