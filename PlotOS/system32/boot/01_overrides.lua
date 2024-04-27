@@ -15,9 +15,9 @@ computer.pullSignal = function(tout)
         while true do
             -- If the signal has a return value, unpack it and remove the signal from the pull
             if proc.io.signal.pull[signalIndex].ret then
-                local a, b, c, d, e, f, g, h, i, j, k = table.unpack(proc.io.signal.pull[signalIndex].ret)
+                local t = proc.io.signal.pull[signalIndex].ret
                 table.remove(proc.io.signal.pull, signalIndex)
-                return a, b, c, d, e, f, g, h, i, j, k
+                return table.unpack(t)
             end
             coroutine.yield()
         end
@@ -26,7 +26,6 @@ computer.pullSignal = function(tout)
         if not computer._signal then
             computer._signal = table.pack(_pullSignal(tout))
         end
-        local a, b, c, d, e, f, g, h, i, j, k = table.unpack(computer._signal)
-        return a, b, c, d, e, f, g, h, i, j, k
+        return table.unpack(computer._signal)
     end
 end
