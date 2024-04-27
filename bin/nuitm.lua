@@ -100,7 +100,7 @@ local function mate(processes, depth, lastElement)
     for i, v in ipairs(processes) do
         local procStr = v.name ..
             " :: " .. (math.floor((v:getAvgCpuTime() * 1000))) ..
-            "ms" .. " :: " .. (math.floor(v:getAvgCpuPercentage() * 10) / 10) .. "%"
+            "ms" .. " :: " .. (math.floor(v:getAvgCpuPercentage() * 1000) / 10) .. "%"
 
         if depth ~= 0 then
             local sub = lastElement and 0 or 1

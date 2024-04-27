@@ -4,6 +4,7 @@
 local api = {}
 api.processes = {}
 api.signal = {}
+api.currentProcess = nil
 local unusedTime = 0
 local security = require("security")
 local gpu = require("driver").load("gpu")
@@ -126,7 +127,7 @@ api.new = function(name, code, env, perms, inService, ...)
         for k, v in ipairs(api.list()) do
             allcputime = allcputime + v:getCpuTime()
         end
-        return ret.lastCpuTime > 0 and (ret.lastCpuTime / allcputime * 100) or 0
+        return ret.lastCpuTime > 0 and (math.min(((ret.lastCpuTime*1000)/50), 1)) or 0
     end
 
     function ret:getAvgCpuTime()
@@ -144,7 +145,9 @@ api.new = function(name, code, env, perms, inService, ...)
             allcputime = allcputime + v:getAvgCpuTime()
         end
         allcputime = allcputime + api.getAvgIdleTime()
-        return ret:getAvgCpuTime() > 0 and (ret:getAvgCpuTime() / allcputime * 100) or 0
+        --return ret:getAvgCpuTime() > 0 and (ret:getAvgCpuTime() / allcputime * 100) or 0
+        --kern_log(ret:getAvgCpuTime())
+        return allcputime > 0 and (math.min((ret:getAvgCpuTime()*1000)/50, 1)) or 0
     end
 
     function ret:kill()
@@ -213,6 +216,7 @@ local driverCache = {}
 
 -- print(coroutine.status(v.thread))
 api.tickProcess = function(v)
+    api.currentProcess = v
     if v.status == "running" or v.status == "idle" then
         if coroutine.status(v.thread) == "suspended" then
             if #v.io.signal.pull > 0 then
@@ -330,6 +334,7 @@ api.tickProcess = function(v)
         v.lastCpuTime = 0
         v.status = "dead"
     end
+    api.currentProcess = nil
 end
 local idleTimeAvg = {}
 

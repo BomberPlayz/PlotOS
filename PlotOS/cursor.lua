@@ -9,7 +9,7 @@ function cursor.set(x, y)
   local ox,oy = 0,0
   local proc = require("process")
   if proc.isProcess() then
-    local p = proc.findByThread(coroutine.running())
+    local p = proc.currentProcess
     ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
   else
 
@@ -28,7 +28,7 @@ function cursor.setBlink(blink)
   cursor.blink = blink
   local proc = require("process")
   if proc.isProcess() then
-    local p = proc.findByThread(coroutine.running())
+    local p = proc.currentProcess
     w,h = p.io.screen.width, p.io.screen.height
   else
     w,h = gpu.getResolution()

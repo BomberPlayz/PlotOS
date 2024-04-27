@@ -79,14 +79,14 @@ function io.read()
     local a,b,bb,c,d = computer.pullSignal(0.5)
     local proc = require("process")
     if proc.isProcess() then
-      local p = proc.findByThread(coroutine.running())
+      local p = proc.currentProcess
       w,h = p.io.screen.width, p.io.screen.height
     else
       w,h = gpu.getResolution()
     end
     local ox,oy = 0,0
     if proc.isProcess() then
-      local p = proc.findByThread(coroutine.running())
+      local p = proc.currentProcess
       ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
     else
 
@@ -146,14 +146,14 @@ end
 function io.write(txt)
   local proc = require("process")
   if proc.isProcess() then
-    local p = proc.findByThread(coroutine.running())
+    local p = proc.currentProcess
     w,h = p.io.screen.width, p.io.screen.height
   else
     w,h = gpu.getResolution()
   end
   local ox,oy = 0,0
   if proc.isProcess() then
-    local p = proc.findByThread(coroutine.running())
+    local p = proc.currentProcess
     ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
   else
 
@@ -174,7 +174,7 @@ end
 function io.setScreenSize(w, h)
   local proc = require("process")
   if proc.isProcess() then
-    local p = proc.findByThread(coroutine.running())
+    local p = proc.currentProcess
     p.io.screen.width = w
     p.io.screen.height = h
   end
@@ -186,7 +186,7 @@ function io.writeline(txt)
   local w, h, ox, oy
 
   if proc.isProcess() then
-    local p = proc.findByThread(coroutine.running())
+    local p = proc.currentProcess
     w, h = p.io.screen.width, p.io.screen.height
     ox, oy = p.io.screen.offset.x, p.io.screen.offset.y
   else
@@ -223,7 +223,7 @@ _G.io = io
 function io.setScreenSize(w,h)
   local proc = require("process")
   if proc.isProcess() then
-    local p = proc.findByThread(coroutine.running())
+    local p = proc.currentProcess
     p.io.screen.width = w
     p.io.screen.height = h
   else
