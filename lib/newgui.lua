@@ -1,8 +1,5 @@
-local dbuf = require("doublebuffering")
 local reg = require("registry")
 local gpu = require("driver").load("gpu")
-local keyboard = require("keyboard")
-
 
 local buffer = gpu
 buffer.width, buffer.height = buffer.getResolution()
