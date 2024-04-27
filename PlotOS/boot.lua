@@ -367,16 +367,13 @@ local function initRegistry(reg)
     end
 
     local lowMemEnabled = reg.get("system/low_mem")
-    if lowMemEnabled == 0 and _G.LOW_MEM == true then
-        _G.LOW_MEM = false
-        kern_log("LOW_MEM mode disabled")
-    elseif lowMemEnabled == 1 and _G.LOW_MEM == false then
+    if lowMemEnabled == 1 and _G.LOW_MEM == false then
         _G.LOW_MEM = true
         kern_log("LOW_MEM mode enabled")
     end
 end
 
-local function boot(type)
+local function initBoot(type)
     if computer.totalMemory() <= 262144 then
         _G.LOW_MEM = true
         kern_log("LOW_MEM mode enabled")
@@ -400,50 +397,6 @@ local function boot(type)
     fs.mount(rawFs, "/")
 
     kern_log("Initializing registry")
-    kern_log("Removing stale registry locks")
-
-    local registryLocks = fs.list("/PlotOS/system32/registry/locks")
-
-    local registryLockCount = 0
-    for lock in registryLocks do
-        fs.remove("/PlotOS/system32/registry/locks/" .. lock)
-        registryLockCount = registryLockCount + 1
-        kern_log("Removing stale registry lock " .. lock, "warn")
-    end
-    if registryLockCount == 0 then
-        kern_log("Found no stale registry locks")
-    end
-
-    registryLocks = nil
-    registryLockCount = nil
-
-    kern_log("Cleaning up stale registry temporary files")
-    local registryFiles = fs.list("/PlotOS/system32/registry")
-
-    local registryTmpCount = 0
-    for file in registryFiles do
-        if not fs.isDirectory("/PlotOS/system32/registry/" .. file) then
-            if endsWith(file, ".tmp") then
-                local msg = "Found registry tmp file: " .. file
-                local nonTmp = string.sub(file, 1, #file - 4)
-                if fs.exists("/PlotOS/system32/registry/" .. nonTmp) then
-                    fs.remove("/PlotOS/system32/registry/" .. file)
-                    msg = msg .. ", deleting"
-                else
-                    fs.rename("/PlotOS/system32/registry/" .. file, "/PlotOS/system32/registry/" .. nonTmp)
-                    msg = msg .. ", moving to " .. nonTmp
-                end
-                kern_log(msg, "warn")
-                registryTmpCount = registryTmpCount + 1
-            end
-        end
-    end
-    if registryTmpCount == 0 then
-        kern_log("Found no stale registry temporary files")
-    end
-
-    registryFiles = nil
-    registryTmpCount = nil
 
     local reg = package.require("registry")
     initRegistry(reg)
@@ -520,29 +473,51 @@ local function boot(type)
             "/PlotOS/system32/zzzz_safemode_shell.lua" }
     end
     table.sort(scripts)
-    loggingHandle = fs.open("/logs.log", "w")
-    local con = splitByChunk(logsToWrite, 1024)
-    for k, v in ipairs(con) do
-        loggingHandle:write(v)
-    end
-    for i = 1, #scripts do
-        kern_log("Running boot script " .. scripts[i])
-        raw_dofile(scripts[i])
+    
+    do
+        loggingHandle = fs.open("/logs.log", "w")
+        local con = splitByChunk(logsToWrite, 1024)
+        for k, v in ipairs(con) do
+            loggingHandle:write(v)
+        end
     end
 
-    --local fse = package.require("fs")
+    return scripts
 end
 
---[[local ok, err = pcall(boot, bootType)
-if not ok then
-    kern_panic("Critical system failure")
-end]]
-local ok, e = xpcall(boot, function(e)
-    return tostring(e) .. "\n" .. tostring(debug.traceback("", 2))
-end, bootType)
+local bootScripts
+do
+    local ok, res = xpcall(initBoot, function(e)
+        return tostring(e) .. "\n" .. tostring(debug.traceback("", 2))
+    end, bootType)
 
-if not ok then
-    kern_panic("Critical system failure: " .. tostring(e))
+    if not ok then
+        kern_panic("Critical system failiure: " .. tostring(res))
+    end
+
+    bootScripts = res
+end
+
+initBoot = nil
+initRegistry = nil -- i know this gets niled twice, just making sure
+
+local function boot(scripts)
+    do
+        for i = 1, #scripts do
+            kern_log("Running boot script " .. scripts[i])
+            raw_dofile(scripts[i])
+        end
+    end
+end
+
+do
+    local ok, e = xpcall(boot, function(e)
+        return tostring(e) .. "\n" .. tostring(debug.traceback("", 2))
+    end, bootScripts)
+
+    if not ok then
+        kern_panic("Critical system failure: " .. tostring(e))
+    end
 end
 
 computer.beep(1000)
