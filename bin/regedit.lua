@@ -1,17 +1,10 @@
 local reg = package.require("registry")
-
-function split(str, sep)
-    local ret = {}
-    for str in string.gmatch(str, "([^"..sep.."]+)") do
-        table.insert(ret, str)
-    end
-    return ret
-end
+local std = package.require("stdlib")
 
 while true do
     io.write("regedit> ")
     local cmd = io.read()
-    local args = split(cmd, " ")
+    local args = std.str.split(cmd, " ")
     cmd = args[1]
     table.remove(args, 1)
     if cmd == "set" then

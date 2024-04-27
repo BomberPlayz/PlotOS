@@ -1,5 +1,5 @@
 local io = {}
-local keyboard = require("keyboard")
+local std = require("stdlib")
 local gpu = require("driver").load("gpu")
 local w,h = gpu.getResolution()
 
@@ -171,15 +171,6 @@ function io.write(txt)
   prt_x = prt_x+string.len(txt)
 end
 
-local function split(string,sep)
-  string = tostring(string)
-  sep = tostring(sep)
-  local sep, fields = sep or ":", {}
-  local pattern = string.format("([^%s]+)", sep)
-  string:gsub(pattern, function(c) fields[#fields+1] = c end)
-  return fields
-end
-
 function io.setScreenSize(w, h)
   local proc = require("process")
   if proc.isProcess() then
@@ -190,7 +181,7 @@ function io.setScreenSize(w, h)
 end
 
 function io.writeline(txt)
-  local dat = split(txt, "\n")
+  local dat = std.str.split(txt, "\n")
   local proc = require("process")
   local w, h, ox, oy
 
