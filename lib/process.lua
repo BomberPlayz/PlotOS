@@ -5,6 +5,11 @@ local api = {}
 api.processes = {}
 api.signal = {}
 api.currentProcess = nil
+
+function api.getCurrentProcess()
+    return api.currentProcess
+end
+
 local unusedTime = 0
 local security = require("security")
 local gpu = require("driver").load("gpu")
@@ -44,7 +49,7 @@ end
 --- Checks if the current Lua function is running as a process.
 --- @return boolean True if the function is running as a process, false otherwise.
 api.isProcess = function()
-    if api.findByThread(coroutine.running()) then
+    if api.currentProcess then
         return true
     end
 end
@@ -114,8 +119,8 @@ api.new = function(name, code, env, perms, inService, ...)
     }
     ret.io.screen.width, ret.io.screen.height = gpu.getResolution()
     ret.io.screen.offset = { x = 0, y = 0 }
-    ret.io.stdin = stream.create()
-    ret.io.stdout = stream.create()
+    ret.io.stdin = stream.new()
+    ret.io.stdout = stream.new()
     as_pid = as_pid + 1
 
     function ret:getCpuTime()
@@ -167,7 +172,7 @@ api.new = function(name, code, env, perms, inService, ...)
     end
 
     if api.isProcess() and not forceRoot then
-        local p = api.findByThread(coroutine.running())
+        local p = api.currentProcess
         table.insert(p.processes, ret)
         ret.parent = p
     else
@@ -216,7 +221,6 @@ local driverCache = {}
 
 -- print(coroutine.status(v.thread))
 api.tickProcess = function(v)
-    api.currentProcess = v
     if v.status == "running" or v.status == "idle" then
         if coroutine.status(v.thread) == "suspended" then
             if #v.io.signal.pull > 0 then
@@ -234,7 +238,9 @@ api.tickProcess = function(v)
                         table.remove(v.io.signal.queue, 1)
                     end
                     local st = computer.uptime() * 1000
+                    api.currentProcess = v
                     local reta = { coroutine.resume(v.thread, table.unpack(v.args)) }
+                    api.currentProcess = nil
                     if not reta[1] then
                         v.err = reta[2] or "Died"
                     else
@@ -286,7 +292,9 @@ api.tickProcess = function(v)
                     table.insert(v.io.signal.queue, { a, b, c, d, e, f, g, aa, ss })
                 end
                 local st = computer.uptime() * 1000
+                api.currentProcess = v
                 local reta = { coroutine.resume(v.thread, table.unpack(v.sysret or v.args)) }
+                api.currentProcess = nil
                 if not reta[1] then
                     v.err = reta[2] or "Died"
                 end

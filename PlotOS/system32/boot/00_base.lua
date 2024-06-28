@@ -4,6 +4,8 @@ _G.require = package.require
 _G.prt_x = 1
 _G.prt_y = 1
 
+
+
 _G.print = function(...)
     local t = {}
 

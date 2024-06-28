@@ -5,7 +5,8 @@ kern_log("Overriding function so process can work")
 computer._signal = {}
 computer.realPullSignal = _pullSignal
 computer.pullSignal = function(tout)
-    local proc = process.findByThread(coroutine.running())
+    local proc = process.getCurrentProcess()
+
 
     if proc then
         coroutine.yield()

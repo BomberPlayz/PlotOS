@@ -227,7 +227,7 @@ function io.setScreenSize(w,h)
     p.io.screen.width = w
     p.io.screen.height = h
   else
-
+    -- we fuck right off
   end
 end
 

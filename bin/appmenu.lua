@@ -50,6 +50,7 @@ local ctxmenu = gui.contextmenu({
     }
 })
 
+
 local ctxmenubutton = gui.button(0, 0, 7, 1, "Program")
 ctxmenubutton.eventbus.on("click", function()
     ctxmenu.showAt(0, 1)
@@ -59,6 +60,7 @@ ctxmenu.eventbus.on("item_click", function(item)
 end)
 win.addChild(ctxmenu)
 win.addChild(ctxmenubutton)
+
 
 local function addApp(name, path)
     local btn = gui.button(0, #appcontainer.children, math.floor(w / 4), 1, name)

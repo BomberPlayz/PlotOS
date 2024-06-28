@@ -21,7 +21,7 @@ function sec.attach(proc)
     end
 
     function ret.addPermission(perm)
-        local proca = process.findByThread(coroutine.running())
+        local proca = process.getCurrentProcess()
         if proca then
             if proca.security.hasPermission("security.permission.add") and proca.security.hasPermission(perm) then
                 proc.security.permissions[perm] = true
@@ -32,7 +32,7 @@ function sec.attach(proc)
     end
 
     function ret.removePermission(perm)
-        local proca = process.findByThread(coroutine.running())
+        local proca = process.getCurrentProcess()
         if proca then
             if proca.security.hasPermission("security.permission.remove") and proca.security.hasPermission(perm) then
                 proc.security.permissions[perm] = false
@@ -59,7 +59,7 @@ end
 function sec.requestPermissions(perms)
     local process = require("process")
 
-    local proca = process.findByThread(coroutine.running())
+    local proca = process.getCurrentProcess()
     if proca then
         for k, v in pairs(perms) do
             if proca.security.hasPermission(v) then
@@ -73,7 +73,7 @@ end
 function sec.requestPermission(perm)
     local process = require("process")
 
-    local proca = process.findByThread(coroutine.running())
+    local proca = process.getCurrentProcess()
     if proca then
         if proca.security.hasPermission(perm) then
             return true
@@ -91,7 +91,7 @@ function sec.hasPermission(perm)
         return true
     end
 
-    local proca = process.findByThread(coroutine.running())
+    local proca = process.getCurrentProcess()
     if proca then
         return proca.security.hasPermission(perm)
     end

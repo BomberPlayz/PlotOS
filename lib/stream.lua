@@ -1,148 +1,90 @@
-local reg = package.require("registry")
-local ignore_greedy = reg.get("system/processes/force_respect")
-local stream = {}
+--- Stream library for handling basic data streams.
+-- @module stream
 
-function stream.create(buf, greedy)
-    if type(buf) == "boolean" then
-        greedy = buf
-        buf = nil
-    end
-    if not buf then
-        buf = ""
-    end
-    if ignore_greedy then
-        greedy = false
-    end
-    local ret = {}
-    ret.buffer = buf
-    ret.pos = 1
-    ret.read = function(self, n)
-        local actual_read = math.min(n, #self.buffer - self.pos + 1)
-        local ret = self.buffer:sub(self.pos, self.pos + actual_read - 1)
-        self.pos = self.pos + actual_read
-        if not greedy and coroutine.running() then
-            coroutine.yield()
-        end
-        return ret
-    end
-    ret.write = function(self, str)
-        self.buffer = self.buffer .. str
-        if not greedy and coroutine.running() then
-            coroutine.yield()
-        end
-    end
-    ret.seek = function(self, whence, offset)
-        if whence == "set" then
-            local actual_offset = math.min(offset, #self.buffer)
-            self.pos = actual_offset
-        elseif whence == "cur" then
-            local actual_offset = math.min(self.pos+offset, #self.buffer)
-            self.pos = actual_offset
-        elseif whence == "end" then
-            local actual_offset = math.min(#self.buffer+offset, #self.buffer)
-            self.pos = actual_offset
-        end
-        return self.pos
-    end
-    ret.close = function(self)
-        self = nil
-    end
-    return ret
+--- @class Stream
+-- @field private buffer string
+-- @field private position number
+-- @field private size number
+-- @field private canRead boolean
+-- @field private canWrite boolean
+local Stream = {}
+Stream.__index = Stream
+
+--- Create a new Stream instance.
+-- @param options table Configuration options for the stream
+-- @return Stream
+function Stream.new(options)
+    local self = setmetatable({}, Stream)
+    self.buffer = options.buffer or ""
+    self.position = 1
+    self.size = options.size or #self.buffer
+    self.canRead = options.canRead ~= false
+    self.canWrite = options.canWrite ~= false
+    return self
 end
 
---- A readonly stream with a defined size and loadData function, eg for reading from a file.
---- @param size number The size of the stream
---- @param loadData function The function to load data from the stream
---- @param cache? number Load data in front of the cursor by this much (default 256)
-function stream.dynamicallyLoadedReadonly(size, loadData, cache)
-    local ret = {}
-    ret.size = size
-    ret.pos = 1
-    ret.loadData = loadData
-    ret.cache = ""
-    ret.cache_size = cache or 256
-    ret.cache_pos = 1
-    ret.cache_end = 0
-
-    ret.read = function(self, n)
-        local actual_read = math.min(n, self.size - self.pos + 1)
-        -- fill the cache
-        while self.cache_end - self.cache_pos < actual_read do
-            if coroutine.running() then
-                coroutine.yield()
-            end
-            local start = self.cache_pos
-            local len = math.min(self.cache_size, self.size - start + 1)
-            local data = self.loadData(start, len)
-            self.cache = self.cache.. data
-            self.cache_end = self.cache_end + #data
-            -- cut the cache if it exceeds the cache limit
-            if self.cache_end > self.cache_size then
-                local excess = self.cache_end - self.cache_size
-                self.cache = self.cache:sub(excess + 1)
-                self.cache_pos = self.cache_pos - excess
-                self.cache_end = self.cache_size
-            end
-        end
-        -- cut the cache
-        local ret = self.cache:sub(self.cache_pos, self.cache_pos + actual_read - 1)
-        self.cache_pos = self.cache_pos + actual_read
-        self.pos = self.pos + actual_read
-        return ret
+--- Read data from the stream.
+-- @param n number Number of bytes to read
+-- @return string|nil Data read from the stream, or nil if not readable
+-- @return string|nil Error message if not readable
+function Stream:read(n)
+    if not self.canRead then
+        return nil, "Stream is not readable"
     end
 
-    ret.seek = function(self, whence, offset)
-        if whence == "set" then
-            local actual_offset = math.min(offset, self.size)
-            self.pos = actual_offset
-            self.cache_pos = 1
-            self.cache = ""
-            self.cache_end = 0
-        elseif whence == "cur" then
-            local actual_offset = math.min(self.pos + offset, self.size)
-            self.pos = actual_offset
-            self.cache_pos = 1
-            self.cache = ""
-            self.cache_end = 0
-        elseif whence == "end" then
-            local actual_offset = math.min(self.size + offset, self.size)
-            self.pos = actual_offset
-            self.cache_pos = 1
-            self.cache = ""
-            self.cache_end = 0
-        end
-        return self.pos
-    end
+    local toRead = math.min(n, self.size - self.position + 1)
+    local result = self.buffer:sub(self.position, self.position + toRead - 1)
+    self.position = self.position + toRead
 
-    ret.close = function(self)
-        self = nil
-    end
-
-    ret.write = function(self, str)
-        return nil, "Stream is readonly"
-    end
-
-    return ret
+    return result
 end
 
-function stream.proxy(h)
-    local ret = {}
-    ret.read = function(self, n)
-        return h.read(n)
+--- Write data to the stream.
+-- @param data string Data to write to the stream
+-- @return number|nil Number of bytes written, or nil if not writable
+-- @return string|nil Error message if not writable
+function Stream:write(data)
+    if not self.canWrite then
+        return nil, "Stream is not writable"
     end
-    ret.write = function(self, str)
-        if type(str) == "number" then
-            str = string.char(str)
-        end
-        h.write(str)
-    end
-    ret.seek = function(self, whence, offset)
-        h.seek(whence, offset)
-    end
-    ret.close = function(self)
-        h.close()
-    end
-    return ret
+
+    self.buffer = self.buffer:sub(1, self.position - 1) .. data .. self.buffer:sub(self.position + #data)
+    self.position = self.position + #data
+    self.size = math.max(self.size, self.position - 1)
+
+    return #data
 end
 
-return stream
+--- Seek to a position in the stream.
+-- @param whence string Where to seek from: "set", "cur", or "end"
+-- @param offset number Offset from the whence position
+-- @return number|nil New position (0-based), or nil on error
+-- @return string|nil Error message on failure
+function Stream:seek(whence, offset)
+    whence = whence or "cur"
+    offset = offset or 0
+
+    local newPosition
+    if whence == "set" then
+        newPosition = offset + 1
+    elseif whence == "cur" then
+        newPosition = self.position + offset
+    elseif whence == "end" then
+        newPosition = self.size + offset + 1
+    else
+        return nil, "Invalid whence"
+    end
+
+    newPosition = math.max(1, math.min(newPosition, self.size + 1))
+
+    self.position = newPosition
+    return self.position - 1
+end
+
+--- Close the stream.
+function Stream:close()
+    -- In this simple implementation, we don't need to do anything
+    -- This method is included for API completeness
+end
+
+return Stream
