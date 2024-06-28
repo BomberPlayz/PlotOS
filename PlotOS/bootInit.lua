@@ -303,10 +303,6 @@ if _G.VERY_LOW_MEM then
     _G.bsod = _G.kern_panic
 end
 
-local function endsWith(str, suffix)
-    return string.sub(str, - #suffix) == suffix
-end
-
 --[[BOOT]]
 --
 local function initRegistry(reg)

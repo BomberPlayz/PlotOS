@@ -1,4 +1,5 @@
 local security = require("security")
+local oldOS = _G.os
 _G.os = {}
 
 os.env = {}
@@ -26,6 +27,12 @@ end
 function os.requestPermission(perm)
     checkArg(1, perm, "string")
 end
+
+-- functions from old os
+os.clock = oldOS.clock
+os.date = oldOS.date
+os.difftime = oldOS.difftime
+os.time = oldOS.time
 
 os.setEnv("SHELL", require("registry").get("/system/shell"))
 os.setEnv("BOOT", "/sys/system32")
