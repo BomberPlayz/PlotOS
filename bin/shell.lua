@@ -75,14 +75,14 @@ while true do
             if not l then
                 gpu.setForeground(0xFF0000)
                 print(tostring(err))
-                kern_log("Shell: program '"..cmd.."' failed to even just load: "..tostring(err))
+                kern_log("shell: program '"..cmd.."' failed to load: "..tostring(err))
                 gpu.setForeground(0xFFFFFF)
             else
                 local s, err = pcall(l, args)
                 if not s then
                     gpu.setForeground(0xFF0000)
                     print(tostring(err))
-                    kern_log("Shell: program '"..cmd.."' failed to run: "..tostring(err))
+                    kern_log("shell: program '"..cmd.."' failed to run: "..tostring(err))
                     gpu.setForeground(0xFFFFFF)
                 end
             end
