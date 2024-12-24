@@ -8,12 +8,13 @@
 -- @field private canRead boolean
 -- @field private canWrite boolean
 local Stream = {}
-Stream.__index = Stream
+
 
 --- Create a new Stream instance.
 -- @param options table Configuration options for the stream
 -- @return Stream
 function Stream.new(options)
+    options = options or {}
     local self = setmetatable({}, Stream)
     self.buffer = options.buffer or ""
     self.position = 1
@@ -86,5 +87,9 @@ function Stream:close()
     -- In this simple implementation, we don't need to do anything
     -- This method is included for API completeness
 end
+
+setmetatable(Stream, {
+    __index = Stream,
+})
 
 return Stream

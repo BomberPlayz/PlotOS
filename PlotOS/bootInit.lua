@@ -44,6 +44,23 @@ local logfile = 0
 local logsToWrite = ""
 local loggingHandle = nil
 
+
+---[[ Logs a message with a specified state and formatting
+--- @param msg string|any Message to be logged (will be converted to string)
+--- @param state string|nil Log level ('debug'|'info'|'warn'|'error'). Defaults to 'info'
+--- Handles multi-line messages by splitting and logging each line separately
+--- Formats output with timestamp, state label, and color coding
+--- Before system initialization (OSSTATUS < 1):
+---   - Displays logs on screen with GPU
+---   - Manages screen scrolling when reaching bottom
+--- After system initialization:
+---   - Writes logs to file through loggingHandle
+--- Global function available through _G
+---@see OS_LOGGING_START_TIME
+---@see OSSTATUS
+---@see loggingHandle
+---@see logsToWrite
+---]]
 function _G.kern_log(msg, state)
     -- Define settings for different log states
     local log = { "debug", "info", "warn", "error" }
@@ -118,100 +135,99 @@ local ropen = fs.open
 local rwrite = fs.write
 local rclose = fs.close
 
+---@class kern_panic
+---Kernel panic handler function that logs system information and halts execution
+---This function is called when a critical system error occurs that prevents normal operation
+---@param reason string|any The reason for the kernel panic
+---@global
+---@usage kern_panic("Critical system error occurred")
+---
+---Performs the following actions:
+---1. Logs the panic reason and stack trace
+---2. Dumps system information (OS details, status, addresses)
+---3. Logs hardware information (architecture, memory, GPU)
+---4. Lists all connected components
+---5. Logs environment state
+---6. Attempts to save logs to /panic.log
+---7. Halts the system
+---
+---Requires global variables:
+---* OSNAME: string - Operating system name
+---* OSVERSION: string - Operating system version
+---* OSRELEASE: string - Operating system release
+---* OSSTATUS: number - Operating system status
+---* LOW_MEM: boolean - Low memory flag
+---* VERY_LOW_MEM: boolean - Critical low memory flag
+---
+---Required components:
+---* computer
+---* component
+---* gpu
 function _G.kern_panic(reason)
     kern_log("KERNEL PANIC", "error")
-    kern_log("A kernel panic occured! Traceback:", "error")
+    kern_log("----------------------------------------------------", "error")
+    kern_log("Panic reason: " .. tostring(reason), "error")
+    kern_log("----------------------------------------------------", "error")
+    
+    -- Stack trace
+    kern_log("Stack trace:", "error")
+    kern_log(debug.traceback("", 2), "error")
     kern_log("----------------------------------------------------", "error")
 
-    -- use debug to get traceback
-    kern_log(debug.traceback("", 1), "error")
-    kern_log("----------------------------------------------------", "error")
-    --[[kern_info("Variable dump:", "error")
-    kern_info("----------------------------------------------------", "error")
-    -- use debug to get all variables
-    function get_vars()
-        local vars = ""
-        local level = 2
-        while true do
-            local i = 1
-            while true do
-                local name, value = debug.getlocal(level, i)
-                if not name then
-                    break
-                end
-                vars = vars .. "\t" .. tostring(name) .. " = " .. tostring(value) .. "\n"
-                i = i + 1
-            end
-            level = level + 1
-            if not debug.getinfo(level) then
-                break
-            end
+    -- System info
+    kern_log("System Information:", "error")
+    kern_log(string.format("OS: %s %s-%s", OSNAME, OSVERSION, OSRELEASE), "error")
+    kern_log(string.format("Status: %d, Uptime: %.2fs", OSSTATUS, computer.uptime()), "error")
+    kern_log(string.format("Boot Address: %s", computer.getBootAddress()), "error")
+    kern_log(string.format("Machine Address: %s", computer.address()), "error")
+    
+    -- Hardware info
+    kern_log("Hardware Information:", "error")
+    kern_log(string.format("Architecture: %s", computer.getArchitecture()), "error")
+    kern_log(string.format("Memory: %dKB total, %dKB free", 
+        math.floor(computer.totalMemory() / 1024),
+        math.floor(computer.freeMemory() / 1024)), "error")
+    kern_log(string.format("GPU Resolution: %dx%d", gpu.maxResolution()), "error")
+    
+    -- Component listing
+    kern_log("Connected Components:", "error")
+    for address, type in component.list() do
+        kern_log(string.format("%s: %s", type, address), "error")
+    end
+    
+    -- Environment state
+    kern_log("Environment State:", "error")
+    kern_log(string.format("LOW_MEM: %s, VERY_LOW_MEM: %s", 
+        tostring(_G.LOW_MEM), 
+        tostring(_G.VERY_LOW_MEM)), "error")
+
+    -- Save logs
+    if not _G.VERY_LOW_MEM then
+        local ok, err = pcall(function()
+            local handle = component_invoke(computer.getBootAddress(), "open", "/panic.log", "w")
+            component_invoke(computer.getBootAddress(), "write", handle, logsToWrite)
+            component_invoke(computer.getBootAddress(), "close", handle)
+            kern_log("Logs saved to /panic.log", "error")
+        end)
+        if not ok then
+            kern_log("Failed to save logs: " .. tostring(err), "error")
         end
-        return vars
-    end
-    kern_info(get_vars(), "error")
-    -- also dump all globals, right here
-    function get_globals()
-        local vars = ""
-        for k, v in pairs(_G) do
-            vars = vars .. "\t" .. tostring(k) .. " = " .. tostring(v) .. "\n"
-        end
-        return vars
-    end
-    kern_info(get_globals(), "error")
-    kern_info("----------------------------------------------------", "error")
-    kern_info("Hardware info:", "error")
-    kern_info("----------------------------------------------------", "error")
-    kern_info("CPU: " .. computer.getArchitecture(), "error")
-    kern_info("RAM: " .. tostring(math.floor(computer.totalMemory() / 1024)) .. " KB", "error")
-    kern_info("GPU: " .. tostring(gpu.maxResolution()) .. "x" .. tostring(gpu.maxResolution()), "error")
-    kern_info("----------------------------------------------------", "error")
-    kern_info("Connected components:", "error")
-    function get_components()
-        local vars = ""
-        for k, v in pairs(component.list()) do
-            vars = vars .. "\t" .. tostring(k) .. " = " .. tostring(v) .. "\n"
-        end
-        return vars
-    end
-    kern_info(get_components(), "error")
-    kern_info("----------------------------------------------------", "error")
-    kern_info("System info:", "error")
-    kern_info("----------------------------------------------------", "error")
-    kern_info("OS: " .. OSNAME .. " " .. OSVERSION, "error")
-    kern_info("OS Status: " .. tostring(OSSTATUS), "error")
-    kern_info("----------------------------------------------------", "error")
-    kern_info("System time: " .. tostring(computer.uptime()), "error")
-    kern_info("System uptime: " .. tostring(computer.uptime()), "error")
-    kern_info("----------------------------------------------------", "error")
-    kern_info("System boot address: " .. tostring(computer.getBootAddress()), "error")
-    kern_info("System address: " .. tostring(computer.address()), "error")]]
-
-    kern_log("Panic reason: " .. reason, "error")
-    -- save logs
-    -- use the raw filesystem API to avoid any errors
-    function save()
-        if _G.VERY_LOW_MEM then return end
-        --[[ local handle = ropen("/logs.log", "w")
-         rwrite(handle, logsToWrite)
-         rclose(handle)]]
-        local handle = component_invoke(computer.getBootAddress(), "open", "/logs.log", "w")
-        component_invoke(computer.getBootAddress(), "write", handle, logsToWrite)
-        component_invoke(computer.getBootAddress(), "close", handle)
-
-        kern_log("Logs saved to /logs.log", "error")
     end
 
-    local ok, err = pcall(save)
-    if not ok then
-        kern_log("Failed to save logs: " .. err, "error")
-    end
-
+    -- System halt
+    kern_log("System halted - Press Ctrl+Alt+C to reboot", "error")
     while true do
         pcps()
     end
 end
 
+---Loads and executes a Lua file with error handling
+---@param file string The path to the Lua file to load and execute
+---@return any ... Returns all results from the executed file on success
+---@throws string Error message if file loading or execution fails
+---@see raw_loadfile
+---@see xpcall
+---@see debug.traceback
 function _G.raw_dofile(file)
     local program, reason = raw_loadfile(file)
     --kernel_info(file.." and is the: "..program)

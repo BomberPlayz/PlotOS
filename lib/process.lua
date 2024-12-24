@@ -26,6 +26,14 @@ local function setfenv(f, env)
 end
 local _signal = nil
 
+-- Define syscall types
+local SYSCALLS = {
+  DRIVER = 1,
+  FS = 2,
+  PROCESS = 3,
+  -- etc
+}
+
 -- Finds a process by its associated thread.
 -- @param thread The thread to search for.
 -- @param process (optional) The process or list of processes to search within. If not provided, the global list of processes will be used.
@@ -96,8 +104,61 @@ api.new = function(name, code, env, perms, inService, ...)
 	env._G = env
 	setmetatable(env, { __index = _G })]]
 
-    local code = load(code, "=" .. name, nil, _G)
-    -- debug fuckery for forcing pre-emptive multitasking
+    --local code = load(code, "=" .. name, nil, _G)
+    local _code = ""
+    local i = 1
+    local in_string = false
+    local string_char = nil
+    local in_comment = false
+    local in_multiline_string = false
+    
+    while i <= #code do
+        local c = code:sub(i,i)
+        
+        -- Handle multiline string detection
+        if not in_string and not in_multiline_string and c == "[" and code:sub(i+1,i+1) == "[" then
+            in_multiline_string = true
+            _code = _code .. "[["
+            i = i + 2
+            goto continue
+        elseif in_multiline_string and c == "]" and code:sub(i+1,i+1) == "]" then
+            in_multiline_string = false
+            _code = _code .. "]]"
+            i = i + 2
+            goto continue
+        end
+        
+        -- Handle regular string detection
+        if not in_multiline_string and not in_string and (c == '"' or c == "'") then
+            in_string = true
+            string_char = c
+        elseif in_string and c == string_char and code:sub(i-1,i-1) ~= "\\" then
+            in_string = false
+        end
+        
+        -- Handle comment detection
+        if not in_string and not in_multiline_string and c == "-" and code:sub(i+1,i+1) == "-" then
+            in_comment = true
+        elseif in_comment and c == "\n" then
+            in_comment = false
+        end
+        
+        -- Replace 'do' with 'do coroutine.yield()' only in actual code
+        if not in_string and not in_multiline_string and not in_comment and 
+           code:sub(i,i+1) == "do" and 
+           (i == 1 or not code:sub(i-1,i-1):match("[%w_]")) and
+           (i+2 > #code or not code:sub(i+2,i+2):match("[%w_]")) then
+            _code = _code .. "do coroutine.yield();"
+            i = i + 2
+        else
+            _code = _code .. c
+            i = i + 1
+        end
+        
+        ::continue::
+    end
+    local code = load(_code, "=" .. name, nil, _G)
+
     ret.thread = coroutine.create(code)
     ret.name = name or "not defined"
     ret.status = "running"
@@ -171,7 +232,7 @@ api.new = function(name, code, env, perms, inService, ...)
         security.attach(ret)
     end
 
-    if api.isProcess() and not forceRoot then
+    if api.isProcess() then
         local p = api.currentProcess
         table.insert(p.processes, ret)
         ret.parent = p
@@ -190,7 +251,7 @@ end
 --- @param perms (table) - Optional permissions for the API object.
 --- @param forceRoot (boolean) - Whether to force the API object to be rooted.
 --- @param ... - Additional arguments to be passed to the API constructor.
---- @return (table, string) - The loaded API object or nil if loading failed, and an error message if applicable.
+--- @return (table), (string) - The loaded API object or nil if loading failed, and an error message if applicable.
 api.load = function(name, path, perms, forceRoot, ...)
     local fs = require("fs")
     if path:sub(1, 1) ~= "/" then
@@ -299,23 +360,25 @@ api.tickProcess = function(v)
                     v.err = reta[2] or "Died"
                 end
                 table.remove(reta, 1)
-                if reta[1] ~= nil then
+                --[[if reta[1] ~= nil then
                     local syscall = table.remove(reta, 1)
                     local args = reta
+                    kern_log("A syscall has been triggered but that's illegal. The syscall was: " .. syscall.." and the args were: "..table.concat(args, ", ").." called by process "..v.name)
+                    --kern_panic("A syscall has been triggered but that's illegal")
                     if syscall == "driver" then
-                        if not driverCache[args[1]] then
+                        if not driverCache[args[1]]--[[ then
                             local drv = require("driver").load(args[1])
-                            driverCache[args[1]] = drv
+                            driverCache[args[1]]--[[ = drv
                         end
-                        if driverCache[args[1]] then
-                            local fn = driverCache[args[1]][args[2]]
+                        if driverCache[args[1]]--[[ then
+                            local fn = driverCache[args[1]]--[[[args[2]]--[[
                             table.remove(args, 1)
                             table.remove(args, 1)
                             local ret = fn(table.unpack(args))
                             v.sysret = ret
                         end
                     end
-                end
+                end]]
                 local et = computer.uptime() * 1000
                 v.lastCpuTime = et / 1000 - st / 1000
                 for kk, vv in ipairs(v.processes) do
@@ -473,5 +536,7 @@ end
 api.resume = function(pid)
     api.setStatus(pid, "running")
 end
+
+
 
 return api

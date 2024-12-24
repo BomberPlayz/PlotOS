@@ -1,0 +1,92 @@
+[    0.00] [  OK  ] LOW_MEM mode disabled
+[    0.00] [ DEBUG] Hell debug
+[    0.00] [  OK  ] Loading package managment...
+[    0.05] [  OK  ] Mounting system drive
+[    0.10] [  OK  ] Mounting table: 0x7f6bd4006580 to /
+[    0.10] [  OK  ] Initializing registry
+[    0.20] [  OK  ] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.20] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.20] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.20] [  OK  ] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.20] [  OK  ] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.25] [  OK  ] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.25] [  OK  ] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.25] [  OK  ] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.25] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.25] [  OK  ] Registry use tmp files to save enabled
+[    0.25] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.25] [  OK  ] Loading drivers...
+[    0.40] [  OK  ] Loading driver rdrive/drive_generic.lua
+[    0.40] [  OK  ] Driver type: rdrive
+[    0.45] [  OK  ] Loading driver sample/sample.lua
+[    0.45] [  OK  ] Driver type: sample
+[    0.50] [  OK  ] Loading driver internet/internet.lua
+[    0.50] [  OK  ] Driver type: internet
+[    0.55] [  OK  ] Loading driver gpu/gpu.lua
+[    0.55] [  OK  ] Driver type: gpu
+[    0.60] [  OK  ] Loading driver printer/openprinter.lua
+[    0.60] [  OK  ] Driver type: printer
+[    0.65] [  OK  ] Loading driver drive/filesystem.lua
+[    0.65] [  OK  ] Driver type: drive
+[    0.65] [  OK  ] Doing some user magic...
+[    0.65] [  OK  ] Loading other files...
+[    0.65] [  OK  ] Safemode is enabled, loading only critical bootscripts.
+[    0.65] [  OK  ] Opening file at /logs.log with mode w
+[    0.70] [  OK  ] Running boot script /PlotOS/system32/boot/00_base.lua
+[    0.70] [  OK  ] Loading base components
+[    0.70] [  OK  ] Running boot script /PlotOS/system32/boot/01_overrides.lua
+[    0.90] [ DEBUG] registry.get("system/security/driver_crash_bsod, nil") called
+[    0.90] [ DEBUG] registry.get("system/security/driver_crash_bsod, nil") called
+[    0.90] [  OK  ] Overriding function so process can work
+[    0.90] [  OK  ] Running boot script /PlotOS/system32/boot/05_OS.lua
+[    0.90] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.90] [  OK  ] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.90] [  OK  ] Enviornment variable BOOT has been set to /sys/system32
+[    0.90] [  OK  ] Enviornment variable PATH has been set to /bin
+[    0.90] [  OK  ] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [  OK  ] Running boot script /PlotOS/system32/boot/80_io.lua
+[    1.05] [ DEBUG] registry.get("system/security/driver_crash_bsod, nil") called
+[    1.05] [ DEBUG] registry.get("system/security/driver_crash_bsod, nil") called
+[    1.05] [  OK  ] Running boot script /PlotOS/system32/safemode_component.lua
+[    1.05] [  OK  ] Running boot script /PlotOS/system32/safemode_warn.lua
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [  OK  ] New process named SafeMode with pid1 created
+[    1.05] [  OK  ] Running boot script /PlotOS/system32/zzzz_safemode_shell.lua
+[    1.10] [  OK  ] Opening file at /PlotOS/cursor.lua with mode r
+[    1.20] [ DEBUG] registry.get("system/security/driver_crash_bsod, nil") called
+[    1.20] [ DEBUG] registry.get("system/security/driver_crash_bsod, nil") called
+[    1.20] [  OK  ] Opening file at /bin/shell.lua with mode r
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [  OK  ] New process named shell with pid2 created
+[    1.40] [FAILED] KERNEL PANIC
+[    1.40] [FAILED] ----------------------------------------------------
+[    1.40] [FAILED] Panic reason: System halted!
+[    1.40] [FAILED] ----------------------------------------------------
+[    1.40] [FAILED] Stack trace:
+[    1.40] [FAILED] stack traceback:
+[    1.40] [FAILED]     /PlotOS/boot.lua:31: in main chunk
+[    1.40] [FAILED]     init:15: in main chunk
+[    1.40] [FAILED]     (...tail calls...)
+[    1.40] [FAILED] ----------------------------------------------------
+[    1.40] [FAILED] System Information:
+[    1.40] [FAILED] OS: PlotOS 0.0.4-alpha
+[    1.40] [FAILED] Status: 0, Uptime: 10.45s
+[    1.40] [FAILED] Boot Address: fc2c9930-a622-4204-9848-1d81f24b673d
+[    1.40] [FAILED] Machine Address: 84a0f153-c6f4-4701-a633-eed5bccfd1de
+[    1.40] [FAILED] Hardware Information:
+[    1.40] [FAILED] Architecture: Lua 5.4
+[    1.40] [FAILED] Memory: 2048KB total, 1807KB free
+[    1.40] [FAILED] GPU Resolution: 160x50
+[    1.40] [FAILED] Connected Components:
+[    1.40] [FAILED] drive: 714fde65-5f5f-455a-830c-0f035c8928c3
+[    1.40] [FAILED] computer: 84a0f153-c6f4-4701-a633-eed5bccfd1de
+[    1.40] [FAILED] gpu: d4400ce2-3670-4de9-bf7f-9aa3b1afaa73
+[    1.40] [FAILED] filesystem: fc2c9930-a622-4204-9848-1d81f24b673d
+[    1.40] [FAILED] screen: ce258025-98c9-4fe2-b77f-ea6c45a163c0
+[    1.40] [FAILED] keyboard: 890d508a-03e2-4a2c-8af2-eae287b5556f
+[    1.40] [FAILED] filesystem: fb705fb0-0e15-439b-9f9c-12e8443973f8
+[    1.40] [FAILED] eeprom: 967f243f-3126-41ff-b311-54912f937a36
+[    1.40] [FAILED] Environment State:
+[    1.40] [FAILED] LOW_MEM: false, VERY_LOW_MEM: false
