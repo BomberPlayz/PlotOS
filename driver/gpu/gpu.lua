@@ -130,6 +130,7 @@ ret.new = function(adr)
     end
 
     drv.set = function(x,y,c, vertical)
+        --printk("set: "..x..", "..y..", "..c)
         -- respect the buffer
         -- if c would be out of bounds, trim it to the mask
         if y > drv.mask.h+drv.mask.y then
@@ -233,6 +234,8 @@ ret.new = function(adr)
     end
 
     drv.bitblt = function(dst,col,row,w,h,src,fromcol,fromrow)
+        --printk("bitblt")
+        --printk(dst..", "..col..", "..row..", "..w..", "..h)
         return com.bitblt(dst,col,row,w,h,src,fromcol,fromrow)
     end
 

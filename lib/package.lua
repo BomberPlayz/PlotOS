@@ -25,7 +25,8 @@ function package.require(file)
 
   -- Check for circular dependencies
   if package.state[file] == 1 then
-    error("circular require detected")
+    printk("Possible circular dependency detected: "..file)
+    --error("circular require detected")
   end
 
   -- Initialize state

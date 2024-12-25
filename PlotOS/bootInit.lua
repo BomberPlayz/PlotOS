@@ -44,7 +44,10 @@ local logfile = 0
 local logsToWrite = ""
 local loggingHandle = nil
 
+-- early-import streams
+local Stream = raw_loadfile("/lib/stream.lua")() -- FIXME: this is a hack
 
+local logStream = Stream.new()
 --- Logs a message with a specified state and formatting
 --- @param msg string|any Message to be logged (will be converted to string)
 --- @param state string|nil Log level ('debug'|'info'|'warn'|'error'). Defaults to 'info'
@@ -106,6 +109,7 @@ function _G.printk(msg, state)
     -- Prepare message: replace tabs with spaces, prepend duration and status label
     local msg_out = string.gsub(msg, "\t", "    ")
     msg_out = string.format("[%8s] %s %s", time_str, state_settings[state].label, msg_out)
+    logStream:write(msg_out .. "\n")
 
     if OSSTATUS < 1 then
         logsToWrite = logsToWrite .. msg_out .. "\n"

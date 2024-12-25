@@ -955,7 +955,7 @@ function gui.eventLoop(object)
         local t, e = gpu.bitblt()
         gpu.setActiveBuffer(0)
         if not t then
-            printk("Issue with render gui: " .. e, "warn")
+            printk("Issue with render gui: " .. (e or "WTF"), "warn")
         end
         --kern_info("afterdraw")
         -- -- buffer.draw()
@@ -971,6 +971,7 @@ end
 require("process").new(
     "GuiTicker",
     [[
+os.sleep(1)
 local event = require("event")
 local gui = require("newgui")
 gui.eventLoop(gui.workspace)
@@ -981,7 +982,5 @@ gui.workspace = gui.panel(1, 1, buffer.width, buffer.height, 0x555555)
 gui.workspace._gx = 1
 gui.workspace._gy = 1
 gui.workspace.alwaysDraw = true
-
-
 
 return gui

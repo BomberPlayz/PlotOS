@@ -6,6 +6,7 @@ local process = package.require("process")
 local cp = component
 ret.loaded = {}
 local drivers = {}
+local driver_cache = {}
 
 function generate_unique_id()
     -- generate a unique id, 16 chars a-z0-9
@@ -195,37 +196,106 @@ function newdriver(d, addr)
 
     end)]]
 
-
+    local _ret = dd
+    --[[
+    if process.currentProcess then
+        _ret = {}
+        setmetatable(_ret, {
+            __index = function(t, k)
+                if type(dd[k]) == "function" then
+                    return function(...)
+                        return coroutine.yield("driver", addr, k, ...)
+                    end
+                else
+                    return dd[k]
+                end
+            end
+        })
+    end
+    ]]
 
     return dd
 end
 
-function ret.load(type, addr)
+function ret.load(typed, addr)
     if not addr then addr = "default" end
 
     if addr == "default" then
-        local d, addra = ret.getDefault(type)
+        
+        local d, addra = ret.getDefault(typed)
         if d then
             local dd = newdriver(d, addra)
             dd.getDriverName = d.getName
             dd.getDriverVersion = d.getDriverVersion
             dd.address = addra
-            return newdriver(d, addra)
+            driver_cache[addra] = dd
+
+            local dd_proxy = {}
+            if process.currentProcess ~= nil then
+                setmetatable(dd_proxy, {
+                    __index = function(t, k)
+                        if type(dd[k]) == "function" then
+                            return function(...)
+                                return coroutine.yield("driver", addra, k, ...)
+                            end
+                        else
+                            return dd[k]
+                        end
+                    end
+                })
+            else
+                printk("A driver has been loaded outside of a process (kernel or we have a major security issue)")
+                dd_proxy = dd
+            end
+
+            --dd_proxy = dd
+
+            return dd_proxy
         else
             return nil, "No drivers found"
         end
     else
+        if driver_cache[addr] then
+            return driver_cache[addr]
+        end
         local d = ret.getBest(type, addr)
         if d then
             local dd = newdriver(d, addr)
             dd.getDriverName = d.getName
             dd.getDriverVersion = d.getVersion
             dd.address = addr
-            return dd
+            driver_cache[addr] = dd
+            
+            local dd_proxy = {}
+
+            if process.currentProcess ~= nil then
+                setmetatable(dd_proxy, {
+                    __index = function(t, k)
+                        if type(dd[k]) == "function" then
+                            return function(...)
+                                return coroutine.yield("driver", addr, k, ...)
+                            end
+                        else
+                            return dd[k]
+                        end
+                    end
+                })
+            else
+                printk("A driver has been loaded outside of a process (kernel or we have a major security issue)")
+                dd_proxy = dd
+            end
+
+            --dd_proxy = dd
+
+            return dd_proxy
         else
             return nil, "No drivers found"
         end
     end
+end
+
+function ret.fromCache(addr)
+    return driver_cache[addr]
 end
 
 
