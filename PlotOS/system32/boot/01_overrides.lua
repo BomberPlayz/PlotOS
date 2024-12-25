@@ -9,7 +9,7 @@ computer.pullSignal = function(tout)
 
 
     if proc then
-        coroutine.yield()
+        --coroutine.yield()
         -- Insert a new signal with timeout and start time into the process's signal pull
         table.insert(proc.io.signal.pull, { timeout = tout or math.huge, start_at = computer.uptime() })
         local signalIndex = #proc.io.signal.pull
@@ -24,9 +24,11 @@ computer.pullSignal = function(tout)
         end
     else
         -- If there's no signal, create a new one
-        if not computer._signal then
+       --[[ if not computer._signal then
             computer._signal = table.pack(_pullSignal(tout))
         end
-        return table.unpack(computer._signal)
+        return table.unpack(computer._signal) -- what im saying is, a coroutine.yield() will instantly return an event? i hav eno idea llmao]]
+
+        return _pullSignal(tout)
     end
 end

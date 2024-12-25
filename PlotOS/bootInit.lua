@@ -45,7 +45,7 @@ local logsToWrite = ""
 local loggingHandle = nil
 
 
----[[ Logs a message with a specified state and formatting
+--- Logs a message with a specified state and formatting
 --- @param msg string|any Message to be logged (will be converted to string)
 --- @param state string|nil Log level ('debug'|'info'|'warn'|'error'). Defaults to 'info'
 --- Handles multi-line messages by splitting and logging each line separately
@@ -60,14 +60,15 @@ local loggingHandle = nil
 ---@see OSSTATUS
 ---@see loggingHandle
 ---@see logsToWrite
----]]
-function _G.kern_log(msg, state)
+function _G.printk(msg, state)
+    
+    -- print all methods
     -- Define settings for different log states
     local log = { "debug", "info", "warn", "error" }
     local state_settings = {
         debug = { label = "[ DEBUG]", color = 0xaaaaff },
-        info = { label =  "[  OK  ]", color = 0x10ff10 },
-        warn = { label =  "[ WARN ]", color = 0xff10ff },
+        info = { label =  "[    OK]", color = 0x10ff10 },
+        warn = { label =  "[  WARN]", color = 0xff10ff },
         error = { label = "[FAILED]", color = 0xff1010 },
     }
 
@@ -125,8 +126,11 @@ function _G.kern_log(msg, state)
             return
         end
         loggingHandle:write(msg_out .. "\n")
+        --loggingHandle:flush()
         logsToWrite = ""
     end
+   -- ocelot.log(msg_out)
+    
 end
 
 gpu.fill(1, 1, w, h, " ")
@@ -298,7 +302,7 @@ local BootTypeEnum = {
 local bootType = KERN_PARAMS.SAFE_MODE and BootTypeEnum.PlotOS.safe or BootTypeEnum.PlotOS.normal
 
 if _G.VERY_LOW_MEM then
-    _G.kern_log = function() end
+    _G.printk = function() end
     _G.kern_panic = function(reason)
         local w, h = gpu.getResolution()
         gpu.setForeground(0xff0000)

@@ -19,6 +19,11 @@ if not e then
 end
 
 local fs = require("fs")
+local ipc = require("ipc")
+
+ipc.register("shell", function()
+    return "I am shell!", "Here's another arg", "and a third"
+end)
 
 if not safemode then
     dofile("/PlotOS/cursor.lua")

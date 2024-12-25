@@ -11,10 +11,10 @@ function api.getCurrentProcess()
 end
 
 local unusedTime = 0
-local security = require("security")
-local gpu = require("driver").load("gpu")
-local reg = require("registry")
-local stream = require("stream")
+local security = package.require("security")
+
+local reg = package.require("registry")
+local stream = package.require("stream")
 local as_pid = 1
 local usedTime = 0
 local function setfenv(f, env)
@@ -34,10 +34,11 @@ local SYSCALLS = {
   -- etc
 }
 
--- Finds a process by its associated thread.
--- @param thread The thread to search for.
--- @param process (optional) The process or list of processes to search within. If not provided, the global list of processes will be used.
--- @return The process that matches the given thread, or nil if no match is found.
+
+--- Finds a process by its associated thread.
+--- @param thread thread The thread to search for.
+--- @param process? process The process or list of processes to search within. If not provided, the global list of processes will be used.
+--- @return The process that matches the given thread, or nil if no match is found.
 api.findByThread = function(thread, process)
     -- process is optional
     process = process or api.processes
@@ -62,15 +63,31 @@ api.isProcess = function()
     end
 end
 
+--- @class plotosthread
+--- @field status string The current status of the thread ("running", "suspended", "normal", "dead")
+--- @field pid number The unique process ID
+--- @field name string The name of the thread/process
+--- @field thread thread The actual Lua thread object
+--- @field err string Any error message associated with the thread
+--- @field args table The arguments passed to the thread
+--- @field processes table List of child processes
+--- @field parent process|nil The parent process (nil if root process)
+--- @field lastCpuTime number The CPU time used in the last tick
+--- @field cputime_avg table[] Array of recent CPU time measurements
+--- @field listeners table[] Array of event listeners
+--- @field io table Input/output handlers and buffers
+--- @field status string Current process status ("running", "idle", "dying", "dead")
+
+
 
 --- Creates a new process with the specified parameters.
 --- @param name (string) - The name of the process.
 --- @param code (string) - The code to be executed by the process.
---- @param env? (table) [optional] - The environment table for the process.
---- @param perms? (table) [optional] - The permissions table for the process.
---- @param inService? (boolean) [optional] - Indicates whether the process is in service.
+--- @param env? (table) - The environment table for the process.
+--- @param perms? (table) - The permissions table for the process.
+--- @param inService? (boolean)- Indicates whether the process is in service.
 --- @param ...? - Additional arguments to be passed to the process.
---- @return (table) # The newly created process object.
+--- @return (plotosthread) # The newly created process object.
 api.new = function(name, code, env, perms, inService, ...)
     local ret = {}
     ret.listeners = {}
@@ -105,6 +122,8 @@ api.new = function(name, code, env, perms, inService, ...)
 	setmetatable(env, { __index = _G })]]
 
     --local code = load(code, "=" .. name, nil, _G)
+    
+    
     local _code = ""
     local i = 1
     local in_string = false
@@ -123,7 +142,7 @@ api.new = function(name, code, env, perms, inService, ...)
             goto continue
         elseif in_multiline_string and c == "]" and code:sub(i+1,i+1) == "]" then
             in_multiline_string = false
-            _code = _code .. "]]"
+            _code = _code .. "]]" -- remember to put \]\] back
             i = i + 2
             goto continue
         end
@@ -157,7 +176,9 @@ api.new = function(name, code, env, perms, inService, ...)
         
         ::continue::
     end
-    local code = load(_code, "=" .. name, nil, _G)
+    
+    
+    local code = load(code, "=" .. name, nil, _G)
 
     ret.thread = coroutine.create(code)
     ret.name = name or "not defined"
@@ -178,10 +199,16 @@ api.new = function(name, code, env, perms, inService, ...)
     ret.io.screen = {
 
     }
+    kern_log("load gpu drv")
+    local gpu = package.require("driver").load("gpu")
+    kern_log("loaded gpu drv")
     ret.io.screen.width, ret.io.screen.height = gpu.getResolution()
+    kern_log("got resolution")
     ret.io.screen.offset = { x = 0, y = 0 }
     ret.io.stdin = stream.new()
     ret.io.stdout = stream.new()
+    
+    ret.ipc_waiting = false
     as_pid = as_pid + 1
 
     function ret:getCpuTime()
@@ -281,155 +308,167 @@ local toRemoveFromProc = {}
 local driverCache = {}
 
 -- print(coroutine.status(v.thread))
-api.tickProcess = function(v)
-    if v.status == "running" or v.status == "idle" then
-        if coroutine.status(v.thread) == "suspended" then
-            if #v.io.signal.pull > 0 then
-                if not v.io.signal.queue[1] then
-                    local a, b, c, d, e, f, g, aa, ss = computer.pullSignal(0)
-                    if a then
-                        table.insert(v.io.signal.queue, { a, b, c, d, e, f, g, aa, ss })
+api.tickProcess = function(process, event)
+    if process.status == "running" or process.status == "idle" then
+        if coroutine.status(process.thread) == "suspended" then
+            if #process.io.signal.pull > 0 then
+                if not process.io.signal.queue[1] then
+                    if event[1] then
+                        table.insert(process.io.signal.queue, event)
                     end
                 end
-                local puk = v.io.signal.pull[#v.io.signal.pull]
-                if type(v.io.signal.queue[1]) == "table" and v.io.signal.queue[1][1] or (computer.uptime() >= puk.timeout + puk.start_at) then
-                    v.status = "running"
-                    v.io.signal.pull[#v.io.signal.pull].ret = v.io.signal.queue[1] or {}
-                    if v.io.signal.queue[1] then
-                        table.remove(v.io.signal.queue, 1)
+                local pullSignal = process.io.signal.pull[#process.io.signal.pull]
+                if type(process.io.signal.queue[1]) == "table" and process.io.signal.queue[1][1] or (computer.uptime() >= pullSignal.timeout + pullSignal.start_at) then
+                    process.status = "running"
+                    process.io.signal.pull[#process.io.signal.pull].ret = process.io.signal.queue[1] or {}
+                    if process.io.signal.queue[1] then
+                        table.remove(process.io.signal.queue, 1)
                     end
-                    local st = computer.uptime() * 1000
-                    api.currentProcess = v
-                    local reta = { coroutine.resume(v.thread, table.unpack(v.args)) }
+                    local startTime = computer.uptime() * 1000
+                    api.currentProcess = process
+                    local resumeResult = { coroutine.resume(process.thread, table.unpack(process.args)) }
                     api.currentProcess = nil
-                    if not reta[1] then
-                        v.err = reta[2] or "Died"
+                    if not resumeResult[1] then
+                        process.err = resumeResult[2] or "Died"
                     else
-                        table.remove(reta, 1)
-                        if reta[1] ~= nil then
-                            local syscall = table.remove(reta, 1)
-                            local args = reta
-                            if syscall == "driver" then
-                                if not driverCache[args[1]] then
-                                    local drv = require("driver").load(args[1])
-                                    driverCache[args[1]] = drv
+                        table.remove(resumeResult, 1)
+                        if resumeResult[1] ~= nil then
+                            local syscall = table.remove(resumeResult, 1)
+                            local args = resumeResult
+                            kern_log(syscall)
+                            if syscall == "ipc_call" then
+                                local handler_name = args[1]
+                                local handler_args = args[2]
+                                
+                                local handler = require("ipc").handlers[handler_name]
+                                if not handler then
+                                    process.sysret = table.pack(false, "Handler not found")
+                                else
+                                    -- Queue IPC call to handler process
+                                    if handler.process then
+                                        table.insert(handler.process.io.signal.queue, {
+                                            "ipc_request",
+                                            handler_name,
+                                            process, -- calling process
+                                            table.unpack(handler_args)
+                                        })
+                                        process.status = "suspended"
+                                        process.ipc_waiting = true
+                                    else
+                                        -- it's us
+                                        local ret = table.pack(handler.handler(table.unpack(handler_args)))
+                                        process.sysret = ret
+                                        process.status = "running"
+                                        process.ipc_waiting = false
+                                    end
+                                    
                                 end
-                                if driverCache[args[1]] then
-                                    local fn = driverCache[args[1]][args[2]]
-                                    table.remove(args, 1)
-                                    table.remove(args, 1)
-                                    local ret = fn(table.unpack(args))
-                                    v.sysret = ret
+                            elseif syscall == "ipc_response" then
+                                kern_log("Process manager has received an IPC call response for a IPC caller process "..process.pid)
+                                for _, waiting_proc in ipairs(api.processes) do
+                                    if waiting_proc.pid == args[1] then
+                                        kern_log("Process manager has found a waiting process for IPC response")
+                                        waiting_proc.status = "running"
+                                        waiting_proc.sysret = table.pack(table.unpack(args, 2))
+                                        break
+                                    end
                                 end
                             end
                         end
                     end
-                    local et = computer.uptime() * 1000
-                    v.lastCpuTime = et / 1000 - st / 1000
-                    for kk, vv in ipairs(v.processes) do
-                        v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
+                    local endTime = computer.uptime() * 1000
+                    process.lastCpuTime = endTime / 1000 - startTime / 1000
+                    for childIndex, childProcess in ipairs(process.processes) do
+                        process.lastCpuTime = process.lastCpuTime + childProcess.lastCpuTime
                     end
-                    usedTime = usedTime + v.lastCpuTime
-                    table.insert(v.cputime_avg, v.lastCpuTime)
-                    if #v.cputime_avg > 24 then
-                        table.remove(v.cputime_avg, 1)
+                    usedTime = usedTime + process.lastCpuTime
+                    table.insert(process.cputime_avg, process.lastCpuTime)
+                    if #process.cputime_avg > 24 then
+                        table.remove(process.cputime_avg, 1)
                     end
                     return ret
                 else
-                    v.status = "idle"
-                    v.lastCpuTime = 0
-                    for kk, vv in ipairs(v.processes) do
-                        v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
+                    process.status = "idle"
+                    process.lastCpuTime = 0
+                    for childIndex, childProcess in ipairs(process.processes) do
+                        process.lastCpuTime = process.lastCpuTime + childProcess.lastCpuTime
                     end
-                    usedTime = usedTime + v.lastCpuTime
-                    table.insert(v.cputime_avg, v.lastCpuTime)
-                    if #v.cputime_avg > 24 then
-                        table.remove(v.cputime_avg, 1)
+                    usedTime = usedTime + process.lastCpuTime
+                    table.insert(process.cputime_avg, process.lastCpuTime)
+                    if #process.cputime_avg > 24 then
+                        table.remove(process.cputime_avg, 1)
                     end
                 end
             else
-                local a, b, c, d, e, f, g, aa, ss = computer.pullSignal(0)
-                if a then
-                    table.insert(v.io.signal.queue, { a, b, c, d, e, f, g, aa, ss })
+                if event[1] then
+                    table.insert(process.io.signal.queue, event)
                 end
-                local st = computer.uptime() * 1000
-                api.currentProcess = v
-                local reta = { coroutine.resume(v.thread, table.unpack(v.sysret or v.args)) }
+                local startTime = computer.uptime() * 1000
+                api.currentProcess = process
+                local resumeResult = { coroutine.resume(process.thread, table.unpack(process.sysret or process.args)) }
                 api.currentProcess = nil
-                if not reta[1] then
-                    v.err = reta[2] or "Died"
+                if not resumeResult[1] then
+                    process.err = resumeResult[2] or "Died"
                 end
-                table.remove(reta, 1)
-                --[[if reta[1] ~= nil then
-                    local syscall = table.remove(reta, 1)
-                    local args = reta
-                    kern_log("A syscall has been triggered but that's illegal. The syscall was: " .. syscall.." and the args were: "..table.concat(args, ", ").." called by process "..v.name)
-                    --kern_panic("A syscall has been triggered but that's illegal")
-                    if syscall == "driver" then
-                        if not driverCache[args[1]]--[[ then
-                            local drv = require("driver").load(args[1])
-                            driverCache[args[1]]--[[ = drv
-                        end
-                        if driverCache[args[1]]--[[ then
-                            local fn = driverCache[args[1]]--[[[args[2]]--[[
-                            table.remove(args, 1)
-                            table.remove(args, 1)
-                            local ret = fn(table.unpack(args))
-                            v.sysret = ret
-                        end
-                    end
-                end]]
-                local et = computer.uptime() * 1000
-                v.lastCpuTime = et / 1000 - st / 1000
-                for kk, vv in ipairs(v.processes) do
-                    v.lastCpuTime = v.lastCpuTime + vv.lastCpuTime
+                table.remove(resumeResult, 1)
+                local endTime = computer.uptime() * 1000
+                process.lastCpuTime = endTime / 1000 - startTime / 1000
+                for childIndex, childProcess in ipairs(process.processes) do
+                    process.lastCpuTime = process.lastCpuTime + childProcess.lastCpuTime
                 end
-                usedTime = usedTime + v.lastCpuTime
-                table.insert(v.cputime_avg, v.lastCpuTime)
-                if #v.cputime_avg > 32 then
-                    table.remove(v.cputime_avg, 1)
+                usedTime = usedTime + process.lastCpuTime
+                table.insert(process.cputime_avg, process.lastCpuTime)
+                if #process.cputime_avg > 32 then
+                    table.remove(process.cputime_avg, 1)
                 end
                 return ret
             end
-        elseif coroutine.status(v.thread) == "dead" then
-            v.status = "dying"
+        elseif coroutine.status(process.thread) == "dead" then
+            process.status = "dying"
         end
-    elseif v.status == "dead" then
-        table.insert(toRemoveFromProc, v)
-    elseif v.status == "dying" then
-        v.emit("exit")
-        kern_log("Process with name " .. v.name .. " with pid " .. v.pid .. " has died: " .. v.err)
-        v.io.signal.pull = {}
-        v.io.signal.queue = {}
-        v.err = ""
-        v.lastCpuTime = 0
-        v.status = "dead"
+    elseif process.status == "dead" then
+        table.insert(toRemoveFromProc, process)
+    elseif process.status == "dying" then
+        process.emit("exit")
+        kern_log("Process with name " .. process.name .. " with pid " .. process.pid .. " has died: " .. process.err)
+        process.io.signal.pull = {}
+        process.io.signal.queue = {}
+        process.err = ""
+        process.lastCpuTime = 0
+        process.status = "dead"
     end
     api.currentProcess = nil
 end
 local idleTimeAvg = {}
 
 api.tick = function()
-    local ae = 0
-    local s = computer.uptime()
+    local activeProcessCount = 0
+    local startTickTime = computer.uptime()
     usedTime = 0
 
-    local function ticker(processes)
-        for k, v in ipairs(processes) do
-            ae = ae + 1
-            if #v.processes > 0 then
-                --print(#v.processes)
-                ticker(v.processes)
+    local function ticker(processes, event)
+        for processIndex, currentProcess in ipairs(processes) do
+            activeProcessCount = activeProcessCount + 1
+            if #currentProcess.processes > 0 then
+                ticker(currentProcess.processes, event)
             end
-            local a, e = api.tickProcess(v)
-            if v.lastCpuTime * 1000 > 65 then
+            if event[1] == "ipc_response" and currentProcess.ipc_waiting and event[2] == currentProcess.pid then
+                kern_log("Process manager has received an IPC response for a IPC caller process (its fucking kernel side) "..currentProcess.pid)
+                currentProcess.status = "running"
+                currentProcess.ipc_waiting = false
+                currentProcess.sysret = event[3] -- Response args
+            elseif event[1] == "ipc_response" then
+                kern_log("Process manager has received an out of context IPC call response for a IPC caller process (kernelside) "..currentProcess.pid)
+            end
+            local tickResult, tickError = api.tickProcess(currentProcess, event)
+            if currentProcess.lastCpuTime * 1000 > 65 then
                 --kern_info("Detected process "..v.pid.." ("..v.name..") slowing down system: "..(v.lastCpuTime*1000).." ms CPU time", "warn")
             end
-            --ticker(v.processes)
-            -- print(v.name)
         end
     end
-    ticker(api.processes)
+    local event = {computer.pullSignal(0)}
+    ticker(api.processes, event)
+    
 
     for k, v in ipairs(toRemoveFromProc) do
         if not v.parent then
@@ -448,14 +487,14 @@ api.tick = function()
             end
         end
     end
-    local e = computer.uptime()
+    local endTickTime = computer.uptime()
     usedTime = 0
 
-    for k, v in ipairs(api.processes) do
-        usedTime = usedTime + v.lastCpuTime
+    for processIndex, process in ipairs(api.processes) do
+        usedTime = usedTime + process.lastCpuTime
     end
 
-    unusedTime = e - s
+    unusedTime = endTickTime - startTickTime
     unusedTime = unusedTime - usedTime
     table.insert(idleTimeAvg, unusedTime)
     if #idleTimeAvg > 32 then
@@ -506,7 +545,7 @@ api.autoTick = function()
             os.sleep(0)
             lastTick = 0
         end
-        computer._signal = nil
+        
     end
 end
 

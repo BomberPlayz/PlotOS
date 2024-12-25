@@ -1,6 +1,8 @@
 local ret = {}
 local fs = package.require("fs")
 local reg = package.require("registry")
+local ipc = package.require("ipc")
+local process = package.require("process")
 local cp = component
 ret.loaded = {}
 local drivers = {}
@@ -134,7 +136,7 @@ function newdriver(d, addr)
     dd.getDriverName = d.getName
     dd.getDriverVersion = d.getVersion
     -- wrap all methods in a xpcall so when called and errors, throws a bsod
-    if reg.get("system/security/driver_crash_bsod") == 1 then
+    --[[if reg.get("system/security/driver_crash_bsod") == 1 then
         for k, v in pairs(dd) do
             if type(v) == "function" then
                 dd[k] = function(...)
@@ -146,9 +148,52 @@ function newdriver(d, addr)
                 end
             end
         end
+    end]]
+    
+    --local drv_ipc_id = "driver_"..generate_unique_id()
+
+    --[[for k,v in pairs(dd) do
+        if type(v) == "function" then
+            dd[k] = function(...)
+                if process.currentProcess then
+                    local re = { ipc.call(drv_ipc_id, ...)}
+                    kern_log("Driver method "..k.." returned "..tostring(re[1]))
+                    return table.unpack(re)
+                else
+                    kern_log("Driver method "..k.." called")
+                    return v(...)        
+                end
+            end
+        end
     end
 
+    ipc.register(drv_ipc_id, function(method, ...)
+    kern_log("Driver method "..method.." called")
+        if not dd[method] then
+            return false, "Method not found"
+        end
+        local ok, ret = xpcall(dd[method], function(e) return e, debug.traceback("", 1) end, ...)
+        if not ok then
+            bsod("Failed to call driver method: " .. ret, false, debug.traceback("", 1))
+        end
+        return true, ret
+    end)]]
 
+    --[[ipc.register("driver", function(driver, addr, method, ...)
+        local drv = ret.load(driver, addr)
+        if not drv then
+            return false, "No driver found"
+        end
+        if not drv[method] then
+            return false, "Method not found"
+        end
+        local ok, ret = xpcall(drv[method], function(e) return e, debug.traceback("", 1) end, ...)
+        if not ok then
+            bsod("Failed to call driver method: " .. ret, false, debug.traceback("", 1))
+        end
+        return true, ret
+
+    end)]]
 
 
 
@@ -182,5 +227,7 @@ function ret.load(type, addr)
         end
     end
 end
+
+
 
 return ret

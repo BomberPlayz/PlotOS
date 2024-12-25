@@ -98,6 +98,35 @@ function sec.hasPermission(perm)
     return false
 end
 
+function sec.protect(tab, perms)
+    local process = require("process")
+    local proca = process.getCurrentProcess()
+    if proca then
+        setmetatable(tab, {
+                __index = function(t, k)
+                    local _process = require("process").getCurrentProcess()
+                    if _process then
+                        if _process == proca or _process.security.hasPermission(perms) then
+                            return t[k]
+                        end
+                    else
+                        return t[k]
+                    end
+                end,
+                __newindex = function(t, k, v)
+                    local _process = require("process").getCurrentProcess()
+                    if _process then
+                        if _process == proca or _process.security.hasPermission(perms) then
+                            t[k] = v
+                        end
+                    else
+                        t[k] = v
+                    end
+                end
+            })
+    end
+end
+
 
 
 return sec

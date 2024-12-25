@@ -3,5 +3,8 @@
         "disable": [
             "undefined-global"
         ]
+    },
+    "workspace": {
+        "library": ["lib/"]
     }
 }
