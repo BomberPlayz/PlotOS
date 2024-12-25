@@ -1,4 +1,4 @@
-kern_log("Loading base components")
+printk("Loading base components")
 
 _G.require = package.require
 _G.prt_x = 1

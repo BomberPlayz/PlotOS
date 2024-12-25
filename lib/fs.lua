@@ -129,7 +129,7 @@ function filesystem.realPath(path)
 end
 
 function filesystem.mount(fs, path)
-    kern_log("Mounting " .. tostring(fs) .. " to " .. path)
+    printk("Mounting " .. tostring(fs) .. " to " .. path)
     checkArg(1, fs, "string", "table")
     if type(fs) == "string" then
         fs = filesystem.proxy(fs)
@@ -363,7 +363,7 @@ function filesystem.internal.proxy(filter, options)
 end
 
 function filesystem.umount(fsOrPath)
-    kern_log("Unmounting " .. tostring(fsOrPath))
+    printk("Unmounting " .. tostring(fsOrPath))
     checkArg(1, fsOrPath, "string", "table")
     local real
     local fs
@@ -491,7 +491,7 @@ function filesystem.rename(oldPath, newPath)
 end
 
 function filesystem.open(path, mode)
-    kern_log("Opening file at " .. path .. " with mode " .. (mode or "r"))
+    printk("Opening file at " .. path .. " with mode " .. (mode or "r"))
     checkArg(1, path, "string")
     mode = tostring(mode or "r")
     checkArg(2, mode, "string")

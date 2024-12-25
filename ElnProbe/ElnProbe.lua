@@ -5,7 +5,7 @@ ret.cp = {}
 local cp = ret.cp
 
 ret.compatible = function(adr)
-    kern_log("targonca: " .. tostring(cp))
+    printk("targonca: " .. tostring(cp))
     return cp.proxy(adr).type == "ElnProbe"
 end
 

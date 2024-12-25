@@ -22,7 +22,7 @@ local component = cp
 
 
 ret.new = function(adr)
-    kern_log("Disk!")
+    printk("Disk!")
     local com = ret.cp.proxy(adr)
 
     local drv = {}

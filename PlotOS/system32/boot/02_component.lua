@@ -10,7 +10,7 @@ component.proxy = function(addr)
         if proc.security and proc.security.hasPermission("component.access.*") or proc.security and proc.security.hasPermission("component.access." .. oldcom.proxy(addr).type) then
             return oldcom.proxy(addr)
         elseif proc.security then
-            kern_log("Permission denied to access component by proxy for " .. proc.pid .. " (" .. proc.name .. ")",
+            printk("Permission denied to access component by proxy for " .. proc.pid .. " (" .. proc.name .. ")",
                 "warn")
             return nil, "EPERM", "Permission denied for accessing component"
         else
@@ -27,7 +27,7 @@ component.invoke = function(addr, ...)
         if proc.security and proc.security.hasPermission("component.access.*") or proc.security and proc.security.hasPermission("component.access." .. oldcom.proxy(addr).type) then
             return oldcom.invoke(addr, ...)
         elseif proc.security then
-            kern_log("Permission denied to access component by invoke for " .. proc.pid .. " (" .. proc.name .. ")",
+            printk("Permission denied to access component by invoke for " .. proc.pid .. " (" .. proc.name .. ")",
                 "warn")
             return nil, "EPERM", "Permission denied for accessing component"
         else

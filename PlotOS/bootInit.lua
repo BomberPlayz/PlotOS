@@ -94,7 +94,7 @@ function _G.printk(msg, state)
     local lines = split(string.gsub(msg, "\r?\n", "\n"), "\n")
     if #lines > 1 then
         for _, line in ipairs(lines) do
-            kern_log(line, state)
+            printk(line, state)
         end
         return
     end
@@ -168,40 +168,40 @@ local rclose = fs.close
 ---* component
 ---* gpu
 function _G.kern_panic(reason)
-    kern_log("KERNEL PANIC", "error")
-    kern_log("----------------------------------------------------", "error")
-    kern_log("Panic reason: " .. tostring(reason), "error")
-    kern_log("----------------------------------------------------", "error")
+    printk("KERNEL PANIC", "error")
+    printk("----------------------------------------------------", "error")
+    printk("Panic reason: " .. tostring(reason), "error")
+    printk("----------------------------------------------------", "error")
     
     -- Stack trace
-    kern_log("Stack trace:", "error")
-    kern_log(debug.traceback("", 2), "error")
-    kern_log("----------------------------------------------------", "error")
+    printk("Stack trace:", "error")
+    printk(debug.traceback("", 2), "error")
+    printk("----------------------------------------------------", "error")
 
     -- System info
-    kern_log("System Information:", "error")
-    kern_log(string.format("OS: %s %s-%s", OSNAME, OSVERSION, OSRELEASE), "error")
-    kern_log(string.format("Status: %d, Uptime: %.2fs", OSSTATUS, computer.uptime()), "error")
-    kern_log(string.format("Boot Address: %s", computer.getBootAddress()), "error")
-    kern_log(string.format("Machine Address: %s", computer.address()), "error")
+    printk("System Information:", "error")
+    printk(string.format("OS: %s %s-%s", OSNAME, OSVERSION, OSRELEASE), "error")
+    printk(string.format("Status: %d, Uptime: %.2fs", OSSTATUS, computer.uptime()), "error")
+    printk(string.format("Boot Address: %s", computer.getBootAddress()), "error")
+    printk(string.format("Machine Address: %s", computer.address()), "error")
     
     -- Hardware info
-    kern_log("Hardware Information:", "error")
-    kern_log(string.format("Architecture: %s", computer.getArchitecture()), "error")
-    kern_log(string.format("Memory: %dKB total, %dKB free", 
+    printk("Hardware Information:", "error")
+    printk(string.format("Architecture: %s", computer.getArchitecture()), "error")
+    printk(string.format("Memory: %dKB total, %dKB free", 
         math.floor(computer.totalMemory() / 1024),
         math.floor(computer.freeMemory() / 1024)), "error")
-    kern_log(string.format("GPU Resolution: %dx%d", gpu.maxResolution()), "error")
+    printk(string.format("GPU Resolution: %dx%d", gpu.maxResolution()), "error")
     
     -- Component listing
-    kern_log("Connected Components:", "error")
+    printk("Connected Components:", "error")
     for address, type in component.list() do
-        kern_log(string.format("%s: %s", type, address), "error")
+        printk(string.format("%s: %s", type, address), "error")
     end
     
     -- Environment state
-    kern_log("Environment State:", "error")
-    kern_log(string.format("LOW_MEM: %s, VERY_LOW_MEM: %s", 
+    printk("Environment State:", "error")
+    printk(string.format("LOW_MEM: %s, VERY_LOW_MEM: %s", 
         tostring(_G.LOW_MEM), 
         tostring(_G.VERY_LOW_MEM)), "error")
 
@@ -211,15 +211,15 @@ function _G.kern_panic(reason)
             local handle = component_invoke(computer.getBootAddress(), "open", "/panic.log", "w")
             component_invoke(computer.getBootAddress(), "write", handle, logsToWrite)
             component_invoke(computer.getBootAddress(), "close", handle)
-            kern_log("Logs saved to /panic.log", "error")
+            printk("Logs saved to /panic.log", "error")
         end)
         if not ok then
-            kern_log("Failed to save logs: " .. tostring(err), "error")
+            printk("Failed to save logs: " .. tostring(err), "error")
         end
     end
 
     -- System halt
-    kern_log("System halted - Press Ctrl+Alt+C to reboot", "error")
+    printk("System halted - Press Ctrl+Alt+C to reboot", "error")
     while true do
         pcps()
     end
@@ -243,13 +243,13 @@ function _G.raw_dofile(file)
 
             return table.unpack(result, 2, result.n)
         else
-            kern_log("Error loading file " .. file, "error")
-            kern_log("Error: " .. result[2], "error")
+            printk("Error loading file " .. file, "error")
+            printk("Error: " .. result[2], "error")
             error(result[2] .. " is the error")
         end
     else
-        kern_log("Error loading file " .. file, "error")
-        kern_log("Error: " .. reason, "error")
+        printk("Error loading file " .. file, "error")
+        printk("Error: " .. reason, "error")
 
         error(reason)
     end
@@ -338,7 +338,7 @@ local function initRegistry(reg)
 
 
     if newSystem then
-        kern_log("Creating system registry")
+        printk("Creating system registry")
         reg.set("system/boot/safemode", 0, reg.types.u8, true)
         reg.set("system/security/disable", 0, reg.types.u8, true)
         reg.set("system/processes/attach_security", 1, reg.types.u8, true)
@@ -354,7 +354,7 @@ local function initRegistry(reg)
     end
 
     if newUserRoot then
-        kern_log("Creating user_root registry")
+        printk("Creating user_root registry")
         reg.set("user_root/home", "/users/root", reg.types.string, true)
         reg.set("user_root/username", "root", reg.types.string, true)
         reg.set("user_root/password", "test", reg.types.string, true)
@@ -370,35 +370,35 @@ local function initRegistry(reg)
     local useTmpFilesToSaveEnabled = reg.get("system/registry/use_tmp_files_to_save")
     if useTmpFilesToSaveEnabled == 0 then
         reg.useTmpFilesToSave = false
-        kern_log("Registry use tmp files to save disabled")
+        printk("Registry use tmp files to save disabled")
     elseif useTmpFilesToSaveEnabled == 1 then
         reg.useTmpFilesToSave = true
-        kern_log("Registry use tmp files to save enabled")
+        printk("Registry use tmp files to save enabled")
     else
         if reg.useTmpFilesToSave then
-            kern_log("Registry use tmp files to save enabled")
+            printk("Registry use tmp files to save enabled")
         else
-            kern_log("Registry use tmp files to save disabled")
+            printk("Registry use tmp files to save disabled")
         end
     end
 
     local lowMemEnabled = reg.get("system/low_mem")
     if lowMemEnabled == 1 and _G.LOW_MEM == false then
         _G.LOW_MEM = true
-        kern_log("LOW_MEM mode enabled")
+        printk("LOW_MEM mode enabled")
     end
 end
 
 local function initBoot(type)
     if computer.totalMemory() <= 262144 then
         _G.LOW_MEM = true
-        kern_log("LOW_MEM mode enabled")
+        printk("LOW_MEM mode enabled")
     else
         _G.LOW_MEM = false
-        kern_log("LOW_MEM mode disabled")
+        printk("LOW_MEM mode disabled")
     end
-    kern_log("Hell debug", "debug")
-    kern_log("Loading package managment...")
+    printk("Hell debug", "debug")
+    printk("Loading package managment...")
     local package = raw_dofile("/lib/package.lua")
 
     _G.package = package
@@ -408,11 +408,11 @@ local function initBoot(type)
     package.loaded.filesystem = fs
     package.loaded.package = package
 
-    kern_log("Mounting system drive")
+    printk("Mounting system drive")
     local fs = package.require("fs")
     fs.mount(rawFs, "/")
 
-    kern_log("Initializing registry")
+    printk("Initializing registry")
 
     local reg = package.require("registry")
     initRegistry(reg)
@@ -427,7 +427,7 @@ local function initBoot(type)
             safemode = false
         end
     else
-        kern_log("SAMA::" .. tostring(reg.get("system/boot/safemode")))
+        printk("SAMA::" .. tostring(reg.get("system/boot/safemode")))
 
         if reg.get("system/boot/safemode") == 1 then
             safemode = true
@@ -437,11 +437,11 @@ local function initBoot(type)
     end
 
     if safemode == "true" then
-        kern_log("Safemode is enabled!", "warn")
+        printk("Safemode is enabled!", "warn")
         safemode = true
     end
 
-    kern_log("Loading drivers...")
+    printk("Loading drivers...")
 
     local driver = package.require("driver")
 
@@ -462,10 +462,10 @@ local function initBoot(type)
         end
     end
 
-    kern_log("Doing some user magic...")
+    printk("Doing some user magic...")
     local user = package.require("libuser")
 
-    kern_log("Loading other files...")
+    printk("Loading other files...")
 
     local function rom_invoke(method, ...)
         return component_invoke(computer.getBootAddress(), method, ...)
@@ -480,9 +480,9 @@ local function initBoot(type)
                 table.insert(scripts, path)
             end
         end
-        kern_log("Loaded " .. #scripts .. " boot scripts.")
+        printk("Loaded " .. #scripts .. " boot scripts.")
     else
-        kern_log("Safemode is enabled, loading only critical bootscripts.")
+        printk("Safemode is enabled, loading only critical bootscripts.")
         scripts = { "/PlotOS/system32/boot/00_base.lua", "/PlotOS/system32/boot/05_OS.lua",
             "/PlotOS/system32/boot/80_io.lua", "/PlotOS/system32/safemode_component.lua",
             "/PlotOS/system32/boot/01_overrides.lua", "/PlotOS/system32/safemode_warn.lua",

@@ -13,7 +13,7 @@ function os.sleep(timeout)
 end
 
 function os.setEnv(env, file)
-    kern_log("Enviornment variable " .. env .. " has been set to " .. file)
+    printk("Enviornment variable " .. env .. " has been set to " .. file)
     checkArg(1, env, "string")
     checkArg(1, file, "string")
     os.env[env] = file

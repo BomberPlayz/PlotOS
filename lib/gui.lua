@@ -96,7 +96,7 @@ function gui.isObstructedAt(object, x, y)
     for i = #object.parent.children, object._parentIndex + 1, -1 do
         local loopObj = object.parent.children[i]
         if gui.isInRect(loopObj.gx, loopObj.gy, loopObj.width, loopObj.height, x, y) then
-            kern_log(
+            printk(
                 "Obstructed at " ..
                 x ..
                 ", " ..
@@ -105,7 +105,7 @@ function gui.isObstructedAt(object, x, y)
                 loopObj.gx .. ", " .. loopObj.gy .. "], [objwh: " .. loopObj.width .. ", " .. loopObj.height .. "]",
                 "debug")
             if loopObj == object then
-                kern_log("Obstructed by self", "debug")
+                printk("Obstructed by self", "debug")
             end
             -- local buf = buffering.getMain()
             -- give the object a red outline

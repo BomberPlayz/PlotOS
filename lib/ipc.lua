@@ -84,7 +84,7 @@ function ipc.tick_me(event)
         local args = event[4] or {}
         local handler = ipc.handlers[name]
         if process.currentProcess ~= handler.process then
-            kern_log("Process " .. process.currentProcess.pid .. " is trying to call " .. name .. " but it's owned by " .. handler.process.pid..", dropping")
+            printk("Process " .. process.currentProcess.pid .. " is trying to call " .. name .. " but it's owned by " .. handler.process.pid..", dropping")
             return false
         end
         local ret = table.pack(handler.handler(table.unpack(args, 1, args.n)))

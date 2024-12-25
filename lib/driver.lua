@@ -23,12 +23,12 @@ end
 
 function ret.getDriver(path)
     if not ret.loaded[path] then
-        kern_log("Loading driver " .. path)
+        printk("Loading driver " .. path)
         local driverPath = "/driver/" .. path
         if fs.exists(driverPath) then
             ret.loaded[path] = raw_dofile(driverPath)
             local type = path:match("(.*)/(.*)")
-            kern_log("Driver type: " .. type)
+            printk("Driver type: " .. type)
             ret.loaded[path].type = type
         else
             error('Driver doesn\'t exist')
@@ -157,10 +157,10 @@ function newdriver(d, addr)
             dd[k] = function(...)
                 if process.currentProcess then
                     local re = { ipc.call(drv_ipc_id, ...)}
-                    kern_log("Driver method "..k.." returned "..tostring(re[1]))
+                    printk("Driver method "..k.." returned "..tostring(re[1]))
                     return table.unpack(re)
                 else
-                    kern_log("Driver method "..k.." called")
+                    printk("Driver method "..k.." called")
                     return v(...)        
                 end
             end
@@ -168,7 +168,7 @@ function newdriver(d, addr)
     end
 
     ipc.register(drv_ipc_id, function(method, ...)
-    kern_log("Driver method "..method.." called")
+    printk("Driver method "..method.." called")
         if not dd[method] then
             return false, "Method not found"
         end

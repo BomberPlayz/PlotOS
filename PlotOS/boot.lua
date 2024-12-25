@@ -11,7 +11,7 @@ end
 local function boot(scripts)
     do
         for i = 1, #scripts do
-            kern_log("Running boot script " .. scripts[i])
+            printk("Running boot script " .. scripts[i])
             raw_dofile(scripts[i])
         end
     end

@@ -108,7 +108,7 @@ function event.setInterval(fun, timeout)
     })
 end
 
-kern_log("Loading timeout handler")
+printk("Loading timeout handler")
 proc.new("TimeoutHandler", [[
 
 local event = require("event")
@@ -129,5 +129,5 @@ end
 
 ]])
 
-kern_log("Loading DONE handler")
+printk("Loading DONE handler")
 return event

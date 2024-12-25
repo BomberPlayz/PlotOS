@@ -1,6 +1,6 @@
 local process = require("process")
 local _pullSignal = computer.pullSignal
-kern_log("Overriding function so process can work")
+printk("Overriding function so process can work")
 
 computer._signal = {}
 computer.realPullSignal = _pullSignal

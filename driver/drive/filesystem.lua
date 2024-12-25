@@ -22,7 +22,7 @@ local component = cp
 
 
 ret.new = function(adr)
-    kern_log(adr)
+    printk(adr)
     local com = ret.cp.proxy(adr)
 
 

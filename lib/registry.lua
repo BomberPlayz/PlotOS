@@ -55,7 +55,7 @@ local function lock(file, mode)
 
     file = fs.canonical(file)
 
-    kern_log("Registry: trying to lock "..file.." "..mode, "debug")
+    printk("Registry: trying to lock "..file.." "..mode, "debug")
     if reglocks[file] then
         if mode == "r" then
             while true do
@@ -77,7 +77,7 @@ local function lock(file, mode)
         reglocks[file] = { 0, {} }
     end
 
-    kern_log("Registry: locking "..file.." "..mode, "debug")
+    printk("Registry: locking "..file.." "..mode, "debug")
     local id = reglocks[file][1]
     reglocks[file][2][id] = mode:byte()
     reglocks[file][1] = id + 1
@@ -257,7 +257,7 @@ local function readRegistryFile(file)
     if not fs.exists(file) then return false, "File doesn't exist" end
 
     local id = lock(file, "r")
-    kern_log("Registry: reading "..file)
+    printk("Registry: reading "..file)
 
     local rawH = fs.open(file, "rb")
     local size = fs.size(file)
@@ -330,7 +330,7 @@ local function mountRaw(file, name)
     if regmounts[name] then return false, "Something is already mounted at the specified name" end
     if not fs.exists(file) then return false, "File doesn't exist" end
     
-    kern_log("Registry: Mounted "..file.." to "..name)
+    printk("Registry: Mounted "..file.." to "..name)
     regmounts[name] = {file, readRegistryFile(file)}
 end
 
@@ -383,9 +383,9 @@ function registry.save(name)
     if not mount then return false, "Attempt to save nonexistent mount" end
     local path = mount[1]
     local data = mount[2][2]
-    kern_log("Registry: saving "..name.." to "..path)
-    if not fs.exists(path) then kern_log("Registry: "..path.." no longer exists, saving anyways", "warn") end
-    if fs.isDirectory(path) then kern_log("Registry: "..path.." got turned into a directory, what the fuck", "error"); return false, "Save path is a directory" end
+    printk("Registry: saving "..name.." to "..path)
+    if not fs.exists(path) then printk("Registry: "..path.." no longer exists, saving anyways", "warn") end
+    if fs.isDirectory(path) then printk("Registry: "..path.." got turned into a directory, what the fuck", "error"); return false, "Save path is a directory" end
 
     local lockId = lock(path, "w")
 
@@ -467,7 +467,7 @@ local function readRegistry()
         if not fs.isDirectory(registryPath.."/"..category) and std.str.endswith(category, ".reg") then
             local name = category:sub(1, #category-4)
             local ok, err = registry.mount(registryPath.."/"..category, name)
-            if not ok then kern_log("Failed to load system registry at "..category..": "..(err or "unknown error"), "error") end
+            if not ok then printk("Failed to load system registry at "..category..": "..(err or "unknown error"), "error") end
         end
     end
 end
@@ -479,17 +479,17 @@ function saveFullRegistry()
     end
 end
 
---kern_log("Loading registry...")
+--printk("Loading registry...")
 --readRegistry()
---kern_log("Registry data: "..package.require("json").encode(regdata), "debug")
---kern_log("Registry data: DISABLED FOR MEMORY OPTIMIZATION", "debug")
---kern_log("Registry loaded!")
+--printk("Registry data: "..package.require("json").encode(regdata), "debug")
+--printk("Registry data: DISABLED FOR MEMORY OPTIMIZATION", "debug")
+--printk("Registry loaded!")
 
 
 
 
 function registry.set(path, value, dataType, noSave)
-    kern_log(
+    printk(
         "registry.set(\"" ..
         table.concat({ tostring(path), tostring(value), tostring(dataType), tostring(noSave) }, ", ") .. "\") called",
         "debug")
@@ -499,7 +499,7 @@ function registry.set(path, value, dataType, noSave)
     local current = regdata[category]
 
     if not current then
-        kern_log("Registry: nothing is mounted at /" .. tostring(category), "warn")
+        printk("Registry: nothing is mounted at /" .. tostring(category), "warn")
         return false, "path_not_mounted"
     end
 
@@ -511,7 +511,7 @@ function registry.set(path, value, dataType, noSave)
             if current[pathv][1] == types.collection then
                 current = current[pathv][2]
             else
-                kern_log("Invalid path, encountered non collection on position "..i, "warn")
+                printk("Invalid path, encountered non collection on position "..i, "warn")
                 return false, "non_collection_in_path"
             end
         else
@@ -547,14 +547,14 @@ local function registry_get_table_parser(tbl)
 end
 
 function registry.get(path) -- TODO: add type filter
-    kern_log("registry.get(\"" .. table.concat({ tostring(path), tostring(getType) }, ", ") .. "\") called", "debug")
+    printk("registry.get(\"" .. table.concat({ tostring(path), tostring(getType) }, ", ") .. "\") called", "debug")
     local parsed = parsePath(path)
     local path = parsed.path
     local category = parsed.category
     local current = regdata[category]
 
     if not current then
-        kern_log("Registry: nothing is mounted at /" .. tostring(category), "error")
+        printk("Registry: nothing is mounted at /" .. tostring(category), "error")
         error("Nothing is mounted at /"..tostring(category))
     end
 
@@ -566,7 +566,7 @@ function registry.get(path) -- TODO: add type filter
             if current[pathv][1] == types.collection then
                 current = current[pathv][2]
             else
-                kern_log("Invalid path, encountered non collection on position "..i, "warn")
+                printk("Invalid path, encountered non collection on position "..i, "warn")
                 return nil, "non_collection_in_path"
             end
         else

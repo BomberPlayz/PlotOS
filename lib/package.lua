@@ -3,33 +3,55 @@ local fs = rawFs
 local booted = false
 package.path = "/lib"
 package.loaded = {}
+package.state = {}
+local function load_file(path, file)
+  if not fs.exists(path) then
+    return nil
+  end
+  
+  package.state[file] = 1
+  local loader = booted and dofile or raw_dofile
+  local result = loader(path)
+  package.state[file] = 2
+  
+  return result
+end
+
 function package.require(file)
-  if not package.loaded[file] then
-    local pac
-    if fs.exists(package.path.."/"..file..".lua") then
-      if not booted then
-        pac = raw_dofile(package.path.."/"..file..".lua")
-      else
-        pac = dofile(package.path.."/"..file..".lua")
-      end
-    else
-      if fs.exists(file..".lua") then
-        if not booted then
-          pac = raw_dofile(file..".lua")
-        else
-          pac = dofile(file..".lua")
-        end
-        else
-        error("file "..file..".lua does not exist")
-      end
-    end
-
-
-    package.loaded[file] = pac
-
+  -- Return cached module if already loaded
+  if package.loaded[file] then
+    return package.loaded[file]
   end
 
-  return package.loaded[file]
+  -- Check for circular dependencies
+  if package.state[file] == 1 then
+    error("circular require detected")
+  end
+
+  -- Initialize state
+  package.state[file] = 0
+
+  -- Try to load from package path first, then current directory
+  local paths = {
+    package.path.."/"..file..".lua",
+    file..".lua"
+  }
+
+  local pac
+  for _, path in ipairs(paths) do
+    pac = load_file(path, file)
+    if pac then
+      break
+    end
+  end
+
+  if not pac then
+    package.state[file] = 0
+    error("file "..file..".lua does not exist")
+  end
+
+  package.loaded[file] = pac
+  return pac
 end
 
 

@@ -199,11 +199,11 @@ api.new = function(name, code, env, perms, inService, ...)
     ret.io.screen = {
 
     }
-    kern_log("load gpu drv")
+    printk("load gpu drv")
     local gpu = package.require("driver").load("gpu")
-    kern_log("loaded gpu drv")
+    printk("loaded gpu drv")
     ret.io.screen.width, ret.io.screen.height = gpu.getResolution()
-    kern_log("got resolution")
+    printk("got resolution")
     ret.io.screen.offset = { x = 0, y = 0 }
     ret.io.stdin = stream.new()
     ret.io.stdout = stream.new()
@@ -239,7 +239,7 @@ api.new = function(name, code, env, perms, inService, ...)
         end
         allcputime = allcputime + api.getAvgIdleTime()
         --return ret:getAvgCpuTime() > 0 and (ret:getAvgCpuTime() / allcputime * 100) or 0
-        --kern_log(ret:getAvgCpuTime())
+        --printk(ret:getAvgCpuTime())
         return allcputime > 0 and (math.min((ret:getAvgCpuTime()*1000)/50, 1)) or 0
     end
 
@@ -267,7 +267,7 @@ api.new = function(name, code, env, perms, inService, ...)
         table.insert(api.processes, ret)
     end
 
-    kern_log("New process named " .. ret.name .. " with pid" .. ret.pid .. " created")
+    printk("New process named " .. ret.name .. " with pid" .. ret.pid .. " created")
 
     return ret
 end
@@ -335,7 +335,7 @@ api.tickProcess = function(process, event)
                         if resumeResult[1] ~= nil then
                             local syscall = table.remove(resumeResult, 1)
                             local args = resumeResult
-                            kern_log(syscall)
+                            printk(syscall)
                             if syscall == "ipc_call" then
                                 local handler_name = args[1]
                                 local handler_args = args[2]
@@ -364,10 +364,10 @@ api.tickProcess = function(process, event)
                                     
                                 end
                             elseif syscall == "ipc_response" then
-                                kern_log("Process manager has received an IPC call response for a IPC caller process "..process.pid)
+                                printk("Process manager has received an IPC call response for a IPC caller process "..process.pid)
                                 for _, waiting_proc in ipairs(api.processes) do
                                     if waiting_proc.pid == args[1] then
-                                        kern_log("Process manager has found a waiting process for IPC response")
+                                        printk("Process manager has found a waiting process for IPC response")
                                         waiting_proc.status = "running"
                                         waiting_proc.sysret = table.pack(table.unpack(args, 2))
                                         break
@@ -430,7 +430,7 @@ api.tickProcess = function(process, event)
         table.insert(toRemoveFromProc, process)
     elseif process.status == "dying" then
         process.emit("exit")
-        kern_log("Process with name " .. process.name .. " with pid " .. process.pid .. " has died: " .. process.err)
+        printk("Process with name " .. process.name .. " with pid " .. process.pid .. " has died: " .. process.err)
         process.io.signal.pull = {}
         process.io.signal.queue = {}
         process.err = ""
@@ -453,12 +453,12 @@ api.tick = function()
                 ticker(currentProcess.processes, event)
             end
             if event[1] == "ipc_response" and currentProcess.ipc_waiting and event[2] == currentProcess.pid then
-                kern_log("Process manager has received an IPC response for a IPC caller process (its fucking kernel side) "..currentProcess.pid)
+                printk("Process manager has received an IPC response for a IPC caller process (its fucking kernel side) "..currentProcess.pid)
                 currentProcess.status = "running"
                 currentProcess.ipc_waiting = false
                 currentProcess.sysret = event[3] -- Response args
             elseif event[1] == "ipc_response" then
-                kern_log("Process manager has received an out of context IPC call response for a IPC caller process (kernelside) "..currentProcess.pid)
+                printk("Process manager has received an out of context IPC call response for a IPC caller process (kernelside) "..currentProcess.pid)
             end
             local tickResult, tickError = api.tickProcess(currentProcess, event)
             if currentProcess.lastCpuTime * 1000 > 65 then

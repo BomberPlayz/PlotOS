@@ -19,7 +19,7 @@ function libpart.getProxy(disk)
         --print(meta)
         -- unpack
         local magic, version, partcount = string.unpack("<c7HH", meta)
-        kern_log("Partition magic: " .. magic .. " with version " .. version .. " and " .. partcount .. " partitions")
+        printk("Partition magic: " .. magic .. " with version " .. version .. " and " .. partcount .. " partitions")
         if magic ~= "POSPART" then
             return nil
         end
@@ -27,7 +27,7 @@ function libpart.getProxy(disk)
         for i = 1, partcount do
             local partname, partstart, partsize = string.unpack("<c20I4I4", meta, 12 + (i - 1) * 28)
             partname = partname:sub(1, partname:find("\0") - 1)
-            kern_log("Partition " .. i .. ": " .. partname .. " at " .. partstart .. " with size " .. partsize)
+            printk("Partition " .. i .. ": " .. partname .. " at " .. partstart .. " with size " .. partsize)
             partitions[partname] = { start = partstart, size = partsize, name = partname }
         end
 
@@ -81,7 +81,7 @@ function libpart.getProxy(disk)
         sector = sector:sub(1, writepos - 1) .. data .. sector:sub(writepos + 28)
         -- partition count
         sector = sector:sub(1, 9) .. string.pack("<H", partcount) .. sector:sub(12)
-        --kern_log(sector)
+        --printk(sector)
         disk.writeSector(2, sector)
     end
 

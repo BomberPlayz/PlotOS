@@ -76,10 +76,10 @@ end
 
 -- find everything in /bin that contains require("newgui")
 local fs = require("fs")
-kern_log("Loading apps")
+printk("Loading apps")
 local files = fs.list("/bin")
 for file in files do
-    kern_log("Checking " .. file)
+    printk("Checking " .. file)
     if fs.isDirectory("/bin/" .. file) then
     else
         local data = fs.open("/bin/" .. file, "r")
