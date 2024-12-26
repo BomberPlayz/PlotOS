@@ -1,6 +1,7 @@
 local io = {}
 local std = require("stdlib")
 local gpu = require("driver").load("gpu")
+local proc = require("process")
 local w,h = gpu.getResolution()
 
 
@@ -165,109 +166,298 @@ setmetatable(io.cursor, {
 
 -- END CURSOR TERRITORY
 
-function io.read()
-  local txt = ""
-  local pusy = 0
-  io.cursor.setPosition(prt_x,prt_y)
-  io.cursor.setBlink(true)
+function io.read(options)
+  options = options or {}
+  assert(type(options) == "table", "options must be a table or nil")
+  assert(not options.history or type(options.history) == "table", "history must be a table or nil")
+  assert(not options.completionCallback or type(options.completionCallback) == "function", "completionCallback must be a function or nil")
+
+  local histcpy = {}
+  local histIndex
+  if options.history then
+    for i = 1, #options.history do
+      histcpy[i] = options.history[i]
+    end
+  end
+
+  local readBuffer = ""
+  local readBufferBak = ""
+  local ucur = 1
+  local offset = 1
+  local cursor = io.cursor
+
+  if cursor.y >= h then
+    gpu.copy(1,2,w,h-1,0,-1)
+    gpu.fill(1,1,w,1," ")
+    cursor.y = cursor.y - 1
+  end
+
+  cursor.setBlink(true)
+
+  local w, h
+
+  local proc = require("process")
+  if proc.isProcess() then
+    local p = proc.currentProcess
+    w, h = p.io.screen.width, p.io.screen.height
+  else
+    w, h = gpu.getResolution()
+  end
+
+  w = w - 1
+
+  local beginX = cursor.x
+
+  local function draw(offset)
+    local s = readBuffer:sub(offset, offset + w - beginX)
+    s = s .. string.rep(" ", w - beginX - #s)
+    gpu.set(beginX,cursor.y,s)
+    --io.write(s)
+  end
+
   while true do
-    local a,b,bb,c,d = computer.pullSignal(0.5)
-    local proc = require("process")
-    if proc.isProcess() then
-      local p = proc.currentProcess
-      w,h = p.io.screen.width, p.io.screen.height
-    else
-      w,h = gpu.getResolution()
-    end
-    local ox,oy = 0,0
-    if proc.isProcess() then
-      local p = proc.currentProcess
-      ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
-    else
-
-    end
-
-    if a == "key_down" then
-      if bb == 13 then
-        if pusy > 0 then
-          cursor.x = cursor.x+1
+    local ev = {computer.pullSignal(0.5)}
+    if ev[1] == "key_down" then
+      local _, _, char, code = table.unpack(ev)
+      
+      if char == 13 then -- CR
+        cursor.setBlink(false)
+        draw(1)
+        cursor.setPosition(1, cursor.y + 1)
+        if cursor.y >= h then
+          gpu.copy(1,2,w,h-1,0,-1)
+          gpu.fill(1,1,w,1," ")
+          cursor.y = cursor.y - 1
         end
-        io.cursor.setBlink(true)
-        io.writeline("")
-        io.cursor.setPosition(prt_x,prt_y)
-        return txt
-      elseif bb == 8 then
-        if pusy > 0 then
-          pusy = pusy-1
-          txt = string.sub(txt,1,(string.len(txt)-1))
-          gpu.fill(prt_x-1,prt_y,1,1, " ")
-          prt_x = prt_x-1
-          --[[cursor.x = prt_x+1
+
+        return readBuffer
+      elseif char == 8 then -- Backspace
+        if #readBuffer > 0 and ucur > 1 then
+          readBuffer = readBuffer:sub(1, ucur-2) .. readBuffer:sub(ucur)
+          if ucur-offset < 0 then offset = offset - 1 end
+          ucur = ucur - 1
           cursor.setBlink(false)
-          cursor.x = prt_x
-          cursor.setBlink(true)]]
-          io.cursor.setPosition(prt_x,prt_y)
-          io.cursor.setBlink(true)
+          cursor.x = beginX+ucur-offset
 
-          if txt == nil then txt = "" end
+          draw(offset)
+          cursor.setBlink(true)
         end
-      elseif bb == 127 then --i dont think we supported del, even before
+      elseif char == 127 then -- Delete
+        if #readBuffer > 0 and ucur <= #readBuffer then
+          readBuffer = readBuffer:sub(1, ucur-1) .. readBuffer:sub(ucur+1)
+          -- dont think we need to touch offset here?
+          cursor.setBlink(false)
+          cursor.x = beginX+ucur-offset
 
-      elseif bb > 31 then
-        txt = txt..string.char(bb)
-        pusy = pusy+1
-        --[[
-        cursor.x = prt_x+1
-        cursor.y = prt_y
-        IO.CURSOR.setBlink(true)
+          draw(offset)
+          cursor.setBlink(true)
+        end
+      elseif char == 9 then -- Tab
+        if options.completionCallback then
+          local ucurChar = readBuffer:sub(ucur, ucur)
+          if ucurChar == " " or ucurChar == "" then
+            local completion = options.completionCallback(readBuffer:sub(1, ucur-1))
+            if completion and type("completion") == "string" then
+              readBuffer = readBuffer:sub(1, ucur-1) .. completion .. readBuffer:sub(ucur)
+              ucur = ucur + #completion
+              offset = offset + math.max(0,(ucur-offset)-(w-beginX))
+              cursor.setBlink(false)
+              cursor.x = beginX+ucur-offset
 
-        cursor.x = prt_x
-        cursor.y = prt_y
-        cursor.setBlink(false)]]
+              draw(offset)
+              cursor.setBlink(true)
+            end
+          end
+        end
+      elseif code == 203 then -- left arrow
+        if ucur > 1 then
+          ucur = ucur - 1
+          if ucur-offset < 0 then offset = offset - 1 end
+          cursor.setBlink(false)
+          cursor.x = beginX+ucur-offset
 
-        io.cursor.setPosition(prt_x+1,prt_y)
-        io.cursor.setBlink(true)
+          draw(offset)
+          cursor.setBlink(true)
+        end
+      elseif code == 205 then -- right arrow
+        if ucur <= #readBuffer then
+          ucur = ucur + 1
+          if ucur-offset > w-beginX then offset = offset + 1 end
+          cursor.setBlink(false)
+          cursor.x = beginX+ucur-offset
 
-        io.write(string.char(bb))
-        --cursor.x = prt_x+1
-        io.cursor.setPosition(prt_x, prt_y)
+          draw(offset)
+          cursor.setBlink(true)
+        end
+      elseif code == 200 then -- up arrow
+        if histIndex and histIndex > 1 then
+          histcpy[histIndex] = readBuffer
+          histIndex = histIndex - 1
+          readBuffer = histcpy[histIndex]
+
+          offset = math.max(1, #readBuffer-(w-beginX)+1)
+          ucur = #readBuffer+1
+          cursor.setBlink(false)
+          cursor.x = beginX+ucur-offset
+
+          draw(offset)
+          cursor.setBlink(true)
+        elseif not histIndex and #histcpy > 0 then
+          histIndex = #histcpy
+          readBufferBak = readBuffer
+          readBuffer = histcpy[histIndex]
+
+          offset = math.max(1, #readBuffer-(w-beginX)+1)
+          ucur = #readBuffer+1
+          cursor.setBlink(false)
+          cursor.x = beginX+ucur-offset
+
+          draw(offset)
+          cursor.setBlink(true)
+        end
+      elseif code == 208 then -- down arrow
+        if histIndex then
+          if histIndex == #histcpy then
+            histcpy[histIndex] = readBuffer
+            readBuffer = readBufferBak
+            histIndex = nil
+          else
+            histcpy[histIndex] = readBuffer
+            histIndex = histIndex + 1
+            readBuffer = histcpy[histIndex]
+          end
+          offset = math.max(1, #readBuffer-(w-beginX)+1)
+          ucur = #readBuffer+1
+          cursor.setBlink(false)
+          cursor.x = beginX+ucur-offset
+
+          draw(offset)
+          cursor.setBlink(true)
+        end
+      elseif code == 199 then -- home
+        offset = 1
+        ucur = 1
+        cursor.setBlink(false)
+        cursor.x = beginX+ucur-offset
+
+        draw(offset)
+        cursor.setBlink(true)
+      elseif code == 207 then -- end
+        offset = math.max(1, #readBuffer-(w-beginX)+1)
+        ucur = #readBuffer+1
+        cursor.setBlink(false)
+        cursor.x = beginX+ucur-offset
+
+        draw(offset)
+        cursor.setBlink(true)
+      elseif char > 31 then -- printable character
+        readBuffer = readBuffer:sub(1, ucur-1) .. string.char(char) .. readBuffer:sub(ucur)
+        ucur = ucur + 1
+        if ucur-offset > w-beginX then offset = offset + 1 end
+        cursor.setBlink(false)
+        cursor.x = beginX+ucur-offset
+
+        draw(offset)
+        cursor.setBlink(true)
       end
-    elseif bb == nil then
-      if io.cursor.blink then
-        io.cursor.setBlink(false)
+    elseif ev[1] == "clipboard" then
+      readBuffer = readBuffer:sub(1, ucur-1) .. ev[3] .. readBuffer:sub(ucur)
+      ucur = ucur + #ev[3]
+      offset = offset + math.max(0,(ucur-offset)-(w-beginX))
+      cursor.setBlink(false)
+      cursor.x = beginX+ucur-offset
+
+      draw(offset)
+      cursor.setBlink(true)
+    elseif ev[1] == nil then
+      if cursor.blink then
+        cursor.setBlink(false)
       else
-        io.cursor.setBlink(true)
+        cursor.setBlink(true)
       end
     end
   end
 end
 
-function io.write(txt)
-  local proc = require("process")
+local function write(txt)
+  local w,h
   if proc.isProcess() then
     local p = proc.currentProcess
     w,h = p.io.screen.width, p.io.screen.height
   else
     w,h = gpu.getResolution()
   end
+  
   local ox,oy = 0,0
   if proc.isProcess() then
     local p = proc.currentProcess
     ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
-  else
+  end
 
+  while true do
+    local chunkSize = w - io.cursor.x
+    local chunk = txt:sub(1, chunkSize)    
+    txt = txt:sub(chunkSize+1)
+    
+    gpu.set(io.cursor.x, io.cursor.y, chunk)
+    
+    io.cursor.setPosition(io.cursor.x + #chunk, io.cursor.y)
+    if io.cursor.x == w then
+      io.cursor.setPosition(1, io.cursor.y + 1)
+    end
+    if io.cursor.y == h then
+      gpu.copy(1+ox,2+oy,w,h,0,-1)
+      gpu.fill(1+ox,h+oy,w,1," ")
+      io.cursor.y = io.cursor.y - 1
+    end
+
+    if txt == "" then break end
   end
-  if prt_x > w then
-    prt_x = 1
-    prt_y = prt_y + 1
+end
+
+local function splitNewlines(str)
+  local res = {}
+  local x = ""
+  for i=1, #str do
+    local char = str:sub(i,i)
+    if char ~= "\n" then
+      x = x .. char
+    else
+      if #x > 0 then
+        table.insert(res, x)
+        x = ""
+      end
+      table.insert(res, "\n")
+    end
   end
-  if prt_y > h then
-    prt_y = prt_y - 1
-    gpu.copy(1+ox,2+oy,w,h,0,-1)
-    gpu.fill(1+ox,h+oy,w,1," ")
+
+  if #x > 0 then
+    table.insert(res, x)
   end
-  gpu.set(prt_x,prt_y,txt)
-  prt_x = prt_x+string.len(txt)
+
+  return res
+end
+
+function io.write(str)
+  local ox,oy = 0,0
+  if proc.isProcess() then
+    local p = proc.currentProcess
+    ox,oy = p.io.screen.offset.x,p.io.screen.offset.y
+  end
+
+  for _,v in ipairs(splitNewlines(str)) do
+    if v == "\n" then
+      io.cursor.y = io.cursor.y + 1
+      io.cursor.x = 1
+      if io.cursor.y == h then
+        gpu.copy(1+ox,2+oy,w,h,0,-1)
+        gpu.fill(1+ox,h+oy,w,1," ")
+        io.cursor.y = io.cursor.y - 1
+      end 
+    else
+      write(v)
+    end
+  end
 end
 
 function io.setScreenSize(w, h)
@@ -279,42 +469,9 @@ function io.setScreenSize(w, h)
   end
 end
 
-function io.writeline(txt)
-  local dat = std.str.split(txt, "\n")
-  local proc = require("process")
-  local w, h, ox, oy
 
-  if proc.isProcess() then
-    local p = proc.currentProcess
-    w, h = p.io.screen.width, p.io.screen.height
-    ox, oy = p.io.screen.offset.x, p.io.screen.offset.y
-  else
-    w, h = gpu.getResolution()
-  end
-
-  for i = 1, #dat do
-    io.write(dat[i])
-
-    if prt_y == h - 1 then
-      gpu.copy(1 + ox, 1 + oy, w, h, 0, -1)
-      gpu.fill(1 + ox, h + oy, w, 1, " ")
-    else
-      prt_y = prt_y + 1
-    end
-
-    prt_x = 1
-  end
-
-  if #dat == 0 then
-    if prt_y == h - 1 then
-      gpu.copy(1 + ox, 1 + oy, w, h, 0, -1)
-      gpu.fill(1 + ox, h + oy, w, 1, " ")
-    else
-      prt_y = prt_y + 1
-    end
-
-    prt_x = 1
-  end
+function io.writeline(str)
+  io.write(str.."\n")
 end
 
 _G.io = io
