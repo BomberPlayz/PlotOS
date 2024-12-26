@@ -1,0 +1,1803 @@
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98c41a2900 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver internet/internet.lua
+[    0.60] [    OK] Driver type: internet
+[    0.65] [    OK] Loading driver gpu/gpu.lua
+[    0.65] [    OK] Driver type: gpu
+[    0.70] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.70] [    OK] Driver type: rdrive
+[    0.75] [    OK] Loading driver printer/openprinter.lua
+[    0.75] [    OK] Driver type: printer
+[    0.80] [    OK] Loading driver drive/filesystem.lua
+[    0.80] [    OK] Driver type: drive
+[    0.85] [    OK] Loading driver sample/sample.lua
+[    0.85] [    OK] Driver type: sample
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Opening file at /logs.log with mode w
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.95] [    OK] Loading base components
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    1.00] [ DEBUG] registry.get("/system/shell, nil") called
+[    1.00] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    1.00] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    1.00] [    OK] Enviornment variable PATH has been set to /bin
+[    1.00] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.05] [    OK] Loading timeout handler
+[    1.05] [    OK] load gpu drv
+[    1.35] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.35] [    OK] loaded gpu drv
+[    1.35] [    OK] got resolution
+[    1.35] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.35] [    OK] New process named TimeoutHandler with pid1 created
+[    1.35] [    OK] Loading DONE handler
+[    1.35] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.35] [    OK] load gpu drv
+[    1.65] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.65] [    OK] loaded gpu drv
+[    1.65] [    OK] got resolution
+[    1.65] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.65] [    OK] New process named eventlistener-component_added-995328067 with pid2 created
+[    1.65] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.65] [    OK] load gpu drv
+[    1.95] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.95] [    OK] loaded gpu drv
+[    1.95] [    OK] got resolution
+[    1.95] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.95] [    OK] New process named eventlistener-component_removed-663438803 with pid3 created
+[    1.95] [    OK] load gpu drv
+[    2.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.25] [    OK] loaded gpu drv
+[    2.25] [    OK] got resolution
+[    2.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.25] [    OK] New process named ComponentAdder with pid4 created
+[    2.25] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    2.55] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.55] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    2.55] [    OK] Starting shell...
+[    2.55] [    OK] Opening file at /lib/screen.lua with mode r
+[    2.90] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.90] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    3.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.20] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    3.20] [    OK] Opening file at /bin/shell.lua with mode r
+[    3.25] [    OK] load gpu drv
+[    3.55] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.55] [    OK] loaded gpu drv
+[    3.55] [    OK] got resolution
+[    3.55] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.55] [    OK] New process named Shell with pid5 created
+[    3.55] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    3.60] [    OK] Opening file at /bin/journald.lua with mode r
+[    3.60] [    OK] load gpu drv
+[    3.90] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.90] [    OK] loaded gpu drv
+[    3.90] [    OK] got resolution
+[    3.90] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.90] [    OK] New process named JournalD with pid6 created
+[    3.90] [    OK] Opening file at /autorun.lua with mode r
+[    3.95] [    OK] Enviornment variable computerName has been set to PlotOS
+[    3.95] [    OK] Enviornment variable user has been set to guest
+[    4.25] [    OK] Opening file at /journal.log with mode a
+[    4.25] [    OK] Journal daemon started
+[    4.25] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98c4190b90 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver sample/sample.lua
+[    0.60] [    OK] Driver type: sample
+[    0.65] [    OK] Loading driver internet/internet.lua
+[    0.65] [    OK] Driver type: internet
+[    0.70] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.70] [    OK] Driver type: rdrive
+[    0.75] [    OK] Loading driver printer/openprinter.lua
+[    0.75] [    OK] Driver type: printer
+[    0.80] [    OK] Loading driver drive/filesystem.lua
+[    0.80] [    OK] Driver type: drive
+[    0.85] [    OK] Loading driver gpu/gpu.lua
+[    0.85] [    OK] Driver type: gpu
+[    0.85] [    OK] Doing some user magic...
+[    0.90] [    OK] Loading other files...
+[    0.95] [    OK] Loaded 8 boot scripts.
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.95] [    OK] Loading base components
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    1.00] [    OK] Overriding function so process can work
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    1.00] [ DEBUG] registry.get("/system/shell, nil") called
+[    1.00] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    1.00] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    1.00] [    OK] Enviornment variable PATH has been set to /bin
+[    1.00] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.05] [    OK] Loading timeout handler
+[    1.05] [    OK] load gpu drv
+[    1.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.05] [    OK] loaded gpu drv
+[    1.05] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named TimeoutHandler with pid1 created
+[    1.10] [    OK] Loading DONE handler
+[    1.10] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named eventlistener-component_added-650479667 with pid2 created
+[    1.10] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.15] [    OK] load gpu drv
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] loaded gpu drv
+[    1.15] [    OK] got resolution
+[    1.15] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.15] [    OK] New process named eventlistener-component_removed-537353865 with pid3 created
+[    1.15] [    OK] load gpu drv
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] loaded gpu drv
+[    1.15] [    OK] got resolution
+[    1.15] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.15] [    OK] New process named ComponentAdder with pid4 created
+[    1.15] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.20] [    OK] Starting shell...
+[    1.20] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.25] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.30] [    OK] load gpu drv
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] loaded gpu drv
+[    1.30] [    OK] got resolution
+[    1.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.30] [    OK] New process named Shell with pid5 created
+[    1.30] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.30] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.30] [    OK] load gpu drv
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] loaded gpu drv
+[    1.30] [    OK] got resolution
+[    1.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.30] [    OK] New process named journald with pid6 created
+[    1.30] [    OK] Opening file at /autorun.lua with mode r
+[    1.35] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.35] [    OK] Enviornment variable user has been set to guest
+[    1.35] [    OK] Opening file at /journal.log with mode a
+[    1.35] [    OK] Journal daemon started
+[    1.35] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98bc1e7cd0 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver internet/internet.lua
+[    0.60] [    OK] Driver type: internet
+[    0.65] [    OK] Loading driver printer/openprinter.lua
+[    0.65] [    OK] Driver type: printer
+[    0.70] [    OK] Loading driver drive/filesystem.lua
+[    0.70] [    OK] Driver type: drive
+[    0.75] [    OK] Loading driver gpu/gpu.lua
+[    0.75] [    OK] Driver type: gpu
+[    0.80] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.80] [    OK] Driver type: rdrive
+[    0.85] [    OK] Loading driver sample/sample.lua
+[    0.85] [    OK] Driver type: sample
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named TimeoutHandler with pid1 created
+[    1.10] [    OK] Loading DONE handler
+[    1.10] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] loaded gpu drv
+[    1.20] [    OK] got resolution
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [    OK] New process named eventlistener-component_added-678417483 with pid2 created
+[    1.20] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.20] [    OK] load gpu drv
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] loaded gpu drv
+[    1.30] [    OK] got resolution
+[    1.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.30] [    OK] New process named eventlistener-component_removed-190088479 with pid3 created
+[    1.30] [    OK] load gpu drv
+[    1.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.40] [    OK] loaded gpu drv
+[    1.40] [    OK] got resolution
+[    1.40] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.40] [    OK] New process named ComponentAdder with pid4 created
+[    1.40] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.50] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.50] [    OK] Starting shell...
+[    1.50] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.60] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.60] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.70] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.70] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.70] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.75] [    OK] load gpu drv
+[    1.85] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.85] [    OK] loaded gpu drv
+[    1.85] [    OK] got resolution
+[    1.85] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.85] [    OK] New process named Shell with pid5 created
+[    1.85] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.85] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.85] [    OK] load gpu drv
+[    1.95] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.95] [    OK] loaded gpu drv
+[    1.95] [    OK] got resolution
+[    1.95] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.95] [    OK] New process named journald with pid6 created
+[    1.95] [    OK] Opening file at /autorun.lua with mode r
+[    1.95] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.95] [    OK] Enviornment variable user has been set to guest
+[    2.05] [    OK] Opening file at /journal.log with mode a
+[    2.05] [    OK] Journal daemon started
+[    2.05] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f988008eed0 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver drive/filesystem.lua
+[    0.60] [    OK] Driver type: drive
+[    0.65] [    OK] Loading driver sample/sample.lua
+[    0.65] [    OK] Driver type: sample
+[    0.70] [    OK] Loading driver printer/openprinter.lua
+[    0.70] [    OK] Driver type: printer
+[    0.75] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.75] [    OK] Driver type: rdrive
+[    0.80] [    OK] Loading driver gpu/gpu.lua
+[    0.80] [    OK] Driver type: gpu
+[    0.85] [    OK] Loading driver internet/internet.lua
+[    0.85] [    OK] Driver type: internet
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] loaded gpu drv
+[    1.20] [    OK] got resolution
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [    OK] New process named TimeoutHandler with pid1 created
+[    1.20] [    OK] Loading DONE handler
+[    1.20] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.20] [    OK] load gpu drv
+[    1.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.40] [    OK] loaded gpu drv
+[    1.40] [    OK] got resolution
+[    1.40] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.40] [    OK] New process named eventlistener-component_added-11530334 with pid2 created
+[    1.40] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.40] [    OK] load gpu drv
+[    1.60] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.60] [    OK] loaded gpu drv
+[    1.60] [    OK] got resolution
+[    1.60] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.60] [    OK] New process named eventlistener-component_removed-771072003 with pid3 created
+[    1.60] [    OK] load gpu drv
+[    1.80] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.80] [    OK] loaded gpu drv
+[    1.80] [    OK] got resolution
+[    1.80] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.80] [    OK] New process named ComponentAdder with pid4 created
+[    1.80] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    2.00] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.00] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    2.00] [    OK] Starting shell...
+[    2.00] [    OK] Opening file at /lib/screen.lua with mode r
+[    2.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.20] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.40] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.40] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.45] [    OK] load gpu drv
+[    2.65] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.65] [    OK] loaded gpu drv
+[    2.65] [    OK] got resolution
+[    2.65] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.65] [    OK] New process named Shell with pid5 created
+[    2.65] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    2.65] [    OK] Opening file at /bin/journald.lua with mode r
+[    2.65] [    OK] load gpu drv
+[    2.85] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.85] [    OK] loaded gpu drv
+[    2.85] [    OK] got resolution
+[    2.85] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.85] [    OK] New process named journald with pid6 created
+[    2.85] [    OK] Opening file at /autorun.lua with mode r
+[    2.85] [    OK] Enviornment variable computerName has been set to PlotOS
+[    2.85] [    OK] Enviornment variable user has been set to guest
+[    3.05] [    OK] Opening file at /journal.log with mode a
+[    3.05] [    OK] Journal daemon started
+[    3.05] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98c4184c10 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver printer/openprinter.lua
+[    0.60] [    OK] Driver type: printer
+[    0.65] [    OK] Loading driver internet/internet.lua
+[    0.65] [    OK] Driver type: internet
+[    0.70] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.70] [    OK] Driver type: rdrive
+[    0.75] [    OK] Loading driver gpu/gpu.lua
+[    0.75] [    OK] Driver type: gpu
+[    0.80] [    OK] Loading driver sample/sample.lua
+[    0.80] [    OK] Driver type: sample
+[    0.85] [    OK] Loading driver drive/filesystem.lua
+[    0.85] [    OK] Driver type: drive
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named TimeoutHandler with pid1 created
+[    1.10] [    OK] Loading DONE handler
+[    1.10] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] loaded gpu drv
+[    1.20] [    OK] got resolution
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [    OK] New process named eventlistener-component_added-466559265 with pid2 created
+[    1.20] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.20] [    OK] load gpu drv
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] loaded gpu drv
+[    1.30] [    OK] got resolution
+[    1.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.30] [    OK] New process named eventlistener-component_removed-827033303 with pid3 created
+[    1.30] [    OK] load gpu drv
+[    1.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.40] [    OK] loaded gpu drv
+[    1.40] [    OK] got resolution
+[    1.40] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.40] [    OK] New process named ComponentAdder with pid4 created
+[    1.40] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.50] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.50] [    OK] Starting shell...
+[    1.50] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.60] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.60] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.70] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.70] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.70] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.75] [    OK] load gpu drv
+[    1.85] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.85] [    OK] loaded gpu drv
+[    1.85] [    OK] got resolution
+[    1.85] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.85] [    OK] New process named Shell with pid5 created
+[    1.85] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.85] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.85] [    OK] load gpu drv
+[    1.95] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.95] [    OK] loaded gpu drv
+[    1.95] [    OK] got resolution
+[    1.95] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.95] [    OK] New process named journald with pid6 created
+[    1.95] [    OK] Opening file at /autorun.lua with mode r
+[    1.95] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.95] [    OK] Enviornment variable user has been set to guest
+[    2.05] [    OK] Opening file at /journal.log with mode a
+[    2.05] [    OK] Journal daemon started
+[    2.05] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98bc1020e0 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver drive/filesystem.lua
+[    0.60] [    OK] Driver type: drive
+[    0.65] [    OK] Loading driver sample/sample.lua
+[    0.65] [    OK] Driver type: sample
+[    0.70] [    OK] Loading driver internet/internet.lua
+[    0.70] [    OK] Driver type: internet
+[    0.75] [    OK] Loading driver printer/openprinter.lua
+[    0.75] [    OK] Driver type: printer
+[    0.80] [    OK] Loading driver gpu/gpu.lua
+[    0.80] [    OK] Driver type: gpu
+[    0.85] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.85] [    OK] Driver type: rdrive
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] loaded gpu drv
+[    1.15] [    OK] got resolution
+[    1.15] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.15] [    OK] New process named TimeoutHandler with pid1 created
+[    1.15] [    OK] Loading DONE handler
+[    1.15] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.15] [    OK] load gpu drv
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] loaded gpu drv
+[    1.30] [    OK] got resolution
+[    1.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.30] [    OK] New process named eventlistener-component_added-601858352 with pid2 created
+[    1.30] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.30] [    OK] load gpu drv
+[    1.45] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.45] [    OK] loaded gpu drv
+[    1.45] [    OK] got resolution
+[    1.45] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.45] [    OK] New process named eventlistener-component_removed-620706306 with pid3 created
+[    1.45] [    OK] load gpu drv
+[    1.60] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.60] [    OK] loaded gpu drv
+[    1.60] [    OK] got resolution
+[    1.60] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.60] [    OK] New process named ComponentAdder with pid4 created
+[    1.60] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.75] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.75] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.75] [    OK] Starting shell...
+[    1.75] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.90] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.90] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.05] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.05] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.10] [    OK] load gpu drv
+[    2.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.25] [    OK] loaded gpu drv
+[    2.25] [    OK] got resolution
+[    2.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.25] [    OK] New process named Shell with pid5 created
+[    2.25] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    2.25] [    OK] Opening file at /bin/journald.lua with mode r
+[    2.25] [    OK] load gpu drv
+[    2.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.40] [    OK] loaded gpu drv
+[    2.40] [    OK] got resolution
+[    2.40] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.40] [    OK] New process named journald with pid6 created
+[    2.40] [    OK] Opening file at /autorun.lua with mode r
+[    2.40] [    OK] Enviornment variable computerName has been set to PlotOS
+[    2.40] [    OK] Enviornment variable user has been set to guest
+[    2.55] [    OK] Opening file at /journal.log with mode a
+[    2.55] [    OK] Journal daemon started
+[    2.55] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98c441cd30 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver printer/openprinter.lua
+[    0.60] [    OK] Driver type: printer
+[    0.65] [    OK] Loading driver sample/sample.lua
+[    0.65] [    OK] Driver type: sample
+[    0.70] [    OK] Loading driver gpu/gpu.lua
+[    0.70] [    OK] Driver type: gpu
+[    0.75] [    OK] Loading driver drive/filesystem.lua
+[    0.75] [    OK] Driver type: drive
+[    0.80] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.80] [    OK] Driver type: rdrive
+[    0.85] [    OK] Loading driver internet/internet.lua
+[    0.85] [    OK] Driver type: internet
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] loaded gpu drv
+[    1.20] [    OK] got resolution
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [    OK] New process named TimeoutHandler with pid1 created
+[    1.20] [    OK] Loading DONE handler
+[    1.20] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.20] [    OK] load gpu drv
+[    1.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.40] [    OK] loaded gpu drv
+[    1.40] [    OK] got resolution
+[    1.40] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.40] [    OK] New process named eventlistener-component_added-880427692 with pid2 created
+[    1.40] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.40] [    OK] load gpu drv
+[    1.60] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.60] [    OK] loaded gpu drv
+[    1.60] [    OK] got resolution
+[    1.60] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.60] [    OK] New process named eventlistener-component_removed-119103039 with pid3 created
+[    1.60] [    OK] load gpu drv
+[    1.80] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.80] [    OK] loaded gpu drv
+[    1.80] [    OK] got resolution
+[    1.80] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.80] [    OK] New process named ComponentAdder with pid4 created
+[    1.80] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    2.00] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.00] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    2.00] [    OK] Starting shell...
+[    2.00] [    OK] Opening file at /lib/screen.lua with mode r
+[    2.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.20] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.40] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.40] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.45] [    OK] load gpu drv
+[    2.65] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.65] [    OK] loaded gpu drv
+[    2.65] [    OK] got resolution
+[    2.65] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.65] [    OK] New process named Shell with pid5 created
+[    2.65] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    2.65] [    OK] Opening file at /bin/journald.lua with mode r
+[    2.65] [    OK] load gpu drv
+[    2.85] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.85] [    OK] loaded gpu drv
+[    2.85] [    OK] got resolution
+[    2.85] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.85] [    OK] New process named journald with pid6 created
+[    2.85] [    OK] Opening file at /autorun.lua with mode r
+[    2.85] [    OK] Enviornment variable computerName has been set to PlotOS
+[    2.85] [    OK] Enviornment variable user has been set to guest
+[    3.05] [    OK] Opening file at /journal.log with mode a
+[    3.05] [    OK] Journal daemon started
+[    3.05] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98c41afe50 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver gpu/gpu.lua
+[    0.60] [    OK] Driver type: gpu
+[    0.65] [    OK] Loading driver sample/sample.lua
+[    0.65] [    OK] Driver type: sample
+[    0.70] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.70] [    OK] Driver type: rdrive
+[    0.75] [    OK] Loading driver internet/internet.lua
+[    0.75] [    OK] Driver type: internet
+[    0.80] [    OK] Loading driver drive/filesystem.lua
+[    0.80] [    OK] Driver type: drive
+[    0.85] [    OK] Loading driver printer/openprinter.lua
+[    0.85] [    OK] Driver type: printer
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.05] [    OK] loaded gpu drv
+[    1.05] [    OK] got resolution
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [    OK] New process named TimeoutHandler with pid1 created
+[    1.05] [    OK] Loading DONE handler
+[    1.05] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.05] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named eventlistener-component_added-934116573 with pid2 created
+[    1.10] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] loaded gpu drv
+[    1.15] [    OK] got resolution
+[    1.15] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.15] [    OK] New process named eventlistener-component_removed-641055522 with pid3 created
+[    1.15] [    OK] load gpu drv
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] loaded gpu drv
+[    1.20] [    OK] got resolution
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [    OK] New process named ComponentAdder with pid4 created
+[    1.20] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.25] [    OK] Starting shell...
+[    1.25] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.35] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.35] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.35] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.40] [    OK] load gpu drv
+[    1.45] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.45] [    OK] loaded gpu drv
+[    1.45] [    OK] got resolution
+[    1.45] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.45] [    OK] New process named Shell with pid5 created
+[    1.45] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.45] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.45] [    OK] load gpu drv
+[    1.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.50] [    OK] loaded gpu drv
+[    1.50] [    OK] got resolution
+[    1.50] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.50] [    OK] New process named journald with pid6 created
+[    1.50] [    OK] Opening file at /autorun.lua with mode r
+[    1.50] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.50] [    OK] Enviornment variable user has been set to guest
+[    1.55] [    OK] Opening file at /journal.log with mode a
+[    1.55] [    OK] Journal daemon started
+[    1.55] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f9880080a30 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver sample/sample.lua
+[    0.60] [    OK] Driver type: sample
+[    0.65] [    OK] Loading driver gpu/gpu.lua
+[    0.65] [    OK] Driver type: gpu
+[    0.70] [    OK] Loading driver drive/filesystem.lua
+[    0.70] [    OK] Driver type: drive
+[    0.75] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.75] [    OK] Driver type: rdrive
+[    0.80] [    OK] Loading driver internet/internet.lua
+[    0.80] [    OK] Driver type: internet
+[    0.85] [    OK] Loading driver printer/openprinter.lua
+[    0.85] [    OK] Driver type: printer
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.05] [    OK] loaded gpu drv
+[    1.05] [    OK] got resolution
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [    OK] New process named TimeoutHandler with pid1 created
+[    1.05] [    OK] Loading DONE handler
+[    1.05] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.05] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named eventlistener-component_added-553314237 with pid2 created
+[    1.10] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] loaded gpu drv
+[    1.15] [    OK] got resolution
+[    1.15] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.15] [    OK] New process named eventlistener-component_removed-543482504 with pid3 created
+[    1.15] [    OK] load gpu drv
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] loaded gpu drv
+[    1.20] [    OK] got resolution
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [    OK] New process named ComponentAdder with pid4 created
+[    1.20] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.25] [    OK] Starting shell...
+[    1.25] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.35] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.35] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.35] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.40] [    OK] load gpu drv
+[    1.45] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.45] [    OK] loaded gpu drv
+[    1.45] [    OK] got resolution
+[    1.45] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.45] [    OK] New process named Shell with pid5 created
+[    1.45] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.45] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.45] [    OK] load gpu drv
+[    1.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.50] [    OK] loaded gpu drv
+[    1.50] [    OK] got resolution
+[    1.50] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.50] [    OK] New process named journald with pid6 created
+[    1.50] [    OK] Opening file at /autorun.lua with mode r
+[    1.50] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.50] [    OK] Enviornment variable user has been set to guest
+[    1.55] [    OK] Opening file at /journal.log with mode a
+[    1.55] [    OK] Journal daemon started
+[    1.55] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98c417bcc0 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver sample/sample.lua
+[    0.60] [    OK] Driver type: sample
+[    0.65] [    OK] Loading driver drive/filesystem.lua
+[    0.65] [    OK] Driver type: drive
+[    0.70] [    OK] Loading driver internet/internet.lua
+[    0.70] [    OK] Driver type: internet
+[    0.75] [    OK] Loading driver printer/openprinter.lua
+[    0.75] [    OK] Driver type: printer
+[    0.80] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.80] [    OK] Driver type: rdrive
+[    0.85] [    OK] Loading driver gpu/gpu.lua
+[    0.85] [    OK] Driver type: gpu
+[    0.85] [    OK] Doing some user magic...
+[    0.90] [    OK] Loading other files...
+[    0.95] [    OK] Loaded 8 boot scripts.
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.95] [    OK] Loading base components
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    1.00] [    OK] Overriding function so process can work
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    1.00] [ DEBUG] registry.get("/system/shell, nil") called
+[    1.00] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    1.00] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    1.00] [    OK] Enviornment variable PATH has been set to /bin
+[    1.00] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.05] [    OK] Loading timeout handler
+[    1.05] [    OK] load gpu drv
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] loaded gpu drv
+[    1.25] [    OK] got resolution
+[    1.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.25] [    OK] New process named TimeoutHandler with pid1 created
+[    1.25] [    OK] Loading DONE handler
+[    1.25] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.25] [    OK] load gpu drv
+[    1.45] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.45] [    OK] loaded gpu drv
+[    1.45] [    OK] got resolution
+[    1.45] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.45] [    OK] New process named eventlistener-component_added-668983385 with pid2 created
+[    1.45] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.45] [    OK] load gpu drv
+[    1.65] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.65] [    OK] loaded gpu drv
+[    1.65] [    OK] got resolution
+[    1.65] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.65] [    OK] New process named eventlistener-component_removed-951573704 with pid3 created
+[    1.65] [    OK] load gpu drv
+[    1.85] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.85] [    OK] loaded gpu drv
+[    1.85] [    OK] got resolution
+[    1.85] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.85] [    OK] New process named ComponentAdder with pid4 created
+[    1.85] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    2.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.05] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    2.05] [    OK] Starting shell...
+[    2.05] [    OK] Opening file at /lib/screen.lua with mode r
+[    2.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.25] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.45] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.45] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.45] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.50] [    OK] load gpu drv
+[    2.70] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.70] [    OK] loaded gpu drv
+[    2.70] [    OK] got resolution
+[    2.70] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.70] [    OK] New process named Shell with pid5 created
+[    2.70] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    2.70] [    OK] Opening file at /bin/journald.lua with mode r
+[    2.70] [    OK] load gpu drv
+[    2.90] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.90] [    OK] loaded gpu drv
+[    2.90] [    OK] got resolution
+[    2.90] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.90] [    OK] New process named journald with pid6 created
+[    2.90] [    OK] Opening file at /autorun.lua with mode r
+[    2.90] [    OK] Enviornment variable computerName has been set to PlotOS
+[    2.90] [    OK] Enviornment variable user has been set to guest
+[    3.10] [    OK] Opening file at /journal.log with mode a
+[    3.10] [    OK] Journal daemon started
+[    3.10] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98bc11ba40 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver gpu/gpu.lua
+[    0.60] [    OK] Driver type: gpu
+[    0.65] [    OK] Loading driver internet/internet.lua
+[    0.65] [    OK] Driver type: internet
+[    0.70] [    OK] Loading driver drive/filesystem.lua
+[    0.70] [    OK] Driver type: drive
+[    0.75] [    OK] Loading driver printer/openprinter.lua
+[    0.75] [    OK] Driver type: printer
+[    0.80] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.80] [    OK] Driver type: rdrive
+[    0.85] [    OK] Loading driver sample/sample.lua
+[    0.85] [    OK] Driver type: sample
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.00] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.00] [    OK] loaded gpu drv
+[    1.00] [    OK] got resolution
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [    OK] New process named TimeoutHandler with pid1 created
+[    1.05] [    OK] Loading DONE handler
+[    1.05] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.05] [    OK] load gpu drv
+[    1.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.05] [    OK] loaded gpu drv
+[    1.05] [    OK] got resolution
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [    OK] New process named eventlistener-component_added-312718178 with pid2 created
+[    1.05] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named eventlistener-component_removed-642712107 with pid3 created
+[    1.10] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named ComponentAdder with pid4 created
+[    1.10] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.15] [    OK] Starting shell...
+[    1.15] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.20] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.25] [    OK] load gpu drv
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] loaded gpu drv
+[    1.25] [    OK] got resolution
+[    1.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.25] [    OK] New process named Shell with pid5 created
+[    1.25] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.25] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.25] [    OK] load gpu drv
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] loaded gpu drv
+[    1.25] [    OK] got resolution
+[    1.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.25] [    OK] New process named journald with pid6 created
+[    1.25] [    OK] Opening file at /autorun.lua with mode r
+[    1.30] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.30] [    OK] Enviornment variable user has been set to guest
+[    1.30] [    OK] Opening file at /journal.log with mode a
+[    1.30] [    OK] Journal daemon started
+[    1.30] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f987c008620 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver printer/openprinter.lua
+[    0.60] [    OK] Driver type: printer
+[    0.65] [    OK] Loading driver gpu/gpu.lua
+[    0.65] [    OK] Driver type: gpu
+[    0.70] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.70] [    OK] Driver type: rdrive
+[    0.75] [    OK] Loading driver drive/filesystem.lua
+[    0.75] [    OK] Driver type: drive
+[    0.80] [    OK] Loading driver sample/sample.lua
+[    0.80] [    OK] Driver type: sample
+[    0.85] [    OK] Loading driver internet/internet.lua
+[    0.85] [    OK] Driver type: internet
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.05] [    OK] loaded gpu drv
+[    1.05] [    OK] got resolution
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [    OK] New process named TimeoutHandler with pid1 created
+[    1.05] [    OK] Loading DONE handler
+[    1.05] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.05] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named eventlistener-component_added-36514181 with pid2 created
+[    1.10] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] loaded gpu drv
+[    1.15] [    OK] got resolution
+[    1.15] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.15] [    OK] New process named eventlistener-component_removed-773553501 with pid3 created
+[    1.15] [    OK] load gpu drv
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] loaded gpu drv
+[    1.20] [    OK] got resolution
+[    1.20] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.20] [    OK] New process named ComponentAdder with pid4 created
+[    1.20] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.25] [    OK] Starting shell...
+[    1.25] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.35] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.35] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.35] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.40] [    OK] load gpu drv
+[    1.45] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.45] [    OK] loaded gpu drv
+[    1.45] [    OK] got resolution
+[    1.45] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.45] [    OK] New process named Shell with pid5 created
+[    1.45] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.45] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.45] [    OK] load gpu drv
+[    1.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.50] [    OK] loaded gpu drv
+[    1.50] [    OK] got resolution
+[    1.50] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.50] [    OK] New process named journald with pid6 created
+[    1.50] [    OK] Opening file at /autorun.lua with mode r
+[    1.50] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.50] [    OK] Enviornment variable user has been set to guest
+[    1.55] [    OK] Opening file at /journal.log with mode a
+[    1.55] [    OK] Journal daemon started
+[    1.55] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98bc0e8d70 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver drive/filesystem.lua
+[    0.60] [    OK] Driver type: drive
+[    0.65] [    OK] Loading driver internet/internet.lua
+[    0.65] [    OK] Driver type: internet
+[    0.70] [    OK] Loading driver gpu/gpu.lua
+[    0.70] [    OK] Driver type: gpu
+[    0.75] [    OK] Loading driver sample/sample.lua
+[    0.75] [    OK] Driver type: sample
+[    0.80] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.80] [    OK] Driver type: rdrive
+[    0.85] [    OK] Loading driver printer/openprinter.lua
+[    0.85] [    OK] Driver type: printer
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] loaded gpu drv
+[    1.15] [    OK] got resolution
+[    1.15] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.15] [    OK] New process named TimeoutHandler with pid1 created
+[    1.15] [    OK] Loading DONE handler
+[    1.15] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.15] [    OK] load gpu drv
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] loaded gpu drv
+[    1.30] [    OK] got resolution
+[    1.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.30] [    OK] New process named eventlistener-component_added-684767265 with pid2 created
+[    1.30] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.30] [    OK] load gpu drv
+[    1.45] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.45] [    OK] loaded gpu drv
+[    1.45] [    OK] got resolution
+[    1.45] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.45] [    OK] New process named eventlistener-component_removed-329122756 with pid3 created
+[    1.45] [    OK] load gpu drv
+[    1.60] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.60] [    OK] loaded gpu drv
+[    1.60] [    OK] got resolution
+[    1.60] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.60] [    OK] New process named ComponentAdder with pid4 created
+[    1.60] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.75] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.75] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.75] [    OK] Starting shell...
+[    1.75] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.90] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.90] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.05] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.05] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.10] [    OK] load gpu drv
+[    2.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.25] [    OK] loaded gpu drv
+[    2.25] [    OK] got resolution
+[    2.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.25] [    OK] New process named Shell with pid5 created
+[    2.25] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    2.25] [    OK] Opening file at /bin/journald.lua with mode r
+[    2.25] [    OK] load gpu drv
+[    2.40] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.40] [    OK] loaded gpu drv
+[    2.40] [    OK] got resolution
+[    2.40] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.40] [    OK] New process named journald with pid6 created
+[    2.40] [    OK] Opening file at /autorun.lua with mode r
+[    2.40] [    OK] Enviornment variable computerName has been set to PlotOS
+[    2.40] [    OK] Enviornment variable user has been set to guest
+[    2.55] [    OK] Opening file at /journal.log with mode a
+[    2.55] [    OK] Journal daemon started
+[    2.55] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f988008a2b0 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver internet/internet.lua
+[    0.60] [    OK] Driver type: internet
+[    0.65] [    OK] Loading driver gpu/gpu.lua
+[    0.65] [    OK] Driver type: gpu
+[    0.70] [    OK] Loading driver sample/sample.lua
+[    0.70] [    OK] Driver type: sample
+[    0.75] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.75] [    OK] Driver type: rdrive
+[    0.80] [    OK] Loading driver drive/filesystem.lua
+[    0.80] [    OK] Driver type: drive
+[    0.85] [    OK] Loading driver printer/openprinter.lua
+[    0.85] [    OK] Driver type: printer
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.00] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.00] [    OK] loaded gpu drv
+[    1.00] [    OK] got resolution
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [    OK] New process named TimeoutHandler with pid1 created
+[    1.05] [    OK] Loading DONE handler
+[    1.05] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.05] [    OK] load gpu drv
+[    1.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.05] [    OK] loaded gpu drv
+[    1.05] [    OK] got resolution
+[    1.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.05] [    OK] New process named eventlistener-component_added-696887348 with pid2 created
+[    1.05] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.10] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named eventlistener-component_removed-175055164 with pid3 created
+[    1.10] [    OK] load gpu drv
+[    1.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.10] [    OK] loaded gpu drv
+[    1.10] [    OK] got resolution
+[    1.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.10] [    OK] New process named ComponentAdder with pid4 created
+[    1.10] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    1.15] [    OK] Starting shell...
+[    1.15] [    OK] Opening file at /lib/screen.lua with mode r
+[    1.15] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.15] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    1.20] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.20] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    1.20] [    OK] Opening file at /bin/shell.lua with mode r
+[    1.25] [    OK] load gpu drv
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] loaded gpu drv
+[    1.25] [    OK] got resolution
+[    1.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.25] [    OK] New process named Shell with pid5 created
+[    1.25] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    1.25] [    OK] Opening file at /bin/journald.lua with mode r
+[    1.25] [    OK] load gpu drv
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] loaded gpu drv
+[    1.25] [    OK] got resolution
+[    1.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.25] [    OK] New process named journald with pid6 created
+[    1.25] [    OK] Opening file at /autorun.lua with mode r
+[    1.30] [    OK] Enviornment variable computerName has been set to PlotOS
+[    1.30] [    OK] Enviornment variable user has been set to guest
+[    1.30] [    OK] Opening file at /journal.log with mode a
+[    1.30] [    OK] Journal daemon started
+[    1.30] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98c40100a0 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver printer/openprinter.lua
+[    0.60] [    OK] Driver type: printer
+[    0.65] [    OK] Loading driver sample/sample.lua
+[    0.65] [    OK] Driver type: sample
+[    0.70] [    OK] Loading driver gpu/gpu.lua
+[    0.70] [    OK] Driver type: gpu
+[    0.75] [    OK] Loading driver internet/internet.lua
+[    0.75] [    OK] Driver type: internet
+[    0.80] [    OK] Loading driver drive/filesystem.lua
+[    0.80] [    OK] Driver type: drive
+[    0.85] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.85] [    OK] Driver type: rdrive
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] loaded gpu drv
+[    1.25] [    OK] got resolution
+[    1.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.25] [    OK] New process named TimeoutHandler with pid1 created
+[    1.25] [    OK] Loading DONE handler
+[    1.25] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.25] [    OK] load gpu drv
+[    1.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.50] [    OK] loaded gpu drv
+[    1.50] [    OK] got resolution
+[    1.50] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.50] [    OK] New process named eventlistener-component_added-526020345 with pid2 created
+[    1.50] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.50] [    OK] load gpu drv
+[    1.75] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.75] [    OK] loaded gpu drv
+[    1.75] [    OK] got resolution
+[    1.75] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.75] [    OK] New process named eventlistener-component_removed-203406271 with pid3 created
+[    1.75] [    OK] load gpu drv
+[    2.00] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.00] [    OK] loaded gpu drv
+[    2.00] [    OK] got resolution
+[    2.00] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.00] [    OK] New process named ComponentAdder with pid4 created
+[    2.00] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    2.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.25] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    2.25] [    OK] Starting shell...
+[    2.25] [    OK] Opening file at /lib/screen.lua with mode r
+[    2.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.50] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.75] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.75] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.75] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.80] [    OK] load gpu drv
+[    3.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.05] [    OK] loaded gpu drv
+[    3.05] [    OK] got resolution
+[    3.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.05] [    OK] New process named Shell with pid5 created
+[    3.05] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    3.05] [    OK] Opening file at /bin/journald.lua with mode r
+[    3.05] [    OK] load gpu drv
+[    3.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.30] [    OK] loaded gpu drv
+[    3.30] [    OK] got resolution
+[    3.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.30] [    OK] New process named journald with pid6 created
+[    3.30] [    OK] Opening file at /autorun.lua with mode r
+[    3.30] [    OK] Enviornment variable computerName has been set to PlotOS
+[    3.30] [    OK] Enviornment variable user has been set to guest
+[    3.55] [    OK] Opening file at /journal.log with mode a
+[    3.55] [    OK] Journal daemon started
+[    3.55] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f98bc0f2e70 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver printer/openprinter.lua
+[    0.60] [    OK] Driver type: printer
+[    0.65] [    OK] Loading driver internet/internet.lua
+[    0.65] [    OK] Driver type: internet
+[    0.70] [    OK] Loading driver drive/filesystem.lua
+[    0.70] [    OK] Driver type: drive
+[    0.75] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.75] [    OK] Driver type: rdrive
+[    0.80] [    OK] Loading driver sample/sample.lua
+[    0.80] [    OK] Driver type: sample
+[    0.85] [    OK] Loading driver gpu/gpu.lua
+[    0.85] [    OK] Driver type: gpu
+[    0.85] [    OK] Doing some user magic...
+[    0.90] [    OK] Loading other files...
+[    0.95] [    OK] Loaded 8 boot scripts.
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.95] [    OK] Loading base components
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    1.00] [    OK] Overriding function so process can work
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    1.00] [ DEBUG] registry.get("/system/shell, nil") called
+[    1.00] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    1.00] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    1.00] [    OK] Enviornment variable PATH has been set to /bin
+[    1.00] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    1.00] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.05] [    OK] Loading timeout handler
+[    1.05] [    OK] load gpu drv
+[    1.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.30] [    OK] loaded gpu drv
+[    1.30] [    OK] got resolution
+[    1.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.30] [    OK] New process named TimeoutHandler with pid1 created
+[    1.30] [    OK] Loading DONE handler
+[    1.30] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.30] [    OK] load gpu drv
+[    1.55] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.55] [    OK] loaded gpu drv
+[    1.55] [    OK] got resolution
+[    1.55] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.55] [    OK] New process named eventlistener-component_added-126502966 with pid2 created
+[    1.55] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.55] [    OK] load gpu drv
+[    1.80] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.80] [    OK] loaded gpu drv
+[    1.80] [    OK] got resolution
+[    1.80] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.80] [    OK] New process named eventlistener-component_removed-951288478 with pid3 created
+[    1.80] [    OK] load gpu drv
+[    2.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.05] [    OK] loaded gpu drv
+[    2.05] [    OK] got resolution
+[    2.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.05] [    OK] New process named ComponentAdder with pid4 created
+[    2.05] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    2.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.30] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    2.30] [    OK] Starting shell...
+[    2.30] [    OK] Opening file at /lib/screen.lua with mode r
+[    2.55] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.55] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.80] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.80] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.80] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.85] [    OK] load gpu drv
+[    3.10] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.10] [    OK] loaded gpu drv
+[    3.10] [    OK] got resolution
+[    3.10] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.10] [    OK] New process named Shell with pid5 created
+[    3.10] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    3.10] [    OK] Opening file at /bin/journald.lua with mode r
+[    3.10] [    OK] load gpu drv
+[    3.35] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.35] [    OK] loaded gpu drv
+[    3.35] [    OK] got resolution
+[    3.35] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.35] [    OK] New process named journald with pid6 created
+[    3.35] [    OK] Opening file at /autorun.lua with mode r
+[    3.35] [    OK] Enviornment variable computerName has been set to PlotOS
+[    3.35] [    OK] Enviornment variable user has been set to guest
+[    3.60] [    OK] Opening file at /journal.log with mode a
+[    3.60] [    OK] Journal daemon started
+[    3.60] [    OK] Process with name ComponentAdder with pid 4 has died: 
+[    0.05] [    OK] LOW_MEM mode disabled
+[    0.05] [ DEBUG] Hell debug
+[    0.05] [    OK] Loading package managment...
+[    0.05] [    OK] Mounting system drive
+[    0.15] [    OK] Mounting table: 0x7f987c053620 to /
+[    0.15] [    OK] Initializing registry
+[    0.25] [    OK] Registry: Mounted /PlotOS/system32/registry/system.reg to system
+[    0.25] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/system.reg r
+[    0.25] [ DEBUG] Registry: locking /PlotOS/system32/registry/system.reg r
+[    0.25] [    OK] Registry: reading /PlotOS/system32/registry/system.reg
+[    0.25] [    OK] Opening file at /PlotOS/system32/registry/system.reg with mode rb
+[    0.30] [    OK] Registry: Mounted /PlotOS/system32/registry/user_root.reg to user_root
+[    0.30] [ DEBUG] Registry: trying to lock /PlotOS/system32/registry/user_root.reg r
+[    0.30] [ DEBUG] Registry: locking /PlotOS/system32/registry/user_root.reg r
+[    0.30] [    OK] Registry: reading /PlotOS/system32/registry/user_root.reg
+[    0.30] [    OK] Opening file at /PlotOS/system32/registry/user_root.reg with mode rb
+[    0.30] [ DEBUG] registry.get("system/registry/use_tmp_files_to_save, nil") called
+[    0.30] [    OK] Registry use tmp files to save enabled
+[    0.30] [ DEBUG] registry.get("system/low_mem, nil") called
+[    0.30] [    OK] Loading drivers...
+[    0.60] [    OK] Loading driver printer/openprinter.lua
+[    0.60] [    OK] Driver type: printer
+[    0.65] [    OK] Loading driver gpu/gpu.lua
+[    0.65] [    OK] Driver type: gpu
+[    0.70] [    OK] Loading driver sample/sample.lua
+[    0.70] [    OK] Driver type: sample
+[    0.75] [    OK] Loading driver internet/internet.lua
+[    0.75] [    OK] Driver type: internet
+[    0.80] [    OK] Loading driver drive/filesystem.lua
+[    0.80] [    OK] Driver type: drive
+[    0.85] [    OK] Loading driver rdrive/drive_generic.lua
+[    0.85] [    OK] Driver type: rdrive
+[    0.85] [    OK] Doing some user magic...
+[    0.85] [    OK] Loading other files...
+[    0.90] [    OK] Loaded 8 boot scripts.
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/001_devfs.lua
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/00_base.lua
+[    0.90] [    OK] Loading base components
+[    0.90] [    OK] Running boot script PlotOS/system32/boot/01_overrides.lua
+[    0.95] [    OK] Overriding function so process can work
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/02_component.lua
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/05_OS.lua
+[    0.95] [ DEBUG] registry.get("/system/shell, nil") called
+[    0.95] [    OK] Enviornment variable SHELL has been set to /bin/shell.lua
+[    0.95] [    OK] Enviornment variable BOOT has been set to /sys/system32
+[    0.95] [    OK] Enviornment variable PATH has been set to /bin
+[    0.95] [    OK] Enviornment variable LIB_PATH has been set to /lib
+[    0.95] [    OK] Running boot script PlotOS/system32/boot/10_filesystem.lua
+[    1.00] [    OK] Loading timeout handler
+[    1.00] [    OK] load gpu drv
+[    1.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.25] [    OK] loaded gpu drv
+[    1.25] [    OK] got resolution
+[    1.25] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.25] [    OK] New process named TimeoutHandler with pid1 created
+[    1.25] [    OK] Loading DONE handler
+[    1.25] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.25] [    OK] load gpu drv
+[    1.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.50] [    OK] loaded gpu drv
+[    1.50] [    OK] got resolution
+[    1.50] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.50] [    OK] New process named eventlistener-component_added-293009720 with pid2 created
+[    1.50] [    OK] Opening file at /lib/event_listener.lua with mode r
+[    1.50] [    OK] load gpu drv
+[    1.75] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    1.75] [    OK] loaded gpu drv
+[    1.75] [    OK] got resolution
+[    1.75] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    1.75] [    OK] New process named eventlistener-component_removed-810692102 with pid3 created
+[    1.75] [    OK] load gpu drv
+[    2.00] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.00] [    OK] loaded gpu drv
+[    2.00] [    OK] got resolution
+[    2.00] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    2.00] [    OK] New process named ComponentAdder with pid4 created
+[    2.00] [    OK] Running boot script PlotOS/system32/boot/80_io.lua
+[    2.25] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.25] [    OK] Running boot script PlotOS/system32/boot/999_run_shell.lua
+[    2.25] [    OK] Starting shell...
+[    2.25] [    OK] Opening file at /lib/screen.lua with mode r
+[    2.50] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.50] [    OK] Opening file at /PlotOS/cursor.lua with mode r
+[    2.75] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    2.75] [    OK] Opening file at /PlotOS/systemAutorun.lua with mode r
+[    2.75] [    OK] Opening file at /bin/shell.lua with mode r
+[    2.80] [    OK] load gpu drv
+[    3.05] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.05] [    OK] loaded gpu drv
+[    3.05] [    OK] got resolution
+[    3.05] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.05] [    OK] New process named Shell with pid5 created
+[    3.05] [    OK] Opening file at /bin/cursorblink.lua with mode r
+[    3.05] [    OK] Opening file at /bin/journald.lua with mode r
+[    3.05] [    OK] load gpu drv
+[    3.30] [    OK] A driver has been loaded outside of a process (kernel or we have a major security issue)
+[    3.30] [    OK] loaded gpu drv
+[    3.30] [    OK] got resolution
+[    3.30] [ DEBUG] registry.get("system/processes/attach_security, nil") called
+[    3.30] [    OK] New process named journald with pid6 created
+[    3.30] [    OK] Opening file at /autorun.lua with mode r
+[    3.30] [    OK] Enviornment variable computerName has been set to PlotOS
+[    3.30] [    OK] Enviornment variable user has been set to guest
+[    3.55] [    OK] Opening file at /journal.log with mode a
+[    3.55] [    OK] Journal daemon started
+[    3.55] [    OK] Process with name ComponentAdder with pid 4 has died: 

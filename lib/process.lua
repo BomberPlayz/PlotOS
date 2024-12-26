@@ -181,6 +181,7 @@ api.new = function(name, code, env, perms, inService, ...)
     ret.io.signal = {}
     ret.io.signal.pull = {}
     ret.io.signal.queue = {}
+    ret.io.handles = {}
     ret.pid = as_pid
     ret.lastCpuTime = 0
     ret.cputime_avg = {}
@@ -425,6 +426,14 @@ api.tickProcess = function(process, event) -- TODO: make more efficient?
         return false
     elseif process.status == "dying" then
         process.emit("exit")
+        local nTerminatedHandles = 0
+        for _, stream in ipairs(process.io.handles) do
+            stream:close()
+            nTerminatedHandles = nTerminatedHandles + 1
+        end
+        if nTerminatedHandles > 0 then
+            printk("Process manager terminated " .. nTerminatedHandles .. " handles for process " .. process.pid, "warn")
+        end
         printk("Process with name " .. process.name .. " with pid " .. process.pid .. " has died: " .. process.err)
         process.io.signal.pull = {}
         process.io.signal.queue = {}
@@ -467,10 +476,11 @@ api.tick = function()
     local event = {computer.pullSignal(0)}
 
     local nTicks = 0
-    while ticker(api.processes, nTicks == 0 and event or {}) > 0 and nTicks < 512 do -- TODO: time-budget based tick limit
+    local st = computer.uptime()
+    while ticker(api.processes, nTicks == 0 and event or {}) > 0 and computer.uptime() - st < 0.05 do
         nTicks = nTicks + 1
     end
-    printk("Process tick took " .. nTicks .. " iters")
+    --printk("Process tick took " .. nTicks .. " iters")
 
     for k, v in ipairs(toRemoveFromProc) do
         if not v.parent then

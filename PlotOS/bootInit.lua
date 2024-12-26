@@ -45,9 +45,10 @@ local logsToWrite = ""
 local loggingHandle = nil
 
 -- early-import streams
+--- @type Stream
 local Stream = raw_loadfile("/lib/stream.lua")() -- FIXME: this is a hack
 
-local logStream = Stream.new()
+local logStream = Stream.new({maxSize = 1024*8}) -- max 8kb
 --- Logs a message with a specified state and formatting
 --- @param msg string|any Message to be logged (will be converted to string)
 --- @param state string|nil Log level ('debug'|'info'|'warn'|'error'). Defaults to 'info'
@@ -124,12 +125,12 @@ function _G.printk(msg, state)
         end
         gpu.setForeground(0xffffff) -- reset color
     else
-        local fs = require("fs")
+        --local fs = require("fs")
         if not loggingHandle then
             logsToWrite = logsToWrite .. msg_out .. "\n"
             return
         end
-        loggingHandle:write(msg_out .. "\n")
+        --loggingHandle:write(msg_out .. "\n")
         --loggingHandle:flush()
         logsToWrite = ""
     end
@@ -213,7 +214,7 @@ function _G.kern_panic(reason)
     if not _G.VERY_LOW_MEM then
         local ok, err = pcall(function()
             local handle = component_invoke(computer.getBootAddress(), "open", "/panic.log", "w")
-            component_invoke(computer.getBootAddress(), "write", handle, logsToWrite)
+            component_invoke(computer.getBootAddress(), "write", handle, logStream:read(math.huge))
             component_invoke(computer.getBootAddress(), "close", handle)
             printk("Logs saved to /panic.log", "error")
         end)
@@ -469,6 +470,13 @@ local function initBoot(type)
     printk("Doing some user magic...")
     local user = package.require("libuser")
 
+    -- create "kernel" RAM package
+    package.loaded.kernel = {
+        createLogReader = function()
+            return logStream:createCursor(true, false)
+        end,
+    }
+
     printk("Loading other files...")
 
     local function rom_invoke(method, ...)
@@ -494,13 +502,14 @@ local function initBoot(type)
     end
     table.sort(scripts)
     
-    do
+    --[[do
         loggingHandle = fs.open("/logs.log", "w")
         local con = splitByChunk(logsToWrite, 1024)
         for k, v in ipairs(con) do
             loggingHandle:write(v)
         end
-    end
+    end]]
+    -- we now have journal daemon!
 
     return scripts
 end
