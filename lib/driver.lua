@@ -89,6 +89,10 @@ function ret.getBest(type, addr)
     return nil
 end
 
+--- get the default driver for a type
+--- @param type string
+--- This function returns a table and a string. If the table is nil, the string will also be nil.
+--- @return table|nil, string|nil
 function ret.getDefault(type)
     local defa = nil
     if type == "drive" then
@@ -223,7 +227,7 @@ function ret.load(typed, addr)
     if addr == "default" then
         
         local d, addra = ret.getDefault(typed)
-        if d then
+        if d and addra then
             local dd = newdriver(d, addra)
             dd.getDriverName = d.getName
             dd.getDriverVersion = d.getDriverVersion

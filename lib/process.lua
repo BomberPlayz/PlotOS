@@ -34,7 +34,7 @@ local SYSCALLS = {
 --- Finds a process by its associated thread.
 --- @param thread thread The thread to search for.
 --- @param process? process The process or list of processes to search within. If not provided, the global list of processes will be used.
---- @return The process that matches the given thread, or nil if no match is found.
+--- @return number? pid The process that matches the given thread, or nil if no match is found.
 api.findByThread = function(thread, process)
     -- process is optional
     process = process or api.processes
@@ -52,22 +52,21 @@ api.findByThread = function(thread, process)
 end
 
 --- Checks if the current Lua function is running as a process.
---- @return boolean True if the function is running as a process, false otherwise.
+--- @return boolean? True if the function is running as a process, false otherwise.
 api.isProcess = function()
     if api.currentProcess then
         return true
     end
 end
 
---- @class plotosthread
---- @field status string The current status of the thread ("running", "suspended", "normal", "dead")
+--- @class process
 --- @field pid number The unique process ID
---- @field name string The name of the thread/process
+--- @field name string The name of the process
 --- @field thread thread The actual Lua thread object
---- @field err string Any error message associated with the thread
---- @field args table The arguments passed to the thread
+--- @field err string Any error message associated with the process
+--- @field args table The arguments passed to the process
 --- @field processes table List of child processes
---- @field parent process|nil The parent process (nil if root process)
+--- @field parent process? The parent process (nil if root process)
 --- @field lastCpuTime number The CPU time used in the last tick
 --- @field cputime_avg table[] Array of recent CPU time measurements
 --- @field listeners table[] Array of event listeners
@@ -80,8 +79,8 @@ end
 --- @param env? (table) - The environment table for the process.
 --- @param perms? (table) - The permissions table for the process.
 --- @param inService? (boolean)- Indicates whether the process is in service.
---- @param ...? - Additional arguments to be passed to the process.
---- @return (plotosthread) # The newly created process object.
+--- @param ...? any Additional arguments to be passed to the process.
+--- @return (process) # The newly created process object.
 api.new = function(name, code, env, perms, inService, ...)
     local ret = {}
     ret.listeners = {}
@@ -266,8 +265,8 @@ end
 --- @param path (string) - The path to the file to be loaded.
 --- @param perms (table) - Optional permissions for the API object.
 --- @param forceRoot (boolean) - Whether to force the API object to be rooted.
---- @param ... - Additional arguments to be passed to the API constructor.
---- @return (table), (string) - The loaded API object or nil if loading failed, and an error message if applicable.
+--- @param ... any Additional arguments to be passed to the API constructor.
+--- @return table?, (string|table|boolean)? - The loaded API object or nil if loading failed, and an error message if applicable.
 api.load = function(name, path, perms, forceRoot, ...)
     local fs = require("fs")
     if path:sub(1, 1) ~= "/" then
@@ -389,6 +388,7 @@ api.tickProcess = function(process, event) -- TODO: make more efficient?
                         end
 
                         process.sysret = table.pack(driverFunc(table.unpack(driverArgs)))
+                        
                     end
                 end
 

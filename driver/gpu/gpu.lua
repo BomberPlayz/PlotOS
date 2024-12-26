@@ -194,6 +194,7 @@ ret.new = function(adr)
         w = math.min(w,drv.mask.w)
         h = math.min(h,drv.mask.h)
 
+
         return com.fill(x,y,w,h,c)
     end
 

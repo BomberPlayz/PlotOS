@@ -186,6 +186,13 @@ function keyboard.isShiftDown()
   return (keyboard.pressedCodes[keyboard.keys.lshift] or keyboard.pressedCodes[keyboard.keys.rshift]) ~= nil
 end
 
+function keyboard.getAddress()
+  -- find the first keyboard
+  for address in component.list("keyboard") do
+    return address
+  end
+end
+
 -------------------------------------------------------------------------------
 
 return keyboard 

@@ -14,5 +14,5 @@ print("Name"..string.rep(" ", mlen-string.len("Name")).." :: cput :: cpu% :: sta
 print("=======================================================")
 for k,v in ipairs(processes) do
 
-    print(v.name..string.rep(" ", mlen-string.len(v.name)).." :: "..v.lastCpuTime.." :: "..(v.lastCpuTime > 0 and (((v.lastCpuTime / allcputime) * 100).."%") or "0%").." :: "..v.status.." :: "..v.error)
+    print(v.name..string.rep(" ", mlen-string.len(v.name)).." :: "..v.lastCpuTime.." :: "..(v.lastCpuTime > 0 and (((v.lastCpuTime / allcputime) * 100).."%") or "0%").." :: "..v.status.." :: "..(v.error or "none"))
 end

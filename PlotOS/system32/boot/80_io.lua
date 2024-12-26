@@ -69,12 +69,107 @@ local disabledCodeMap = {
   ["end"]=true
 }
 
+
+-- CURSOR TERRITORY
+io.cursor = {}
+io.cursor.position = {1,1}
+io.cursor.blink = false
+
+function io.cursor.setPosition(x,y)
+  local proc = require("process")
+
+  local newposx, newposy = x, y
+
+  if proc.isProcess() then -- if we are in a process, offset by the screen offset of that thing.
+    local p = proc.currentProcess
+    local offsetX, offsetY = p.io.screen.offset.x, p.io.screen.offset.y
+    newposx, newposy = x+offsetX, y+offsetY
+  end
+
+  if io.cursor.blink then -- Pat, is this bad? if so please make better
+    local oldx, oldy = io.cursor.position[1], io.cursor.position[2]
+    io.cursor.position = {newposx,newposy}
+    io.cursor.setBlink(true)
+    io.cursor.position = {oldx,oldy}
+    io.cursor.setBlink(false)
+    io.cursor.position = {newposx,newposy}
+  else
+    io.cursor.position = {newposx, newposy}
+  end
+end
+
+-- Pat, if you have any idea how to not have duplicate code here, fix it please
+function io.cursor.addPosition(x,y)
+  local proc = require("process")
+  local newposx, newposy = x, y
+
+  if proc.isProcess() then -- if we are in a process, offset by the screen offset of that thing.
+    local p = proc.currentProcess
+    local offsetX, offsetY = p.io.screen.offset.x, p.io.screen.offset.y
+    newposx, newposy = x+offsetX, y+offsetY
+  end
+
+  if io.cursor.blink then -- Pat, is this bad? if so please make better
+    local oldx, oldy = io.cursor.position[1], io.cursor.position[2]
+    io.cursor.position = {newposx,newposy}
+    io.cursor.setBlink(true)
+    io.cursor.position = {oldx,oldy}
+    io.cursor.setBlink(false)
+    io.cursor.position = {newposx,newposy}
+  else
+    io.cursor.position = {newposx, newposy}
+  end
+end
+
+function io.cursor.getPosition()
+  return io.cursor.position
+end
+
+function io.cursor.setBlink(blink) --FIXME: not great!
+  io.cursor.blink = blink
+  local x,y = io.cursor.position[1],io.cursor.position[2]
+  local bg = gpu.getBackground()
+  local fg = gpu.getForeground()
+  local cc = {gpu.get(x, y)}
+  if blink then 
+    gpu.setBackground(fg)
+    gpu.setForeground(bg)
+    gpu.set(x, y, cc[1])
+  else
+    gpu.set(x, y, cc[1])
+  end
+  gpu.setForeground(fg)
+  gpu.setBackground(bg)
+end
+
+setmetatable(io.cursor, {
+  __index = function(t,k)
+    if k == "x" then
+      return io.cursor.position[1]
+    elseif k == "y" then
+      return io.cursor.position[2]
+    elseif k == "blink" then
+      return io.cursor.blink
+    end
+  end,
+  __newindex = function(t,k,v)
+    if k == "x" then
+      io.cursor.position[1] = v
+    elseif k == "y" then
+      io.cursor.position[2] = v
+    elseif k == "blink" then
+      io.cursor.setBlink(v)
+    end
+  end
+}) -- TODO FOR PATRIIK: add more that are useful:tm:
+
+-- END CURSOR TERRITORY
+
 function io.read()
   local txt = ""
   local pusy = 0
-  cursor.y = prt_y
-  cursor.x = prt_x
-  cursor.setBlink(true)
+  io.cursor.setPosition(prt_x,prt_y)
+  io.cursor.setBlink(true)
   while true do
     local a,b,bb,c,d = computer.pullSignal(0.5)
     local proc = require("process")
@@ -97,11 +192,9 @@ function io.read()
         if pusy > 0 then
           cursor.x = cursor.x+1
         end
-        cursor.x = prt_x
-        cursor.setBlink(false)
+        io.cursor.setBlink(true)
         io.writeline("")
-        cursor.x = prt_x
-        cursor.y = prt_y
+        io.cursor.setPosition(prt_x,prt_y)
         return txt
       elseif bb == 8 then
         if pusy > 0 then
@@ -109,10 +202,12 @@ function io.read()
           txt = string.sub(txt,1,(string.len(txt)-1))
           gpu.fill(prt_x-1,prt_y,1,1, " ")
           prt_x = prt_x-1
-          cursor.x = prt_x+1
+          --[[cursor.x = prt_x+1
           cursor.setBlink(false)
           cursor.x = prt_x
-          cursor.setBlink(true)
+          cursor.setBlink(true)]]
+          io.cursor.setPosition(prt_x,prt_y)
+          io.cursor.setBlink(true)
 
           if txt == nil then txt = "" end
         end
@@ -121,23 +216,27 @@ function io.read()
       elseif bb > 31 then
         txt = txt..string.char(bb)
         pusy = pusy+1
+        --[[
         cursor.x = prt_x+1
         cursor.y = prt_y
-        cursor.setBlink(true)
+        IO.CURSOR.setBlink(true)
 
         cursor.x = prt_x
         cursor.y = prt_y
-        cursor.setBlink(false)
+        cursor.setBlink(false)]]
+
+        io.cursor.setPosition(prt_x+1,prt_y)
+        io.cursor.setBlink(true)
 
         io.write(string.char(bb))
         --cursor.x = prt_x+1
-        cursor.x = prt_x
+        io.cursor.setPosition(prt_x, prt_y)
       end
     elseif bb == nil then
-      if cursor.blink then
-        cursor.setBlink(false)
+      if io.cursor.blink then
+        io.cursor.setBlink(false)
       else
-        cursor.setBlink(true)
+        io.cursor.setBlink(true)
       end
     end
   end
@@ -228,6 +327,16 @@ function io.setScreenSize(w,h)
     p.io.screen.height = h
   else
     -- we fuck right off
+  end
+end
+
+function io.getScreenSize()
+  local proc = require("process")
+  if proc.isProcess() then
+    local p = proc.currentProcess
+    return p.io.screen.width, p.io.screen.height
+  else
+    return gpu.getResolution()
   end
 end
 

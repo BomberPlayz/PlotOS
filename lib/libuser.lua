@@ -1,5 +1,6 @@
 local registry = package.require("registry")
 local fs = package.require("fs")
+local process = package.require("process")
 
 local libuser = {}
 

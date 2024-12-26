@@ -1,13 +1,12 @@
 --- Stream library for handling basic data streams.
---- @module stream
 
 --- @class Stream
---- @field private buffer string
---- @field private size number
---- @field private cursors table
---- @field private defaultCursor StreamCursor
---- @field private maxSize number
---- @field private realPos number Starting position of the buffer in absolute terms
+--- @field public buffer string
+--- @field public size number
+--- @field public cursors table
+--- @field public defaultCursor StreamCursor
+--- @field public maxSize number
+--- @field public realPos number Starting position of the buffer in absolute terms
 local Stream = {}
 
 --- @class StreamCursor
@@ -15,7 +14,6 @@ local Stream = {}
 --- @field private position number The cursor's position (1-based)
 --- @field private canRead boolean
 --- @field private canWrite boolean
-
 --- Cursor methods (for use with metatable)
 local CursorMethods = {}
 CursorMethods.__index = CursorMethods -- Set __index *before* defining methods
@@ -144,7 +142,7 @@ function CursorMethods:seek(whence, offset)
 end
 
 --- Close a cursor.
--- @param self StreamCursor The cursor to close
+--- @param self StreamCursor The cursor to close
 function CursorMethods:close()
     -- Remove the cursor from the stream's list
     for i, c in ipairs(self.stream.cursors) do
@@ -191,10 +189,10 @@ function Stream:createCursor(canRead, canWrite)
 end
 
 --- Read data from the stream (using the default cursor).
--- @param self Stream
--- @param n number Number of bytes to read
--- @return string|nil Data read from the stream, or nil if not readable
--- @return string|nil Error message if not readable
+--- @param self Stream
+--- @param n number Number of bytes to read
+--- @return string|nil Data read from the stream, or nil if not readable
+--- @return string|nil Error message if not readable
 function Stream:read(n)
     return self.defaultCursor:read(n)
 end

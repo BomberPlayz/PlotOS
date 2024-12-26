@@ -5,6 +5,7 @@ local mtab = { name = "", children = {}, links = {} }
 local fstab = {}
 
 local function segments(path)
+    assert(type(path) == "string", "bad argument #1 (expected string, got " .. type(path) .. ")")
     local parts = {}
     for part in path:gmatch("[^\\/]+") do
         local current, up = part:find("^%.?%.$")

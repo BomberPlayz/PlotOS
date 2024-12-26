@@ -144,7 +144,6 @@ local ropen = fs.open
 local rwrite = fs.write
 local rclose = fs.close
 
----@class kern_panic
 ---Kernel panic handler function that logs system information and halts execution
 ---This function is called when a critical system error occurs that prevents normal operation
 ---@param reason string|any The reason for the kernel panic
@@ -261,6 +260,9 @@ function _G.raw_dofile(file)
 end
 
 _G.bsod = function(reason, isKern, stack)
+    if coroutine.running() then
+        error("no way in hell you doin that")
+    end
     if gpu then
         gpu.setBackground(0x2665ed)
         gpu.setForeground(0xffffff)
