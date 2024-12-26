@@ -513,6 +513,9 @@ api.tick = function()
         table.remove(idleTimeAvg, 1)
     end
     --print(tostring(ae))
+
+    
+
 end
 
 api.getIdleTime = function()

@@ -44,6 +44,43 @@ local logfile = 0
 local logsToWrite = ""
 local loggingHandle = nil
 
+
+local function prettyPrint(value, indent, visited)
+    visited = visited or {}
+    indent = indent or ""
+    
+    if type(value) == "table" and not visited[value] then
+        visited[value] = true
+        local items = {}
+        local isArray = #value > 0
+        local result = "{\n"
+        
+        -- Handle array part first
+        for i=1, #value do
+            local val = value[i]
+            table.insert(items, indent .. "  " .. prettyPrint(val, indent .. "  ", visited))
+        end
+        
+        -- Handle hash part
+        for k, v in pairs(value) do
+            if type(k) ~= "number" or k > #value then
+                local key = type(k) == "string" and k:match("^[%a_][%w_]*$") 
+                    and k or "[" .. prettyPrint(k, "", visited) .. "]"
+                table.insert(items, indent .. "  " .. key .. " = " .. prettyPrint(v, indent .. "  ", visited))
+            end
+        end
+        
+        result = result .. table.concat(items, ",\n") .. "\n" .. indent .. "}"
+        return result
+    else
+        local str = tostring(value)
+        if type(value) == "string" then
+            str = string.format("%q", value)
+        end
+        return str
+    end
+end
+
 -- early-import streams
 --- @type Stream
 local Stream = raw_loadfile("/lib/stream.lua")() -- FIXME: this is a hack
@@ -92,6 +129,10 @@ function _G.printk(msg, state)
     end
 
     -- Make sure we have a valid message string
+    if type(msg) == "table" then
+        msg = prettyPrint(msg)
+    end
+    
     msg = tostring(msg)
 
     -- If message contains multiple lines, call this function recursively for each line

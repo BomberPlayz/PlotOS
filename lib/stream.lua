@@ -27,6 +27,10 @@ function CursorMethods:read(n)
     if not self.canRead then
         return nil, "Cursor cannot read"
     end
+    
+    if not n then
+        n = self.stream.size - self.position + 1
+    end
 
     -- Ensure we don't read beyond buffer bounds
     local toRead = math.min(n, self.stream.size - self.position + 1)
@@ -53,12 +57,18 @@ function CursorMethods:write(data)
         self.stream.buffer = self.stream.buffer .. string.rep("\0", self.position - self.stream.size - 1)
     end
 
+    local oldEnd = self.stream.size + 1
     local newBuffer = self.stream.buffer:sub(1, self.position - 1) .. data .. self.stream.buffer:sub(self.position)
     local newSize = #newBuffer
 
     -- Store write position for cursor updates
     local writePos = self.position
     local writeLen = #data
+
+    -- First, record absolute positions
+    for _, c in ipairs(self.stream.cursors) do
+        c._absPos = (c.position - 1) + self.stream.realPos
+    end
 
     -- Handle maxSize limit
     if newSize > self.stream.maxSize then
@@ -91,11 +101,15 @@ function CursorMethods:write(data)
 
     self.stream.size = #self.stream.buffer
 
-    -- Update positions of cursors after the write point
-    for _, otherCursor in ipairs(self.stream.cursors) do
-        if otherCursor ~= self and otherCursor.position >= writePos then
-            otherCursor.position = otherCursor.position + writeLen
+    -- Now restore positions from absolute positions
+    for _, c in ipairs(self.stream.cursors) do
+        local newRel = c._absPos - self.stream.realPos
+        if newRel < 0 then newRel = 0 end
+        if newRel > self.stream.size then
+            newRel = self.stream.size
         end
+        c.position = newRel + 1
+        c._absPos = nil
     end
 
     -- Update our position
