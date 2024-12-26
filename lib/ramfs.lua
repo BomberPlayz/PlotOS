@@ -1,4 +1,5 @@
 local stream = require("stream")
+local fs = require("fs")
 local ramfs = {}
 ramfs.files = {}
 ramfs.openfiles = {}

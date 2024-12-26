@@ -1,5 +1,17 @@
 local registryPath = "/PlotOS/system32/registry"
 
+---@class RegistryTypes
+---@field category number Category type (0)
+---@field s8 number Signed 8-bit integer type (1)
+---@field u8 number Unsigned 8-bit integer type (2)
+---@field s16 number Signed 16-bit integer type (3)
+---@field u16 number Unsigned 16-bit integer type (4)
+---@field s32 number Signed 32-bit integer type (5)
+---@field u32 number Unsigned 32-bit integer type (6)
+---@field shortString number Short string type (8)
+---@field string number String type (9)
+---@field longString number Long string type (10)
+---@field collection number Collection type (255)
 local types = {
     category = 0,
     s8 = 1,
@@ -250,6 +262,8 @@ local function parseCollection(h, fileSize, length)
     return res
 end
 
+---@class Registry
+---@field useTmpFilesToSave boolean Whether to use temporary files when saving registry data
 local registry = {}
 registry.useTmpFilesToSave = true
 
@@ -334,6 +348,13 @@ local function mountRaw(file, name)
     regmounts[name] = {file, readRegistryFile(file)}
 end
 
+---Mounts a registry file to a specific name
+---@param file string Path to the registry file
+---@param name string Mount name
+---@param createIfNotExists boolean Whether to create the file if it doesn't exist
+---@return boolean success Whether the mount was successful
+---@return boolean|string error Error message if mount failed
+---@return boolean created Whether the file was created
 function registry.mount(file, name, createIfNotExists)
     local created = false
     if regmounts[name] then return false, "Something is already mounted at the specified name" end
@@ -368,6 +389,9 @@ function registry.mount(file, name, createIfNotExists)
     return true, mountRaw(file, name), created
 end
 
+---Unmounts a registry mount
+---@param name string Name of the mount to unmount
+---@return boolean success Whether the unmount was successful
 function registry.unmount(name)
     if regmounts[name] then
         registry.save(name)
@@ -378,6 +402,10 @@ function registry.unmount(name)
     end
 end
 
+---Saves a registry mount to disk
+---@param name string Name of the mount to save
+---@return boolean|nil success Whether the save was successful
+---@return string|nil error Error message if save failed
 function registry.save(name)
     local mount = regmounts[name]
     if not mount then return false, "Attempt to save nonexistent mount" end
@@ -473,6 +501,8 @@ local function readRegistry()
 end
 --]]
 
+---Global function to save all mounted registry files
+---@return nil
 function saveFullRegistry()
     for k,v in pairs(regmounts) do
         registry.save(k)
@@ -485,9 +515,13 @@ end
 --printk("Registry data: DISABLED FOR MEMORY OPTIMIZATION", "debug")
 --printk("Registry loaded!")
 
-
-
-
+---Sets a value in the registry
+---@param path string Full path to the registry key (category/path/to/key)
+---@param value any Value to set
+---@param dataType? number Type from registry.types to use (defaults to string)
+---@param noSave? boolean Whether to skip saving changes to disk
+---@return boolean success Whether the set was successful
+---@return string|nil error Error message if set failed
 function registry.set(path, value, dataType, noSave)
     printk(
         "registry.set(\"" ..
@@ -546,6 +580,11 @@ local function registry_get_table_parser(tbl)
     return res
 end
 
+---Gets a value from the registry
+---@param path string Full path to the registry key (category/path/to/key)
+---@return any value The value at the specified path
+---@return number|nil type The type of the value from registry.types
+---@return string|nil error Error message if get failed
 function registry.get(path) -- TODO: add type filter
     printk("registry.get(\"" .. table.concat({ tostring(path), tostring(getType) }, ", ") .. "\") called", "debug")
     local parsed = parsePath(path)
@@ -581,7 +620,9 @@ function registry.get(path) -- TODO: add type filter
     return nil, "not_found"
 end
 
--- MIGHT NOT WORK
+---Checks if a path exists in the registry
+---@param path string Full path to check (category/path/to/key)
+---@return boolean exists Whether the path exists
 function registry.exists(path)
     local parsed = parsePath(path)
     local category = parsed.category
@@ -613,6 +654,9 @@ function registry.exists(path)
     end
 end
 
+---Lists all entries at a specific path
+---@param path string Full path to list (category/path/to)
+---@return table<string,number>|false entries Table of entry name to type pairs, or false if path doesn't exist
 function registry.list(path)
     local parsed = parsePath(path)
     local category = parsed.category

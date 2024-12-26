@@ -166,6 +166,9 @@ setmetatable(io.cursor, {
 
 -- END CURSOR TERRITORY
 
+--- Read from the console.
+--- @param options {history: table?, completionCallback: function?}? Options for the read function
+--- @return string The string read from the console
 function io.read(options)
   options = options or {}
   assert(type(options) == "table", "options must be a table or nil")
@@ -438,6 +441,8 @@ local function splitNewlines(str)
   return res
 end
 
+--- Write to the console.
+--- @param str string The string to write
 function io.write(str)
   local ox,oy = 0,0
   if proc.isProcess() then
@@ -459,6 +464,7 @@ function io.write(str)
     end
   end
 end
+
 
 function io.setScreenSize(w, h)
   local proc = require("process")

@@ -8,14 +8,17 @@ local libuser = {}
 --- @param id string | number The user id or name
 --- @return table | nil The user table or nil if not found
 function libuser.getUser(id)
-    local user = registry.get()
+    local user = registry.get("user_"..id)
+    local userdata = {}
+    if user then
+        userdata = {
+            name = user.name,
+            home = user.home,
+            permissions = user.permissions
+        }
+    end
 end
 
---- Get the current user
---- @return table | nil The user table or nil if not found
-function libuser.getCurrentUser()
-    return libuser.getUser(process.info().uid)
-end
 
 --- Create a user
 --- @param options {name: string, password: string, home: string, permissions: table<string,string>}
