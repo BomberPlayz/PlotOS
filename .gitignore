@@ -1,7 +1,8 @@
 desktop.ini
 logs.log
 *.luatest
-journal.log
+/journal.log
+/panic.log
 PlotOS/system32/registry/*
 .aider*
 .env
