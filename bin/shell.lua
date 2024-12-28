@@ -98,10 +98,16 @@ local function main()
         io.write(os.getEnv("user") .. "@" .. os.getEnv("computerName") .. ":")
         gpu.setForeground(0x2fa1c6)
         io.write(os.currentDirectory .. "$ ")
+        gpu.setForeground(0xFFFFFF)
         
         -- Parse input
         local input = io.read({history = history})
-        table.insert(history, input)
+        if #input > 0 then
+            table.insert(history, input)
+            if #history > 64 then
+                table.remove(history, 1)
+            end
+        end
         local args = std.str.split(input or "", " ")
         local cmd = args[1]
         
