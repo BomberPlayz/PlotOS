@@ -130,7 +130,7 @@ local function main()
         
         -- Parse input
         local input = io.read({history = history})
-        if not input:match("^%s") then
+        if #input > 0 and (not input:match("^%s")) then
             table.insert(history, input)
             if #history > 64 then
                 table.remove(history, 1)
