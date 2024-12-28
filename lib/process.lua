@@ -336,68 +336,68 @@ api.tickProcess = function(process, event) -- TODO: make more efficient?
 
                 if not resumeResult[1] then
                     process.err = resumeResult[2] or "Died"
-                end
+                else
+                    -- Handle syscalls if any
+                    if resumeResult[2] then
+                        table.remove(resumeResult, 1)
+                        local syscall = table.remove(resumeResult, 1)
+                        local args = resumeResult
 
-                -- Handle syscalls if any
-                if resumeResult[2] then
-                    table.remove(resumeResult, 1)
-                    local syscall = table.remove(resumeResult, 1)
-                    local args = resumeResult
+                        if syscall == "ipc_call" then
+                            local handler_name = args[1]
+                            local handler_args = args[2]
+                            local handler = require("ipc").handlers[handler_name]
 
-                    if syscall == "ipc_call" then
-                        local handler_name = args[1]
-                        local handler_args = args[2]
-                        local handler = require("ipc").handlers[handler_name]
-
-                        if not handler then
-                            process.sysret = table.pack(false, "Handler not found")
-                        else
-                            if handler.process then
-                                table.insert(handler.process.io.signal.queue, {
-                                    "ipc_request",
-                                    handler_name,
-                                    process,
-                                    table.unpack(handler_args)
-                                })
-                                process.status = "suspended"
-                                process.ipc_waiting = true
+                            if not handler then
+                                process.sysret = table.pack(false, "Handler not found")
                             else
-                                local ret = table.pack(handler.handler(table.unpack(handler_args)))
-                                process.sysret = ret
-                                process.status = "running"
-                                process.ipc_waiting = false
+                                if handler.process then
+                                    table.insert(handler.process.io.signal.queue, {
+                                        "ipc_request",
+                                        handler_name,
+                                        process,
+                                        table.unpack(handler_args)
+                                    })
+                                    process.status = "suspended"
+                                    process.ipc_waiting = true
+                                else
+                                    local ret = table.pack(handler.handler(table.unpack(handler_args)))
+                                    process.sysret = ret
+                                    process.status = "running"
+                                    process.ipc_waiting = false
+                                end
                             end
-                        end
-                    elseif syscall == "ipc_response" then
-                        for _, waiting_proc in ipairs(api.processes) do
-                            if waiting_proc.pid == args[1] then
-                                waiting_proc.status = "running"
-                                waiting_proc.sysret = table.pack(table.unpack(args, 2))
-                                break
+                        elseif syscall == "ipc_response" then
+                            for _, waiting_proc in ipairs(api.processes) do
+                                if waiting_proc.pid == args[1] then
+                                    waiting_proc.status = "running"
+                                    waiting_proc.sysret = table.pack(table.unpack(args, 2))
+                                    break
+                                end
                             end
-                        end
-                    elseif syscall == "driver" then
-                        local driverAddr = table.remove(args, 1)
-                        local driverFunc = table.remove(args, 1)
-                        local driverArgs = args
+                        elseif syscall == "driver" then
+                            local driverAddr = table.remove(args, 1)
+                            local driverFunc = table.remove(args, 1)
+                            local driverArgs = args
 
-                        local driver = package.require("driver").fromCache(driverAddr)
-                        if not driver then
-                            process.sysret = table.pack(false, "No")
-                            return
-                        end
+                            local driver = package.require("driver").fromCache(driverAddr)
+                            if not driver then
+                                process.sysret = table.pack(false, "No")
+                                return
+                            end
 
-                        local driverFunc = driver[driverFunc]
-                        if not driverFunc then
-                            process.sysret = table.pack(false, "Driver function not found")
-                            return
-                        end
+                            local driverFunc = driver[driverFunc]
+                            if not driverFunc then
+                                process.sysret = table.pack(false, "Driver function not found")
+                                return
+                            end
 
-                        process.sysret = table.pack(driverFunc(table.unpack(driverArgs)))
-                        
+                            process.sysret = table.pack(driverFunc(table.unpack(driverArgs)))
+                            
+                        end
                     end
                 end
-
+                
                 -- Update CPU times
                 local endTime = computer.uptime() * 1000
                 process.lastCpuTime = endTime / 1000 - startTime / 1000

@@ -4,73 +4,6 @@ local gpu = require("driver").load("gpu")
 local proc = require("process")
 local w,h = gpu.getResolution()
 
-
-
-local codeMap = {
-  space=" ",
-  numpad0="0",
-  numpad1="1",
-  numpad2="2",
-  numpad3="3",
-  numpad4="4",
-  numpad5="5",
-  numpad6="6",
-  numpad7="7",
-  numpad8="8",
-  numpad9="9",
-  numpaddecimal=".",
-  equals="=",
-  apostrophe="'",
-  grave="`"
-}
-
-local disabledCodeMap = {
-  lshift=true,
-  rshift=true,
-  lcontrol=true,
-  rcontrol=true,
-  lmenu=true,
-  rmenu=true,
-  tab=true,
-  numlock=true,
-  scroll=true,
-  pageUp=true,
-  pageDown=true,
-  insert=true,
-  pause=true,
-  f1=true,
-  f2=true,
-  f3=true,
-  f4=true,
-  f5=true,
-  f6=true,
-  f7=true,
-  f8=true,
-  f9=true,
-  f10=true,
-  f11=true,
-  f12=true,
-  f13=true,
-  f14=true,
-  f15=true,
-  f16=true,
-  f17=true,
-  f18=true,
-  f19=true,
-  f20=true,
-  f21=true,
-  f22=true,
-  f23=true,
-  f24=true,
-  up=true,
-  down=true,
-  left=true,
-  right=true,
-  home=true,
-  ["end"]=true
-}
-
-
 -- CURSOR TERRITORY
 io.cursor = {}
 io.cursor.position = {1,1}
@@ -101,6 +34,7 @@ end
 
 -- Pat, if you have any idea how to not have duplicate code here, fix it please
 function io.cursor.addPosition(x,y)
+  assert("addPosition")
   local proc = require("process")
   local newposx, newposy = x, y
 
@@ -132,12 +66,13 @@ function io.cursor.setBlink(blink) --FIXME: not great!
   local bg = gpu.getBackground()
   local fg = gpu.getForeground()
   local cc = {gpu.get(x, y)}
+
   if blink then 
     gpu.setBackground(fg)
     gpu.setForeground(bg)
-    gpu.set(x, y, cc[1])
+    gpu.set(x, y, cc[1]:sub(1,1))
   else
-    gpu.set(x, y, cc[1])
+    gpu.set(x, y, cc[1]:sub(1,1))
   end
   gpu.setForeground(fg)
   gpu.setBackground(bg)
@@ -155,9 +90,9 @@ setmetatable(io.cursor, {
   end,
   __newindex = function(t,k,v)
     if k == "x" then
-      io.cursor.position[1] = v
+      io.cursor.setPosition(v, io.cursor.position[2])
     elseif k == "y" then
-      io.cursor.position[2] = v
+      io.cursor.setPosition(io.cursor.position[1], v)
     elseif k == "blink" then
       io.cursor.setBlink(v)
     end
@@ -189,25 +124,20 @@ function io.read(options)
   local offset = 1
   local cursor = io.cursor
 
-  if cursor.y >= h then
-    gpu.copy(1,2,w,h-1,0,-1)
-    gpu.fill(1,1,w,1," ")
-    cursor.y = cursor.y - 1
-  end
-
   cursor.setBlink(true)
 
+  local ox, oy
   local w, h
 
   local proc = require("process")
   if proc.isProcess() then
     local p = proc.currentProcess
     w, h = p.io.screen.width, p.io.screen.height
+    ox, oy = p.io.screen.offset.x, p.io.screen.offset.y
   else
     w, h = gpu.getResolution()
+    ox, oy = 0, 0
   end
-
-  w = w - 1
 
   local beginX = cursor.x
 
@@ -227,9 +157,9 @@ function io.read(options)
         cursor.setBlink(false)
         draw(1)
         cursor.setPosition(1, cursor.y + 1)
-        if cursor.y >= h then
-          gpu.copy(1,2,w,h-1,0,-1)
-          gpu.fill(1,1,w,1," ")
+        if cursor.y > h then
+          gpu.copy(1+ox,2+oy,w,h,0,-1)
+          gpu.fill(1+ox,h+oy,w,h," ")
           cursor.y = cursor.y - 1
         end
 
@@ -408,9 +338,9 @@ local function write(txt)
     if io.cursor.x == w then
       io.cursor.setPosition(1, io.cursor.y + 1)
     end
-    if io.cursor.y == h then
+    if io.cursor.y > h then
       gpu.copy(1+ox,2+oy,w,h,0,-1)
-      gpu.fill(1+ox,h+oy,w,1," ")
+      gpu.fill(1+ox,h+oy,w,h," ")
       io.cursor.y = io.cursor.y - 1
     end
 
@@ -454,9 +384,9 @@ function io.write(str)
     if v == "\n" then
       io.cursor.y = io.cursor.y + 1
       io.cursor.x = 1
-      if io.cursor.y == h then
+      if io.cursor.y > h then
         gpu.copy(1+ox,2+oy,w,h,0,-1)
-        gpu.fill(1+ox,h+oy,w,1," ")
+        gpu.fill(1+ox,h+oy,w,h," ")
         io.cursor.y = io.cursor.y - 1
       end 
     else

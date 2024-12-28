@@ -26,7 +26,6 @@ ipc.register("shell", function()
 end)
 
 if not safemode then
-    dofile("/PlotOS/cursor.lua")
     local s1, e1 = pcall(function()
         dofile("/PlotOS/systemAutorun.lua")
     end)

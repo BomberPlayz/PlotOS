@@ -94,7 +94,7 @@ while true do
         break
     end
 
-    if #line > 0 then
+    if line:match("[^%s]") then
         table.insert(history, line)
         if #history > 64 then
             table.remove(history, 1)

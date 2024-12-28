@@ -133,34 +133,39 @@ ret.new = function(adr)
         --printk("set: "..x..", "..y..", "..c)
         -- respect the buffer
         -- if c would be out of bounds, trim it to the mask
+
+        -- why do we have these masks or vertical sets anyways?? the masks dont even offset the pos
         if y > drv.mask.h+drv.mask.y then
             return
         end
+
+        if y < drv.mask.y and not vertical then
+            return
+        end
+
         if x < drv.mask.x then
             c = string.sub(c,drv.mask.x-x+1)
             x = drv.mask.x
         end
 
-        if x+#c > drv.mask.w+drv.mask.x then
-            c = string.sub(c,1,drv.mask.w+drv.mask.x-x)
-        end
-        
-        if y < drv.mask.y then
-            local diff = drv.mask.y-y
-            y = drv.mask.y
-            if vertical then
-                c = string.sub(c,diff+1)
-            else
-                c = string.rep(" ",diff)..c
-            end
+        if x > drv.mask.w+drv.mask.x then
+            return
         end
 
-        if y+#c > drv.mask.h+drv.mask.y then
-            local diff = y+#c - (drv.mask.h+drv.mask.y)
-            if vertical then
+        if x+#c-1 > drv.mask.w+drv.mask.x then
+            c = string.sub(c,1,drv.mask.w+drv.mask.x-x+1)
+        end
+        
+        if vertical then
+            if y < drv.mask.y then
+                local diff = drv.mask.y-y
+                y = drv.mask.y
+                c = string.sub(c,diff+1)
+            end
+
+            if y+#c > drv.mask.h+drv.mask.y then
+                local diff = y+#c - (drv.mask.h+drv.mask.y)
                 c = string.sub(c,1,#c-diff)
-            else
-                c = c..string.rep(" ",diff)
             end
         end
 
@@ -171,16 +176,7 @@ ret.new = function(adr)
             return
         end
 
-
-
-        
-
-        
-
-
-
-        
-        return com.set(x,y,c,vertical)
+        return com.set(x,y,c)
     end
 
     drv.copy = function(x,y,w,h,tx,ty)
