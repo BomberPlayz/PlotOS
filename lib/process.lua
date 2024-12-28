@@ -168,7 +168,7 @@ api.new = function(name, code, env, perms, inService, ...)
         ::continue::
     end
 
-    printk(_code)
+    --printk(_code)
 
     local code, err = load(_code, "=" .. name, nil, _G)
     if not code then
