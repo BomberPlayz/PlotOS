@@ -8,10 +8,20 @@ window.content.color = 0xcccccc
 
 local function createTree(parent, path)
     local keys = reg.list(path)
+    local i=0
     for key, value in pairs(keys) do
-        local node = gui.treeNode(key)
+        i = i+1
+        printk(key)
+        printk(value)
+        local node = gui.treeNode(key, 1, i)
         parent.addChild(node)
-        if type(value) == "table" then
+        --[[if type(value) == "table" then
+            createTree(node, path .. "/" .. key)
+        else
+            node.addChild(gui.treeNode(tostring(value)))
+        end]]
+        if value == reg.types.collection then
+            printk("ITS A COLLECITON YO")
             createTree(node, path .. "/" .. key)
         else
             node.addChild(gui.treeNode(tostring(value)))
@@ -19,8 +29,8 @@ local function createTree(parent, path)
     end
 end
 
-local root = gui.treeNode("Root")
-createTree(root, "/")
+local root = gui.treeNode("Root", 0, 0)
+createTree(root, "/system")
 window.addChild(root)
 
 gui.workspace.addChild(window)

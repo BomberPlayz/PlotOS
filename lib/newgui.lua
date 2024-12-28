@@ -705,8 +705,8 @@ function gui.window(x, y, w, h, options)
     return win
 end
 
-function gui.treeNode(text)
-    local node = gui.container(0, 0, 0, 0)
+function gui.treeNode(text, x,y)
+    local node = gui.container(x,y,#text,1)
     node.text = text
 
     node.expanded = false
@@ -720,12 +720,63 @@ function gui.treeNode(text)
         buffer.fill(node.x, node.y, node.w, node.h, " ")
 
         buffer.set(node.x, node.y, node.text)
+
+        if node.expanded then
+            for _, child in ipairs(cont.children) do
+                -- check if the child is not obscured by another child. The other child should have a higher index in the table.
+                -- check from the root object. --
+    
+                if child.enabled then
+                    child.x = child.x + cont.x
+                    child.y = child.y + cont.y
+    
+                    if child.dirty or cont.alwaysDraw then
+                        child._beforeDraw()
+                        child.beforeDraw()
+                        child.draw(special)
+                        child.afterDraw()
+                        child._afterDraw()
+                        if child.draw_shadow and child.enabled then
+                            -- draw two black lines around the component
+                            local mask = { buffer.getMask() }
+                            buffer.setMask(0, 0, buffer.width, buffer.height)
+                            buffer.setForeground(0x000000)
+                            --[[for i = 1, child.w do
+                                buffer.set(child.x + i, child.y + child.h, "█")
+                            end
+                            for i = 0, child.h do
+                                buffer.set(child.x + child.w, child.y + i, "█")
+                            end]]
+                            buffer.fill(child.x + 1, child.y + child.h, child.w - 1, 1, "█")
+                            buffer.fill(child.x + child.w, child.y + 1, 1, child.h, "█")
+                            buffer.setMask(table.unpack(mask))
+                        end
+    
+                        child.dirty = false
+                    end
+    
+                    child.x = child.x - cont.x
+                    child.y = child.y - cont.y
+                end
+            end
+        end
     end
 
     node.onEvent = function(event)
         if event.type == "touch" then
+            printk("the treenode was touched")
             node.expanded = not node.expanded
             node.dirty = true
+            if node.expanded then
+                -- set height to the amount of children
+                local cumulative_h = 0
+                for _, child in ipairs(node.children) do
+                    cumulative_h = cumulative_h + child.h
+                end
+                node.h = cumulative_h
+            else
+                node.h = 1
+            end
         end
     end
 

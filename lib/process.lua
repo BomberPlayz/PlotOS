@@ -168,7 +168,7 @@ api.new = function(name, code, env, perms, inService, ...)
         ::continue::
     end
 
-    local code = load(code, "=" .. name, nil, _G)
+    local code = load(_code, "=" .. name, nil, _G)
 
     ret.thread = coroutine.create(code)
     ret.name = name or "not defined"

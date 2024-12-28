@@ -264,8 +264,17 @@ end
 
 ---@class Registry
 ---@field useTmpFilesToSave boolean Whether to use temporary files when saving registry data
+---@field types RegistryTypes Registry types
 local registry = {}
 registry.useTmpFilesToSave = true
+registry.types = types
+
+-- reverse types
+local typesReverse = {}
+for k,v in pairs(types) do
+    typesReverse[v] = k
+end
+registry.typesReverse = typesReverse
 
 local function readRegistryFile(file)
     if not fs.exists(file) then return false, "File doesn't exist" end
