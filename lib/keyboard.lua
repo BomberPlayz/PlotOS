@@ -6,9 +6,14 @@ local kp = require("process").new("KeyboardInterrupts", [[
   local kb = require("keyboard")
   while true do
     local e,_,_,key = require("event").pull()
-    if e == "key_down" or key ~= nil then
+    if e == "key_down" and key ~= nil then
       pcall(function()
         kb.event.emit("key_pressed",key)
+      end)
+    end
+    if e == "key_up" and key ~= nil then
+      pcall(function()
+        kb.event.emit("key_released",key)
       end)
     end
   end
@@ -194,5 +199,25 @@ function keyboard.getAddress()
 end
 
 -------------------------------------------------------------------------------
+
+keyboard.event.on("key_pressed", function(keycode)
+  local char = keyboard.keys[keycode]
+  if char then
+    keyboard.pressedChars[char] = true
+    keyboard.pressedCodes[keycode] = true
+    keyboard.event.emit("char", char)
+    --printk(char)
+  end
+end)
+
+keyboard.event.on("key_released", function(keycode)
+  local char = keyboard.keys[keycode]
+  if char then
+    keyboard.pressedChars[char] = nil
+    keyboard.pressedCodes[keycode] = nil
+    keyboard.event.emit("char_up", char)
+    --printk(char)
+  end
+end)
 
 return keyboard 

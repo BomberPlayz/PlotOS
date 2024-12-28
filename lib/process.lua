@@ -168,7 +168,13 @@ api.new = function(name, code, env, perms, inService, ...)
         ::continue::
     end
 
-    local code = load(_code, "=" .. name, nil, _G)
+    printk(_code)
+
+    local code, err = load(_code, "=" .. name, nil, _G)
+    if not code then
+        printk("Failed to load process code: " .. err, "error")
+        return
+    end
 
     ret.thread = coroutine.create(code)
     ret.name = name or "not defined"

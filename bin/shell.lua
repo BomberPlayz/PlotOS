@@ -1,6 +1,9 @@
 local std = require("stdlib")
 local fs = require("fs")
 local gpu = require("driver").load("gpu")
+local process = require("process")
+local event   = require("event")
+local keyboard= require("keyboard")
 
 -- Initialize environment
 local function initEnvironment()
@@ -54,15 +57,40 @@ local function findExecutable(cmd)
 end
 
 local function executeCommand(binPath, args)
-    local program, err = loadfile(binPath)
+    --local program, err = loadfile(binPath)
+    local fileHandle = fs.open(binPath, "r")
+    if not fileHandle then
+        return false, "Failed to open: " .. tostring(err)
+    end
+
+    local program = ""
+    while true do
+        local data, reason = fileHandle:read(1024)
+        if not data then
+            fileHandle:close()
+            if reason then
+                return false, "Failed to read: " .. tostring(reason)
+            end
+            break
+        end
+        program = program .. data
+    end
+    --print(program)
     if not program then
         return false, "Failed to load: " .. tostring(err)
     end
     
-    local success, err = pcall(program, args)
-    if not success then
-        return false, "Runtime error: " .. tostring(err)
+
+    local proc = process.new(fs.name(binPath), program, _G, nil, nil, args)
+    while proc.status ~= "dead" do
+        local e = event.pull(nil, 0)
+        if keyboard.isControlDown() and keyboard.isKeyDown("c") then
+            printk("Killing process due to user input of ^C")
+            proc:terminate()
+            print("Killed")
+        end
     end
+
     
     return true
 end
@@ -128,5 +156,6 @@ local function main()
         end
     end
 end
+
 
 main()
