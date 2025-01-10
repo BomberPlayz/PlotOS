@@ -1,7 +1,8 @@
-local path =  {...}
-path = path[1]
+local fs = require "fs"
+local path = { ... }
+path = path[1][2]
 
-local fs = require("filesystem")
+local fs = require("fs")
 local file = fs.open(path, "r")
 if not file then
   error("file not found")

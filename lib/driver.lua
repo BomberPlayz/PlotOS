@@ -285,7 +285,7 @@ function ret.load(typed, addr)
                     end
                 })
             else
-                printk("A driver has been loaded outside of a process (kernel or we have a major security issue)")
+                printk("Driver "..d.getName().." has been loaded kernel-side", "warn")
                 dd_proxy = dd
             end
 

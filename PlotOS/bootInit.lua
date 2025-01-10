@@ -85,7 +85,7 @@ end
 --- @type Stream
 local Stream = raw_loadfile("/lib/stream.lua")() -- FIXME: this is a hack
 
-local logStream = Stream.new({maxSize = 1024*8}) -- max 8kb
+local logStream = Stream.new({maxSize = 1024*16}) -- max 16kb
 --- Logs a message with a specified state and formatting
 --- @param msg string|any Message to be logged (will be converted to string)
 --- @param state string|nil Log level ('debug'|'info'|'warn'|'error'). Defaults to 'info'
@@ -214,14 +214,7 @@ local rclose = fs.close
 ---* gpu
 function _G.kern_panic(reason)
     printk("KERNEL PANIC", "error")
-    printk("----------------------------------------------------", "error")
-    printk("Panic reason: " .. tostring(reason), "error")
-    printk("----------------------------------------------------", "error")
     
-    -- Stack trace
-    printk("Stack trace:", "error")
-    printk(debug.traceback("", 2), "error")
-    printk("----------------------------------------------------", "error")
 
     -- System info
     printk("System Information:", "error")
@@ -250,12 +243,25 @@ function _G.kern_panic(reason)
         tostring(_G.LOW_MEM), 
         tostring(_G.VERY_LOW_MEM)), "error")
 
+        printk("----------------------------------------------------", "error")
+        printk("Panic reason: " .. tostring(reason), "error")
+        printk("----------------------------------------------------", "error")
+        
+        -- Stack trace  
+        printk("Stack trace:", "error")
+        printk(debug.traceback("", 2), "error")
+        printk("----------------------------------------------------", "error")
+
     -- Save logs
     if not _G.VERY_LOW_MEM then
         local ok, err = pcall(function()
-            local handle = component_invoke(computer.getBootAddress(), "open", "/panic.log", "w")
-            component_invoke(computer.getBootAddress(), "write", handle, logStream:read(math.huge))
-            component_invoke(computer.getBootAddress(), "close", handle)
+            local handlee = component_invoke(computer.getBootAddress(), "open", "/panic.log", "w")
+            local c = logStream:createCursor(true, false)
+            c:seek("set", 1)
+            local a,b = c:read(math.huge)
+            if not a then printk(b) end
+            component_invoke(computer.getBootAddress(), "write", handlee, a)
+            component_invoke(computer.getBootAddress(), "close", handlee)
             printk("Logs saved to /panic.log", "error")
         end)
         if not ok then
@@ -264,7 +270,7 @@ function _G.kern_panic(reason)
     end
 
     -- System halt
-    printk("System halted - Press Ctrl+Alt+C to reboot", "error")
+    printk("System halted", "error")
     while true do
         pcps()
     end

@@ -104,7 +104,7 @@ local function mate(processes, depth, lastElement)
 
         if depth ~= 0 then
             local sub = lastElement and 0 or 1
-            local char = lastElement and "" or "║"
+            local char = ""
 
             if i == #processes then
                 procStr = char .. (" "):rep(depth - 1 - sub) .. "╚" .. procStr

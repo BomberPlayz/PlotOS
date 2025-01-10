@@ -433,7 +433,7 @@ function gui.progressBar(x, y, w, h, max)
 
     bar.intdeterminateBarSize = 4
 
-    bar.max = max
+    bar.max = max or 100
 
     bar.draw = function(special)
         if bar.progress == -1 then
@@ -948,34 +948,7 @@ function _sleep(time, object)
     local f = true
     while computer.uptime() - start < time or f do
         f = false
-        local event = { event.pull(time - (computer.uptime() - start)) }
-        if event[1] then
-            if event[1] == "touch" then
-                if object then
-                    object.onEvent({ type = "touch", x = event[3], y = event[4] })
-                end
-            end
-            if event[1] == "key_down" then
-                if object then
-                    object.onEvent({ type = "key_down", key = event[3], keycode = event[4] })
-                end
-            end
-            if event[1] == "key_up" then
-                if object then
-                    object.onEvent({ type = "key_up", key = event[3], keycode = event[4] })
-                end
-            end
-            if event[1] == "drop" then
-                if object then
-                    object.onEvent({ type = "drop", path = event[6] })
-                end
-            end
-            if event[1] == "drag" then
-                if object then
-                    object.onEvent({ type = "drag", path = event[6], _x = event[3], _y = event[4] })
-                end
-            end
-        end
+        
     end
 end
 
@@ -1015,7 +988,34 @@ function gui.eventLoop(object)
         --gpu.set(1,1,tostring(time))
         --kern_info("time: "..tostring(time))
 
-        _sleep(0, object)
+        local event = { event.pull(0) }
+        if event[1] then
+            if event[1] == "touch" then
+                if object then
+                    object.onEvent({ type = "touch", x = event[3], y = event[4] })
+                end
+            end
+            if event[1] == "key_down" then
+                if object then
+                    object.onEvent({ type = "key_down", key = event[3], keycode = event[4] })
+                end
+            end
+            if event[1] == "key_up" then
+                if object then
+                    object.onEvent({ type = "key_up", key = event[3], keycode = event[4] })
+                end
+            end
+            if event[1] == "drop" then
+                if object then
+                    object.onEvent({ type = "drop", path = event[6] })
+                end
+            end
+            if event[1] == "drag" then
+                if object then
+                    object.onEvent({ type = "drag", path = event[6], _x = event[3], _y = event[4] })
+                end
+            end
+        end
     end
 end
 

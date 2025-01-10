@@ -1,7 +1,6 @@
 {
-    "Lua.diagnostics.globals": [
-        "unicode",
-        "computer",
-        "component"
-    ]
+  "Lua.diagnostics.globals": ["unicode", "computer", "component"],
+  "Lua.runtime.special": {
+    "package.require": "require"
+  }
 }
