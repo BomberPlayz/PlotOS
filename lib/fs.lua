@@ -363,7 +363,7 @@ function filesystem.internal.proxy(filter, options)
     return proxy
 end
 
-function filesystem.umount(fsOrPath)
+function filesystem.unmount(fsOrPath)
     printk("Unmounting " .. tostring(fsOrPath))
     checkArg(1, fsOrPath, "string", "table")
     local real

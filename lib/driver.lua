@@ -154,7 +154,7 @@ function newdriver(d, addr)
             end
         end
     end]]
-    
+
     --local drv_ipc_id = "driver_"..generate_unique_id()
 
     --[[for k,v in pairs(dd) do
@@ -166,7 +166,7 @@ function newdriver(d, addr)
                     return table.unpack(re)
                 else
                     printk("Driver method "..k.." called")
-                    return v(...)        
+                    return v(...)
                 end
             end
         end
@@ -225,7 +225,6 @@ function ret.load(typed, addr)
     if not addr then addr = "default" end
 
     if addr == "default" then
-        
         local d, addra = ret.getDefault(typed)
         if d and addra then
             local dd = newdriver(d, addra)
@@ -262,14 +261,14 @@ function ret.load(typed, addr)
         if driver_cache[addr] then
             return driver_cache[addr]
         end
-        local d = ret.getBest(type, addr)
+        local d = ret.getBest(typed, addr)
         if d then
             local dd = newdriver(d, addr)
             dd.getDriverName = d.getName
             dd.getDriverVersion = d.getVersion
             dd.address = addr
             driver_cache[addr] = dd
-            
+
             local dd_proxy = {}
 
             if process.currentProcess ~= nil then
@@ -285,7 +284,7 @@ function ret.load(typed, addr)
                     end
                 })
             else
-                printk("Driver "..d.getName().." has been loaded kernel-side", "warn")
+                printk("Driver " .. d.getName() .. " has been loaded kernel-side", "warn")
                 dd_proxy = dd
             end
 
@@ -301,7 +300,5 @@ end
 function ret.fromCache(addr)
     return driver_cache[addr]
 end
-
-
 
 return ret

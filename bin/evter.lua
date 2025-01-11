@@ -1,4 +1,7 @@
 while true do
-local a,b,c,d = require("event").pull()
-print(a.." "..b.." "..c.." "..d)
+    local a = { require("event").pull() }
+    for i, v in ipairs(a) do
+        io.write(v .. " ")
+    end
+    io.write("\n")
 end
