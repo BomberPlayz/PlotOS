@@ -1,3 +1,16 @@
+if not safemode then
+    local s1, e1 = pcall(function()
+        dofile("/PlotOS/serviceRun.lua")
+    end)
+
+    if not s1 then
+        kern_error("Error running service autorun: " .. e1)
+    end
+else
+    printk("Safemode is enabled, skipping critical boot scripts.", "warn")
+end
+
+
 printk("Starting shell...")
 package.on_booted()
 
